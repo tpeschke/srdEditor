@@ -9,7 +9,7 @@ export default class Home extends Component {
         this.state = {
             main: [],
             side: [],
-            chapter: 1
+            chapter: 4
         }
     }
 
@@ -29,15 +29,25 @@ export default class Home extends Component {
         })
     }
 
+    insertNewItem = () => {
+
+    }
+
     render() {
         let display = this.state.main.map(val => {
+            let sbinner = <div></div>
+            if (val.linkid.split('.')[1] === 'sb') {
+                sbinner = val.inner.map(inside => {
+                    return <Display key={val.linkid} linkid={inside.linkid} body={inside.body} right={inside.rightbody} left={inside.leftbody} source={val.source} alt={val.alt}/>
+                })
+            }
+
             return (
                 <div key={val.linkid} className="displayItemShell">
-                    <Display linkid={val.linkid} body={val.body} />
-                    <div>
-                        <button>Add Below</button>
-                        <button>Edit</button>
-                        <button>Save</button>
+                    <Display linkid={val.linkid} body={val.body} right={val.rightbody} left={val.leftbody} source={val.source} alt={val.alt} />
+                    <div className="displayItemShell">
+                        <button>Add to sidebar</button>
+                        {sbinner}
                     </div>
                 </div>
             )

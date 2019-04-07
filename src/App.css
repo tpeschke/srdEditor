@@ -7,6 +7,10 @@ textarea {
   background: lightgrey;
 }
 
+.displayShell div:nth-child(2) {
+  background: transparent;
+}
+
 .displayShell div {
   display: flex;
 }
@@ -19,5 +23,5 @@ textarea {
 .displayItemShell {
   display: flex;
   flex-direction: column;
-  padding: 5px;
+  padding: 10px 5px;
 }

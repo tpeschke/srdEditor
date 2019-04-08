@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import axios from 'axios'
 import Display from './Display';
+import _ from 'lodash'
 
 export default class Home extends Component {
     constructor() {
@@ -29,28 +30,161 @@ export default class Home extends Component {
         })
     }
 
-    insertNewItem = () => {
+    makeid = () => {
+        let text = "";
+        let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
+        for (let i = 0; i < 10; i++)
+            text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+        return text;
+    }
+
+    insertNewItem = (linkid) => {
+        let copyArray = _.cloneDeep(this.state.main)
+        let index = null;
+        let previousIndex = null;
+        let newId = this.state.chapter + '.s.' + this.makeid()
+        if (linkid) {
+            for (let i = 0; i < copyArray.length; i++) {
+                if (copyArray[i].linkid === linkid) {
+                    index = i + 1
+                    previousIndex = i
+                    i = copyArray.length
+                }
+            }
+            copyArray.splice(index, 0, {id: newId, linkid: newId, nextid: copyArray[index].linkid })
+            copyArray[previousIndex] = Object.assign({}, copyArray[previousIndex], { nextid: newId })
+        } else {
+            copyArray.unshift({id: newId, linkid: newId, nextid: copyArray[0].linkid })
+        }
+        this.setState({ main: copyArray })
+    }
+
+    editItem = (type, value, parentid, id) => {
+        let copyArray = _.cloneDeep(this.state.main)
+        if (parentid) {
+            if (type === 'linkid') {
+                for (let i = 0; i < copyArray.length; i++) {
+                    if (copyArray[i].id === parentid) {
+                        for (let x = 0; x < copyArray[i].inner.length; x++) {
+                            if (copyArray[i].inner[x].id === id) {
+                                copyArray[i].inner[x].linkid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
+                                copyArray[i].inner[x].edited = true
+                                if (value === 'p') {
+                                    copyArray[i].inner[x].body = []
+                                }
+                                x = copyArray[i].inner.length
+                            }
+                        }
+                        i = copyArray.length
+                    }
+                }
+            } else if (type === 'p') {
+                for (let i = 0; i < copyArray.length; i++) {
+                    if (copyArray[i].id === parentid) {
+                        for (let x = 0; x < copyArray[i].inner.length; x++) {
+                            if (copyArray[i].inner[x].id === id) {
+                                copyArray[i].inner[x].body = value.split(' ')
+                                copyArray[i].inner[x].edited = true
+                                x = copyArray[i].inner.length
+                            }
+                        }
+                        i = copyArray.length
+                    }
+                }
+            } else if (type) {
+                for (let i = 0; i < copyArray.length; i++) {
+                    if (copyArray[i].id === parentid) {
+                        for (let x = 0; x < copyArray[i].inner.length; x++) {
+                            if (copyArray[i].inner[x].id === id) {
+                                copyArray[i].inner[x][value] = value
+                                copyArray[i].inner[x].edited = true
+                                x = copyArray[i].inner.length
+                            }
+                        }
+                        i = copyArray.length
+                    }
+                }
+            } else {
+                for (let i = 0; i < copyArray.length; i++) {
+                    if (copyArray[i].id === parentid) {
+                        for (let x = 0; x < copyArray[i].inner.length; x++) {
+                            if (copyArray[i].inner[x].id === id) {
+                                copyArray[i].inner[x].body = value
+                                copyArray[i].inner[x].edited = true
+                                x = copyArray[i].inner.length
+                            }
+                        }
+                        i = copyArray.length
+                    }
+                }
+            }
+        } else {
+            if (type === 'linkid') {
+                for (let i = 0; i < copyArray.length; i++) {
+                    if (copyArray[i].id === id) {
+                        copyArray[i].linkid = this.state.chapter + '.' + value + '.' + copyArray[i].linkid.split('.')[2]
+                        copyArray[i].edited = true
+                        if (value === 'p') {
+                            copyArray[i].body = ['']
+                        }
+                        i = copyArray.length
+                    }
+                }
+            } else if (type === 'p') {
+                for (let i = 0; i < copyArray.length; i++) {
+                    if (copyArray[i].id === id) {
+                        copyArray[i].body = value.split(' ')
+                        copyArray[i].edited = true
+                        i = copyArray.length
+                    }
+                }
+            } else if (type) {
+                for (let i = 0; i < copyArray.length; i++) {
+                    if (copyArray[i].id === id) {
+                        copyArray[i][type] = value
+                        copyArray[i].edited = true
+                        i = copyArray.length
+                    }
+                }
+            } else {
+                for (let i = 0; i < copyArray.length; i++) {
+                    if (copyArray[i].id === id) {
+                        copyArray[i].body = value
+                        copyArray[i].edited = true
+                        i = copyArray.length
+                    }
+                }
+            }
+        }
+
+        this.setState({ main: copyArray })
     }
 
     render() {
         let display = this.state.main.map(val => {
             let sbinner = <div></div>
-            if (val.linkid.split('.')[1] === 'sb') {
+            if (val.linkid.split('.')[1] === 'sb' && val.inner) {
                 sbinner = val.inner.map(inside => {
-                    return <Display key={val.linkid} linkid={inside.linkid} body={inside.body} right={inside.rightbody} left={inside.leftbody} source={val.source} alt={val.alt}/>
+                    return <Display key={inside.id} id={inside.id} linkid={inside.linkid} body={inside.body} right={inside.rightbody} left={inside.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} parentid={val.id} />
                 })
-            }
-
-            return (
-                <div key={val.linkid} className="displayItemShell">
-                    <Display linkid={val.linkid} body={val.body} right={val.rightbody} left={val.leftbody} source={val.source} alt={val.alt} />
-                    <div className="displayItemShell">
-                        <button>Add to sidebar</button>
-                        {sbinner}
+                return (
+                    <div key={val.id} className="displayItemShell">
+                        <Display linkid={val.linkid} id={val.id} body={val.body} right={val.rightbody} left={val.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} />
+                        <div className="displayItemShell">
+                            <button>Add to sidebar</button>
+                            {sbinner}
+                        </div>
                     </div>
+                )
+            }
+            return (
+                <div key={val.id} className="displayItemShell">
+                    <Display linkid={val.linkid} id={val.id} body={val.body} right={val.rightbody} left={val.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} />
                 </div>
             )
+
         })
 
         return (
@@ -58,8 +192,9 @@ export default class Home extends Component {
                 <div>
                     <input type="text" placeholder={`currently on chapter ${this.state.chapter}`} onChange={e => this.setState({ chapter: e.target.value })} />
                     <button onClick={this.getNewChapter}>GO!</button>
+                    <button>Save</button>
                 </div>
-                <button>Add Below</button>
+                <button onClick={_ => this.insertNewItem()}>Add Below</button>
                 {display}
             </div>
         )

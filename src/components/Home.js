@@ -60,6 +60,8 @@ export default class Home extends Component {
                 } else {
                     copyArray[parentIndex].inner = [{ id: newId, linkid: newId, nextid: copyArray[0].linkid }]
                 }
+                copyArray[parentIndex].nextid = newId
+                copyArray[parentIndex].endit = newId
             } else {
                 for (let i = 0; i < copyArray.length; i++) {
                     if (copyArray[i].id === parentid) {
@@ -76,6 +78,7 @@ export default class Home extends Component {
                 }
                 if (copyArray[parentIndex].inner.length === index) {
                     copyArray[parentIndex].inner.push({ id: newId, linkid: newId, nextid: null })
+                    copyArray[parentIndex].endid = newId
                 } else {
                     copyArray[parentIndex].inner.splice(index, 0, { id: newId, linkid: newId, nextid: copyArray[parentIndex].inner[index].linkid })
                     copyArray[parentIndex].inner[previousIndex] = Object.assign({}, copyArray[previousIndex].inner[previousIndex], { nextid: newId })
@@ -111,6 +114,9 @@ export default class Home extends Component {
                     if (copyArray[i].id === parentid) {
                         for (let x = 0; x < copyArray[i].inner.length; x++) {
                             if (copyArray[i].inner[x].id === id) {
+                                if (copyArray[i].endid === copyArray[i].inner[x].linkid) {
+                                    copyArray[i].endid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
+                                }
                                 copyArray[i].inner[x].linkid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
                                 copyArray[i].inner[x].edited = true
                                 if (value === 'p') {
@@ -127,6 +133,9 @@ export default class Home extends Component {
                     if (copyArray[i].id === parentid) {
                         for (let x = 0; x < copyArray[i].inner.length; x++) {
                             if (copyArray[i].inner[x].id === id) {
+                                if (copyArray[i].endid === copyArray[i].inner[x].linkid) {
+                                    copyArray[i].endid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
+                                }
                                 copyArray[i].inner[x].body = value.split(' ')
                                 copyArray[i].inner[x].edited = true
                                 x = copyArray[i].inner.length
@@ -139,6 +148,9 @@ export default class Home extends Component {
                 for (let i = 0; i < copyArray.length; i++) {
                     if (copyArray[i].id === parentid) {
                         for (let x = 0; x < copyArray[i].inner.length; x++) {
+                            if (copyArray[i].endid === copyArray[i].inner[x].linkid) {
+                                copyArray[i].endid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
+                            }
                             if (copyArray[i].inner[x].id === id) {
                                 copyArray[i].inner[x][value] = value
                                 copyArray[i].inner[x].edited = true
@@ -152,6 +164,9 @@ export default class Home extends Component {
                 for (let i = 0; i < copyArray.length; i++) {
                     if (copyArray[i].id === parentid) {
                         for (let x = 0; x < copyArray[i].inner.length; x++) {
+                            if (copyArray[i].endid === copyArray[i].inner[x].linkid) {
+                                copyArray[i].endid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
+                            }
                             if (copyArray[i].inner[x].id === id) {
                                 copyArray[i].inner[x].body = value
                                 copyArray[i].inner[x].edited = true
@@ -204,18 +219,57 @@ export default class Home extends Component {
         this.setState({ main: copyArray })
     }
 
+    deleteItem = (linkid, parentid) => {
+        let copyArray = _.cloneDeep(this.state.main)
+        if (parentid) {
+            for (let i = 0; i < copyArray.length; i++) {
+                if (copyArray[i].id === parentid) {
+                    for (let x = 0; x < copyArray[i].inner.length; x++) {
+                        if (copyArray[i].inner.length === 1) {
+                            copyArray[i].inner.pop()
+                            copyArray[i].endid = null
+                            copyArray[i].nextid = null
+                            copyArray[i].edited = true
+                        } else {
+                            if (!copyArray[i].inner[x+1].nextid) {
+                                copyArray[i].inner[x].nextid = null
+                            } else {
+                                copyArray[i].inner[x - 1].nextid = copyArray[i].inner[x+1].linkid
+                            }
+                            copyArray[i].inner.splice(x+1,1)
+                            copyArray[i].endid = copyArray[i].inner[copyArray[i].inner.length-1].linkid
+                        }
+                        x = copyArray[i].inner.length
+                    }
+                    i = copyArray.length 
+                }
+            }
+        } else {
+            for (let i = 0; i < copyArray.length; i++) {
+                if (copyArray[i].id === linkid) {
+                    copyArray[i - 1].nextid = copyArray[i+1].linkid
+                    copyArray[i - 1].edited = true
+                    copyArray.splice(i,1)
+                    i = copyArray.length
+                }
+            }
+        }
+
+        this.setState({main: copyArray})
+    }
+
     render() {
         let display = this.state.main.map(val => {
             let sbinner = <div></div>
             if (val.linkid.split('.')[1] === 'sb') {
                 if (val.inner) {
                     sbinner = val.inner.map(inside => {
-                        return <Display key={inside.id} id={inside.id} linkid={inside.linkid} body={inside.body} right={inside.rightbody} left={inside.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} parentid={val.id} />
+                        return <Display key={inside.id} id={inside.id} linkid={inside.linkid} body={inside.body} right={inside.rightbody} left={inside.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} parentid={val.id} deleteItem={this.deleteItem} />
                     })
                 }
                 return (
                     <div key={val.id} className="displayItemShell">
-                        <Display linkid={val.linkid} id={val.id} body={val.body} right={val.rightbody} left={val.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} />
+                        <Display linkid={val.linkid} id={val.id} body={val.body} right={val.rightbody} left={val.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} deleteItem={this.deleteItem} />
                         <div className="displayItemShell">
                             <button onClick={_ => this.insertNewItem(val.id, 'parent')}>Add to sidebar</button>
                             {sbinner}
@@ -225,7 +279,7 @@ export default class Home extends Component {
             }
             return (
                 <div key={val.id} className="displayItemShell">
-                    <Display linkid={val.linkid} id={val.id} body={val.body} right={val.rightbody} left={val.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} />
+                    <Display linkid={val.linkid} id={val.id} body={val.body} right={val.rightbody} left={val.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} deleteItem={this.deleteItem}/>
                 </div>
             )
 

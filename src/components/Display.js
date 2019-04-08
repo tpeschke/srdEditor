@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function Display({ body, linkid, right, left, source, alt, insertNewItem, editItem, parentid, id }) {
+export default function Display({ body, linkid, right, left, source, alt, insertNewItem, editItem, parentid, id, deleteItem }) {
     let inner = <div></div>;
 
     switch (linkid.split('.')[1]) {
@@ -28,7 +28,7 @@ export default function Display({ body, linkid, right, left, source, alt, insert
             {inner}
             <div>
                 <button onClick={_=>insertNewItem(linkid, parentid)}>Add Below</button>
-                <button>Delete</button>
+                <button onClick={_=>deleteItem(id, parentid)}>Delete</button>
             </div>
         </div>
     )

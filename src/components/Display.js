@@ -27,7 +27,7 @@ export default function Display({ body, linkid, right, left, source, alt, insert
             <input type="text" value={linkid.split('.')[1]} onChange={e=>editItem('linkid', e.target.value, parentid, id)}/>
             {inner}
             <div>
-                <button onClick={_=>insertNewItem(linkid)}>Add Below</button>
+                <button onClick={_=>insertNewItem(linkid, parentid)}>Add Below</button>
                 <button>Delete</button>
             </div>
         </div>

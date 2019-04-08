@@ -40,23 +40,65 @@ export default class Home extends Component {
         return text;
     }
 
-    insertNewItem = (linkid) => {
+    insertNewItem = (linkid, parentid) => {
         let copyArray = _.cloneDeep(this.state.main)
         let index = null;
         let previousIndex = null;
         let newId = this.state.chapter + '.s.' + this.makeid()
-        if (linkid) {
-            for (let i = 0; i < copyArray.length; i++) {
-                if (copyArray[i].linkid === linkid) {
-                    index = i + 1
-                    previousIndex = i
-                    i = copyArray.length
+
+        if (parentid) {
+            let parentIndex = 0
+            if (parentid === 'parent') {
+                for (let i = 0; i < copyArray.length; i++) {
+                    if (copyArray[i].id === linkid) {
+                        parentIndex = i
+                        i = copyArray.length
+                    }
+                }
+                if (copyArray[parentIndex].inner) {
+                    copyArray[parentIndex].inner.unshift({ id: newId, linkid: newId, nextid: copyArray[0].linkid })
+                } else {
+                    copyArray[parentIndex].inner = [{ id: newId, linkid: newId, nextid: copyArray[0].linkid }]
+                }
+            } else {
+                for (let i = 0; i < copyArray.length; i++) {
+                    if (copyArray[i].id === parentid) {
+                        parentIndex = i
+                        i = copyArray.length
+                    }
+                }
+                for (let i = 0; i < copyArray[parentIndex].inner.length; i++) {
+                    if (copyArray[parentIndex].inner[i].linkid === linkid) {
+                        index = i + 1
+                        previousIndex = i
+                        i = copyArray.length
+                    }
+                }
+                if (copyArray[parentIndex].inner.length === index) {
+                    copyArray[parentIndex].inner.push({ id: newId, linkid: newId, nextid: null })
+                } else {
+                    copyArray[parentIndex].inner.splice(index, 0, { id: newId, linkid: newId, nextid: copyArray[parentIndex].inner[index].linkid })
+                    copyArray[parentIndex].inner[previousIndex] = Object.assign({}, copyArray[previousIndex].inner[previousIndex], { nextid: newId })
                 }
             }
-            copyArray.splice(index, 0, {id: newId, linkid: newId, nextid: copyArray[index].linkid })
-            copyArray[previousIndex] = Object.assign({}, copyArray[previousIndex], { nextid: newId })
         } else {
-            copyArray.unshift({id: newId, linkid: newId, nextid: copyArray[0].linkid })
+            if (linkid) {
+                for (let i = 0; i < copyArray.length; i++) {
+                    if (copyArray[i].linkid === linkid) {
+                        index = i + 1
+                        previousIndex = i
+                        i = copyArray.length
+                    }
+                }
+                if (copyArray.length === index) {
+                    copyArray.push({ id: newId, linkid: newId, nextid: null })
+                } else {
+                    copyArray.splice(index, 0, { id: newId, linkid: newId, nextid: copyArray[index].linkid })
+                }
+                copyArray[previousIndex] = Object.assign({}, copyArray[previousIndex], { nextid: newId })
+            } else {
+                copyArray.unshift({ id: newId, linkid: newId, nextid: copyArray[0].linkid })
+            }
         }
         this.setState({ main: copyArray })
     }
@@ -165,15 +207,17 @@ export default class Home extends Component {
     render() {
         let display = this.state.main.map(val => {
             let sbinner = <div></div>
-            if (val.linkid.split('.')[1] === 'sb' && val.inner) {
-                sbinner = val.inner.map(inside => {
-                    return <Display key={inside.id} id={inside.id} linkid={inside.linkid} body={inside.body} right={inside.rightbody} left={inside.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} parentid={val.id} />
-                })
+            if (val.linkid.split('.')[1] === 'sb') {
+                if (val.inner) {
+                    sbinner = val.inner.map(inside => {
+                        return <Display key={inside.id} id={inside.id} linkid={inside.linkid} body={inside.body} right={inside.rightbody} left={inside.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} parentid={val.id} />
+                    })
+                }
                 return (
                     <div key={val.id} className="displayItemShell">
                         <Display linkid={val.linkid} id={val.id} body={val.body} right={val.rightbody} left={val.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} />
                         <div className="displayItemShell">
-                            <button>Add to sidebar</button>
+                            <button onClick={_ => this.insertNewItem(val.id, 'parent')}>Add to sidebar</button>
                             {sbinner}
                         </div>
                     </div>

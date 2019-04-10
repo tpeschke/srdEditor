@@ -23,6 +23,37 @@ export default class Home extends Component {
             if (res.data === 'Something went wrong') {
                 this.setState({ main: [], side: [] })
             } else if (res.data.main) {
+                res.data.main.forEach(val => {
+                    let content = ''
+                    if (val.linkid.split('.')[1] === 'p') {
+                        for (let i = 0; i < val.body.length; i++) {
+                            if (val.body[i].substring(0, 2) === '+)' || val.body[i].substring(0, 7) === 'Chapter') {
+                                content = content + val.body[i] + '|'
+                            } else if (val.body[i + 1] && val.body[i + 1].substring(0, 7) === 'Chapter') {
+                                content = content + val.body[i] + '|'
+                            } else {
+                                content = content + val.body[i] + ' '
+                            }
+                        }
+                        val.body = content
+                    } else if (val.linkid.split('.')[1] === 'sb') {
+                        val.inner.forEach(para => {
+                            if (para.linkid.split('.')[1] === 'p') {
+                                for (let i = 0; i < para.body.length; i++) {
+                                    if (para.body[i].substring(0, 2) === '+)' || para.body[i].substring(0, 7) === 'Chapter') {
+                                        content = content + para.body[i] + '|'
+                                    } else if (para.body[i + 1] && para.body[i + 1].substring(0, 7) === 'Chapter') {
+                                        content = content + para.body[i] + '|'
+                                    } else {
+                                        content = content + para.body[i] + ' '
+                                    }
+                                }
+                                para.body = content
+                            }
+                        })
+                    }
+                })
+                console.log(res.data.main)
                 this.setState({ main: res.data.main, side: res.data.side })
             } else {
                 this.setState({ main: res.data })
@@ -62,6 +93,7 @@ export default class Home extends Component {
                 }
                 copyArray[parentIndex].nextid = newId
                 copyArray[parentIndex].endit = newId
+                copyArray[parentIndex].edited = true
             } else {
                 for (let i = 0; i < copyArray.length; i++) {
                     if (copyArray[i].id === parentid) {
@@ -98,7 +130,7 @@ export default class Home extends Component {
                 } else {
                     copyArray.splice(index, 0, { id: newId, linkid: newId, nextid: copyArray[index].linkid })
                 }
-                copyArray[previousIndex] = Object.assign({}, copyArray[previousIndex], { nextid: newId })
+                copyArray[previousIndex] = Object.assign({}, copyArray[previousIndex], { nextid: newId, edited: true })
             } else {
                 copyArray.unshift({ id: newId, linkid: newId, nextid: copyArray[0].linkid })
             }
@@ -119,6 +151,10 @@ export default class Home extends Component {
                                 }
                                 copyArray[i].inner[x].linkid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
                                 copyArray[i].inner[x].edited = true
+                                if (copyArray[i].inner[x - i]) {
+                                    copyArray[i].inner[x - 1].nextid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
+                                    copyArray[i].inner[x - 1].edited = true
+                                }
                                 if (value === 'p') {
                                     copyArray[i].inner[x].body = []
                                 }
@@ -136,7 +172,7 @@ export default class Home extends Component {
                                 if (copyArray[i].endid === copyArray[i].inner[x].linkid) {
                                     copyArray[i].endid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
                                 }
-                                copyArray[i].inner[x].body = value.split(' ')
+                                copyArray[i].inner[x].body = value
                                 copyArray[i].inner[x].edited = true
                                 x = copyArray[i].inner.length
                             }
@@ -183,6 +219,8 @@ export default class Home extends Component {
                     if (copyArray[i].id === id) {
                         copyArray[i].linkid = this.state.chapter + '.' + value + '.' + copyArray[i].linkid.split('.')[2]
                         copyArray[i].edited = true
+                        copyArray[i - 1].nextid = this.state.chapter + '.' + value + '.' + copyArray[i].linkid.split('.')[2]
+                        copyArray[i - 1].edited = true
                         if (value === 'p') {
                             copyArray[i].body = ['']
                         }
@@ -192,7 +230,7 @@ export default class Home extends Component {
             } else if (type === 'p') {
                 for (let i = 0; i < copyArray.length; i++) {
                     if (copyArray[i].id === id) {
-                        copyArray[i].body = value.split(' ')
+                        copyArray[i].body = value
                         copyArray[i].edited = true
                         i = copyArray.length
                     }
@@ -206,6 +244,7 @@ export default class Home extends Component {
                     }
                 }
             } else {
+                console.log(value, id)
                 for (let i = 0; i < copyArray.length; i++) {
                     if (copyArray[i].id === id) {
                         copyArray[i].body = value
@@ -215,7 +254,6 @@ export default class Home extends Component {
                 }
             }
         }
-
         this.setState({ main: copyArray })
     }
 
@@ -231,31 +269,55 @@ export default class Home extends Component {
                             copyArray[i].nextid = null
                             copyArray[i].edited = true
                         } else {
-                            if (!copyArray[i].inner[x+1].nextid) {
+                            if (!copyArray[i].inner[x + 1].nextid) {
                                 copyArray[i].inner[x].nextid = null
                             } else {
-                                copyArray[i].inner[x - 1].nextid = copyArray[i].inner[x+1].linkid
+                                copyArray[i].inner[x - 1].nextid = copyArray[i].inner[x + 1].linkid
+                                copyArray[i].inner[x - 1].edited = true
                             }
-                            copyArray[i].inner.splice(x+1,1)
-                            copyArray[i].endid = copyArray[i].inner[copyArray[i].inner.length-1].linkid
+                            copyArray[i].inner.splice(x + 1, 1)
+                            copyArray[i].endid = copyArray[i].inner[copyArray[i].inner.length - 1].linkid
                         }
                         x = copyArray[i].inner.length
                     }
-                    i = copyArray.length 
+                    i = copyArray.length
                 }
             }
         } else {
             for (let i = 0; i < copyArray.length; i++) {
                 if (copyArray[i].id === linkid) {
-                    copyArray[i - 1].nextid = copyArray[i+1].linkid
+                    copyArray[i - 1].nextid = copyArray[i + 1].linkid
                     copyArray[i - 1].edited = true
-                    copyArray.splice(i,1)
+                    copyArray.splice(i, 1)
                     i = copyArray.length
                 }
             }
         }
 
-        this.setState({main: copyArray})
+        this.setState({ main: copyArray })
+    }
+
+    saveChanges = () => {
+        let savedArray = []
+        let copyArray = _.cloneDeep(this.state.main)
+        copyArray.forEach(val => {
+            if (val.edited) {
+                savedArray.push(val)
+                val.edited = null;
+            }
+            if (val.linkid.split('.')[1] === 'sb') {
+                val.inner.forEach(inside => {
+                    if (inside.edited) {
+                        savedArray.push(inside)
+                        inside.edited = null;
+                    }
+                })
+            }
+        })
+
+        axios.patch('/saveChapter', { auth: process.env.REACT_APP_AUTH, chapter: savedArray }).then(_ => {
+            this.setState({main: copyArray})
+        })
     }
 
     render() {
@@ -264,11 +326,11 @@ export default class Home extends Component {
             if (val.linkid.split('.')[1] === 'sb') {
                 if (val.inner) {
                     sbinner = val.inner.map(inside => {
-                        return <Display key={inside.id} id={inside.id} linkid={inside.linkid} body={inside.body} right={inside.rightbody} left={inside.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} parentid={val.id} deleteItem={this.deleteItem} />
+                        return <Display key={inside.id+inside.linkid} id={inside.id} linkid={inside.linkid} body={inside.body} right={inside.rightbody} left={inside.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} parentid={val.id} deleteItem={this.deleteItem} />
                     })
                 }
                 return (
-                    <div key={val.id} className="displayItemShell">
+                    <div key={val.id+val.linkid} className="displayItemShell">
                         <Display linkid={val.linkid} id={val.id} body={val.body} right={val.rightbody} left={val.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} deleteItem={this.deleteItem} />
                         <div className="displayItemShell">
                             <button onClick={_ => this.insertNewItem(val.id, 'parent')}>Add to sidebar</button>
@@ -278,8 +340,8 @@ export default class Home extends Component {
                 )
             }
             return (
-                <div key={val.id} className="displayItemShell">
-                    <Display linkid={val.linkid} id={val.id} body={val.body} right={val.rightbody} left={val.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} deleteItem={this.deleteItem}/>
+                <div key={val.id+val.linkid} className="displayItemShell">
+                    <Display linkid={val.linkid} id={val.id} body={val.body} right={val.rightbody} left={val.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} deleteItem={this.deleteItem} />
                 </div>
             )
 
@@ -290,7 +352,7 @@ export default class Home extends Component {
                 <div>
                     <input type="text" placeholder={`currently on chapter ${this.state.chapter}`} onChange={e => this.setState({ chapter: e.target.value })} />
                     <button onClick={this.getNewChapter}>GO!</button>
-                    <button>Save</button>
+                    <button onClick={this.saveChanges}>Save</button>
                 </div>
                 <button onClick={_ => this.insertNewItem()}>Add Below</button>
                 {display}

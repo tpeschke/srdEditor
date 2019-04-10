@@ -5,7 +5,7 @@ export default function Display({ body, linkid, right, left, source, alt, insert
 
     switch (linkid.split('.')[1]) {
         case 'p':
-            inner = <textarea type="text" value={body.join(' ')} onChange={e=>editItem('p', e.target.value, parentid, id)} />
+            inner = <textarea type="text" value={body} onChange={e=>editItem('p', e.target.value, parentid, id)} />
             break;
         case 'c':
             inner = (<div>
@@ -18,6 +18,10 @@ export default function Display({ body, linkid, right, left, source, alt, insert
                     <textarea type="text" value={source} onChange={e=>editItem('source', e.target.value, parentid, id)} />
                     <textarea type="text" value={alt} onChange={e=>editItem('alt', e.target.value, parentid, id)} />
                 </div>)
+            break;
+        case 'ab':
+        case 'a':
+            inner = <div></div>
             break;
         default:
             inner = <textarea type="text" value={body} onChange={e=>editItem(null, e.target.value, parentid, id)} />

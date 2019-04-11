@@ -8,20 +8,21 @@ export default function Display({ body, linkid, right, left, source, alt, insert
             inner = <textarea type="text" value={body} onChange={e=>editItem('p', e.target.value, parentid, id)} />
             break;
         case 'c':
-            inner = (<div>
+            inner = (<div className="doubleShell">
                 <textarea type="text" value={left} onChange={e=>editItem('left', e.target.value, parentid, id)} />
                 <textarea type="text" value={right} onChange={e=>editItem('right', e.target.value, parentid, id)} />
             </div>)
             break;
         case 'i':
-            inner = (<div>
+            inner = (<div className="doubleShell">
                     <textarea type="text" value={source} onChange={e=>editItem('source', e.target.value, parentid, id)} />
                     <textarea type="text" value={alt} onChange={e=>editItem('alt', e.target.value, parentid, id)} />
                 </div>)
             break;
         case 'ab':
         case 'a':
-            inner = <div></div>
+        case 's':
+            inner = <div className="middeBridge"></div>
             break;
         default:
             inner = <textarea type="text" value={body} onChange={e=>editItem(null, e.target.value, parentid, id)} />

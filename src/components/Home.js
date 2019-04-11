@@ -135,7 +135,7 @@ export default class Home extends Component {
                 copyArray.unshift({ id: newId, linkid: newId, nextid: copyArray[0].linkid })
             }
         }
-        this.setState({ main: copyArray })
+        this.setState({ main: copyArray }, _ => window.scrollTo(0, document.body.scrollHeight))
     }
 
     editItem = (type, value, parentid, id) => {
@@ -244,7 +244,6 @@ export default class Home extends Component {
                     }
                 }
             } else {
-                console.log(value, id)
                 for (let i = 0; i < copyArray.length; i++) {
                     if (copyArray[i].id === id) {
                         copyArray[i].body = value

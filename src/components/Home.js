@@ -105,16 +105,20 @@ export default class Home extends Component {
                     if (copyArray[parentIndex].inner[i].linkid === linkid) {
                         index = i + 1
                         previousIndex = i
-                        i = copyArray.length
+                        i = copyArray[parentIndex].inner.length
                     }
                 }
                 if (copyArray[parentIndex].inner.length === index) {
                     copyArray[parentIndex].inner.push({ id: newId, linkid: newId, nextid: null })
+                    copyArray[parentIndex].inner[previousIndex].nextid = newId
                     copyArray[parentIndex].endid = newId
+                    copyArray[parentIndex].edited = true
                 } else {
                     copyArray[parentIndex].inner.splice(index, 0, { id: newId, linkid: newId, nextid: copyArray[parentIndex].inner[index].linkid })
-                    copyArray[parentIndex].inner[previousIndex] = Object.assign({}, copyArray[previousIndex].inner[previousIndex], { nextid: newId })
+                    copyArray[parentIndex].inner[previousIndex].nextid = newId
                 }
+                copyArray[parentIndex].inner[previousIndex].edited = true
+                copyArray[parentIndex].inner[index].edited = true
             }
         } else {
             if (linkid) {
@@ -148,13 +152,12 @@ export default class Home extends Component {
                             if (copyArray[i].inner[x].id === id) {
                                 if (copyArray[i].endid === copyArray[i].inner[x].linkid) {
                                     copyArray[i].endid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
+                                    copyArray[i].edited = true
                                 }
                                 copyArray[i].inner[x].linkid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
                                 copyArray[i].inner[x].edited = true
-                                if (copyArray[i].inner[x - i]) {
-                                    copyArray[i].inner[x - 1].nextid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
-                                    copyArray[i].inner[x - 1].edited = true
-                                }
+                                copyArray[i].inner[x - 1].nextid = copyArray[i].inner[x].linkid
+                                copyArray[i].inner[x - 1].edited = true
                                 if (value === 'p') {
                                     copyArray[i].inner[x].body = []
                                 }
@@ -170,7 +173,8 @@ export default class Home extends Component {
                         for (let x = 0; x < copyArray[i].inner.length; x++) {
                             if (copyArray[i].inner[x].id === id) {
                                 if (copyArray[i].endid === copyArray[i].inner[x].linkid) {
-                                    copyArray[i].endid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
+                                    copyArray[i].endid = this.state.chapter + '.' + type + '.' + copyArray[i].inner[x].linkid.split('.')[2]
+                                    copyArray[i].edited = true
                                 }
                                 copyArray[i].inner[x].body = value
                                 copyArray[i].inner[x].edited = true
@@ -315,7 +319,7 @@ export default class Home extends Component {
         })
 
         axios.patch('/saveChapter', { auth: process.env.REACT_APP_AUTH, chapter: savedArray }).then(_ => {
-            this.setState({main: copyArray})
+            this.setState({ main: copyArray })
         })
     }
 
@@ -325,11 +329,11 @@ export default class Home extends Component {
             if (val.linkid.split('.')[1] === 'sb') {
                 if (val.inner) {
                     sbinner = val.inner.map(inside => {
-                        return <Display key={inside.id+inside.linkid} id={inside.id} linkid={inside.linkid} body={inside.body} right={inside.rightbody} left={inside.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} parentid={val.id} deleteItem={this.deleteItem} />
+                        return <Display key={inside.id + inside.linkid} id={inside.id} linkid={inside.linkid} body={inside.body} right={inside.rightbody} left={inside.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} parentid={val.id} deleteItem={this.deleteItem} />
                     })
                 }
                 return (
-                    <div key={val.id+val.linkid} className="displayItemShell">
+                    <div key={val.id + val.linkid} className="displayItemShell">
                         <Display linkid={val.linkid} id={val.id} body={val.body} right={val.rightbody} left={val.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} deleteItem={this.deleteItem} />
                         <div className="displayItemShell">
                             <button onClick={_ => this.insertNewItem(val.id, 'parent')}>Add to sidebar</button>
@@ -339,7 +343,7 @@ export default class Home extends Component {
                 )
             }
             return (
-                <div key={val.id+val.linkid} className="displayItemShell">
+                <div key={val.id + val.linkid} className="displayItemShell">
                     <Display linkid={val.linkid} id={val.id} body={val.body} right={val.rightbody} left={val.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} deleteItem={this.deleteItem} />
                 </div>
             )
@@ -347,14 +351,18 @@ export default class Home extends Component {
         })
 
         return (
-            <div className="displayShell">
-                <div>
+            <div className="outerShell">
+                <div className="navShell">
                     <input type="text" placeholder={`currently on chapter ${this.state.chapter}`} onChange={e => this.setState({ chapter: e.target.value })} />
                     <button onClick={this.getNewChapter}>GO!</button>
                     <button onClick={this.saveChanges}>Save</button>
+                    <br/>
+                    <button onClick={_=>window.scrollTo(0,document.body.scrollHeight)}>To Bottom</button>
                 </div>
-                <button onClick={_ => this.insertNewItem()}>Add Below</button>
-                {display}
+                <div className="displayShell">
+                    <button onClick={_ => this.insertNewItem()}>Add Below</button>
+                    {display}
+                </div>
             </div>
         )
     }

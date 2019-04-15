@@ -2,6 +2,8 @@ textarea {
   padding: 10px;
   width: 100%;
   border: none;
+  background: transparent;
+  font-family: serif;
 }
 
 .doubleShell {
@@ -13,12 +15,20 @@ textarea {
   height: 0px;
 }
 
-.displayShell div:nth-child(even) {
-  background: lightgrey;
+.navShell {
+  position: fixed;
+  background: lightblue;
+  width: 100%;
+  top: 0;
+  padding: 15px;
 }
 
-.displayShell div:nth-child(2) {
-  background: transparent;
+.displayShell {
+  margin-top: 60px;
+}
+
+.displayShell div:nth-child(even) {
+  background: lightgrey;
 }
 
 .displayShell div {
@@ -28,6 +38,9 @@ textarea {
 .displayItem input:first-child {
   width: 50px;
   text-align: center;
+  border: none;
+  background: transparent;
+  border-right: 1px solid black;
 }
 
 .displayItemShell {

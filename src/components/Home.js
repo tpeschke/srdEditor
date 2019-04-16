@@ -142,22 +142,25 @@ export default class Home extends Component {
         this.setState({ main: copyArray }, _ => window.scrollTo(0, document.body.scrollHeight))
     }
 
-    editItem = (type, value, parentid, id) => {
+    editItem = (type, value, parentid, linkid) => {
         let copyArray = _.cloneDeep(this.state.main)
+console.log(type, value, parentid, linkid)
         if (parentid) {
             if (type === 'linkid') {
                 for (let i = 0; i < copyArray.length; i++) {
                     if (copyArray[i].id === parentid) {
                         for (let x = 0; x < copyArray[i].inner.length; x++) {
-                            if (copyArray[i].inner[x].id === id) {
+                            if (copyArray[i].inner[x].linkid === linkid) {
                                 if (copyArray[i].endid === copyArray[i].inner[x].linkid) {
                                     copyArray[i].endid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
                                     copyArray[i].edited = true
                                 }
                                 copyArray[i].inner[x].linkid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
                                 copyArray[i].inner[x].edited = true
-                                copyArray[i].inner[x - 1].nextid = copyArray[i].inner[x].linkid
-                                copyArray[i].inner[x - 1].edited = true
+                                if (copyArray[i].inner[x - 1]) {
+                                    copyArray[i].inner[x - 1].nextid = copyArray[i].inner[x].linkid
+                                    copyArray[i].inner[x - 1].edited = true
+                                }
                                 if (value === 'p') {
                                     copyArray[i].inner[x].body = []
                                 }
@@ -171,7 +174,7 @@ export default class Home extends Component {
                 for (let i = 0; i < copyArray.length; i++) {
                     if (copyArray[i].id === parentid) {
                         for (let x = 0; x < copyArray[i].inner.length; x++) {
-                            if (copyArray[i].inner[x].id === id) {
+                            if (copyArray[i].inner[x].linkid === linkid) {
                                 if (copyArray[i].endid === copyArray[i].inner[x].linkid) {
                                     copyArray[i].endid = this.state.chapter + '.' + type + '.' + copyArray[i].inner[x].linkid.split('.')[2]
                                     copyArray[i].edited = true
@@ -191,7 +194,7 @@ export default class Home extends Component {
                             if (copyArray[i].endid === copyArray[i].inner[x].linkid) {
                                 copyArray[i].endid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
                             }
-                            if (copyArray[i].inner[x].id === id) {
+                            if (copyArray[i].inner[x].linkid === linkid) {
                                 copyArray[i].inner[x][value] = value
                                 copyArray[i].inner[x].edited = true
                                 x = copyArray[i].inner.length
@@ -207,7 +210,7 @@ export default class Home extends Component {
                             if (copyArray[i].endid === copyArray[i].inner[x].linkid) {
                                 copyArray[i].endid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
                             }
-                            if (copyArray[i].inner[x].id === id) {
+                            if (copyArray[i].inner[x].linkid === linkid) {
                                 copyArray[i].inner[x].body = value
                                 copyArray[i].inner[x].edited = true
                                 x = copyArray[i].inner.length
@@ -220,7 +223,7 @@ export default class Home extends Component {
         } else {
             if (type === 'linkid') {
                 for (let i = 0; i < copyArray.length; i++) {
-                    if (copyArray[i].id === id) {
+                    if (copyArray[i].linkid === linkid) {
                         copyArray[i].linkid = this.state.chapter + '.' + value + '.' + copyArray[i].linkid.split('.')[2]
                         copyArray[i].edited = true
                         copyArray[i - 1].nextid = this.state.chapter + '.' + value + '.' + copyArray[i].linkid.split('.')[2]
@@ -233,7 +236,7 @@ export default class Home extends Component {
                 }
             } else if (type === 'p') {
                 for (let i = 0; i < copyArray.length; i++) {
-                    if (copyArray[i].id === id) {
+                    if (copyArray[i].linkid === linkid) {
                         copyArray[i].body = value
                         copyArray[i].edited = true
                         i = copyArray.length
@@ -241,7 +244,7 @@ export default class Home extends Component {
                 }
             } else if (type) {
                 for (let i = 0; i < copyArray.length; i++) {
-                    if (copyArray[i].id === id) {
+                    if (copyArray[i].linkid === linkid) {
                         copyArray[i][type] = value
                         copyArray[i].edited = true
                         i = copyArray.length
@@ -249,7 +252,8 @@ export default class Home extends Component {
                 }
             } else {
                 for (let i = 0; i < copyArray.length; i++) {
-                    if (copyArray[i].id === id) {
+                    if (copyArray[i].linkid === linkid) {
+                        console.log(copyArray[i]) 
                         copyArray[i].body = value
                         copyArray[i].edited = true
                         i = copyArray.length

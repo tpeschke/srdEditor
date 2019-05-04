@@ -10,7 +10,8 @@ export default class Home extends Component {
         this.state = {
             main: [],
             side: [],
-            chapter: 4
+            deleteList: [],
+            chapter: 5
         }
     }
 
@@ -144,7 +145,7 @@ export default class Home extends Component {
 
     editItem = (type, value, parentid, linkid) => {
         let copyArray = _.cloneDeep(this.state.main)
-console.log(type, value, parentid, linkid)
+
         if (parentid) {
             if (type === 'linkid') {
                 for (let i = 0; i < copyArray.length; i++) {
@@ -252,8 +253,7 @@ console.log(type, value, parentid, linkid)
                 }
             } else {
                 for (let i = 0; i < copyArray.length; i++) {
-                    if (copyArray[i].linkid === linkid) {
-                        console.log(copyArray[i]) 
+                    if (copyArray[i].linkid === linkid) { 
                         copyArray[i].body = value
                         copyArray[i].edited = true
                         i = copyArray.length
@@ -268,7 +268,7 @@ console.log(type, value, parentid, linkid)
         let copyArray = _.cloneDeep(this.state.main)
         if (parentid) {
             for (let i = 0; i < copyArray.length; i++) {
-                if (copyArray[i].id === parentid) {
+                if (copyArray[i].linkid === parentid) {
                     for (let x = 0; x < copyArray[i].inner.length; x++) {
                         if (copyArray[i].inner.length === 1) {
                             copyArray[i].inner.pop()
@@ -292,7 +292,7 @@ console.log(type, value, parentid, linkid)
             }
         } else {
             for (let i = 0; i < copyArray.length; i++) {
-                if (copyArray[i].id === linkid) {
+                if (copyArray[i].linkid === linkid) {
                     copyArray[i - 1].nextid = copyArray[i + 1].linkid
                     copyArray[i - 1].edited = true
                     copyArray.splice(i, 1)

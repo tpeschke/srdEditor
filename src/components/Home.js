@@ -11,7 +11,7 @@ export default class Home extends Component {
             main: [],
             side: [],
             deleteList: [],
-            chapter: 5
+            chapter: 7
         }
     }
 
@@ -40,6 +40,7 @@ export default class Home extends Component {
                     } else if (val.linkid.split('.')[1] === 'sb') {
                         val.inner.forEach(para => {
                             if (para.linkid.split('.')[1] === 'p') {
+                                content = ''
                                 for (let i = 0; i < para.body.length; i++) {
                                     if (para.body[i].substring(0, 2) === '+)' || para.body[i].substring(0, 7) === 'Chapter') {
                                         content = content + para.body[i] + '|'
@@ -77,7 +78,7 @@ export default class Home extends Component {
         let index = null;
         let previousIndex = null;
         let newId = this.state.chapter + '.s.' + this.makeid()
-
+console.log(linkid, parentid)
         if (parentid) {
             let parentIndex = 0
             if (parentid === 'parent') {
@@ -90,10 +91,10 @@ export default class Home extends Component {
                 if (copyArray[parentIndex].inner) {
                     copyArray[parentIndex].inner.unshift({ id: newId, linkid: newId, nextid: copyArray[0].linkid })
                 } else {
-                    copyArray[parentIndex].inner = [{ id: newId, linkid: newId, nextid: copyArray[0].linkid }]
+                    copyArray[parentIndex].inner = [{ id: newId, linkid: newId, nextid: null }]
                 }
                 copyArray[parentIndex].nextid = newId
-                copyArray[parentIndex].endit = newId
+                copyArray[parentIndex].endid = newId
                 copyArray[parentIndex].edited = true
             } else {
                 for (let i = 0; i < copyArray.length; i++) {
@@ -137,7 +138,7 @@ export default class Home extends Component {
                 }
                 copyArray[previousIndex] = Object.assign({}, copyArray[previousIndex], { nextid: newId, edited: true })
             } else {
-                copyArray.unshift({ id: newId, linkid: newId, nextid: copyArray[0].linkid })
+                copyArray.unshift({ id: newId, linkid: copyArray[0] ? newId : `${this.state.chapter}.p.1`, nextid: copyArray[0] ? copyArray[0].linkid : null })
             }
         }
         this.setState({ main: copyArray }, _ => window.scrollTo(0, document.body.scrollHeight))
@@ -145,7 +146,6 @@ export default class Home extends Component {
 
     editItem = (type, value, parentid, linkid) => {
         let copyArray = _.cloneDeep(this.state.main)
-
         if (parentid) {
             if (type === 'linkid') {
                 for (let i = 0; i < copyArray.length; i++) {
@@ -227,8 +227,10 @@ export default class Home extends Component {
                     if (copyArray[i].linkid === linkid) {
                         copyArray[i].linkid = this.state.chapter + '.' + value + '.' + copyArray[i].linkid.split('.')[2]
                         copyArray[i].edited = true
-                        copyArray[i - 1].nextid = this.state.chapter + '.' + value + '.' + copyArray[i].linkid.split('.')[2]
-                        copyArray[i - 1].edited = true
+                        if (copyArray[i - 1]) {
+                            copyArray[i - 1].nextid = this.state.chapter + '.' + value + '.' + copyArray[i].linkid.split('.')[2]
+                            copyArray[i - 1].edited = true
+                        }
                         if (value === 'p') {
                             copyArray[i].body = ['']
                         }
@@ -333,7 +335,7 @@ export default class Home extends Component {
             if (val.linkid.split('.')[1] === 'sb') {
                 if (val.inner) {
                     sbinner = val.inner.map(inside => {
-                        return <Display key={inside.id + inside.linkid} id={inside.id} linkid={inside.linkid} body={inside.body} right={inside.rightbody} left={inside.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} parentid={val.id} deleteItem={this.deleteItem} />
+                        return <Display key={inside.id + inside.linkid} id={inside.id} linkid={inside.linkid} body={inside.body} right={inside.rightbody} left={inside.leftbody} source={inside.source} alt={inside.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} parentid={val.id} deleteItem={this.deleteItem} />
                     })
                 }
                 return (
@@ -366,6 +368,7 @@ export default class Home extends Component {
                 <div className="displayShell">
                     <button onClick={_ => this.insertNewItem()}>Add Below</button>
                     {display}
+                    <button onClick={_=>console.log(this.state.main)}>Log Chapter Array</button>
                 </div>
             </div>
         )

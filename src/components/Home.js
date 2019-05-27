@@ -79,6 +79,7 @@ export default class Home extends Component {
 
         //Sidebar
         if (parentIndex || parentIndex === 0) {
+            console.log(parentIndex)
             let item = copyArray[parentIndex]
             if (!index && index !== 0) {
                 if (!item.inner) {
@@ -177,7 +178,7 @@ export default class Home extends Component {
         this.setState({ main: copyArray })
     }
 
-    deleteItem = (linkid, parentid) => {
+    deleteItem = (index, parentIndex) => {
 
     }
 
@@ -217,7 +218,7 @@ export default class Home extends Component {
                     <div key={val.id + val.linkid} className="displayItemShell">
                         <Display linkid={val.linkid} index={index} body={val.body} right={val.rightbody} left={val.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItemType={this.editItemType} editItemValue={this.editItemValue} deleteItem={this.deleteItem} />
                         <div className="displayItemShell">
-                            <button onClick={_ => this.insertNewItem(null, 0)}>Add to sidebar</button>
+                            <button onClick={_ => this.insertNewItem(null, index)}>Add to sidebar</button>
                             {sbinner}
                         </div>
                     </div>

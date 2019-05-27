@@ -8,15 +8,15 @@ export default class Home extends Component {
         super()
 
         this.state = {
-            main: [],
+            main: [{ linkid: '9.p.1' }],
             side: [],
             deleteList: [],
-            chapter: 7
+            chapter: 9
         }
     }
 
     componentWillMount() {
-        this.getNewChapter()
+        // this.getNewChapter()
     }
 
     getNewChapter = () => {
@@ -63,247 +63,122 @@ export default class Home extends Component {
         })
     }
 
-    makeid = () => {
+    makeid = (num) => {
         let text = "";
         let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-        for (let i = 0; i < 10; i++)
+        for (let i = 0; i < num; i++)
             text += possible.charAt(Math.floor(Math.random() * possible.length));
 
         return text;
     }
 
-    insertNewItem = (linkid, parentid) => {
+    insertNewItem = (index, parentIndex) => {
         let copyArray = _.cloneDeep(this.state.main)
-        let index = null;
-        let previousIndex = null;
-        let newId = this.state.chapter + '.s.' + this.makeid()
-console.log(linkid, parentid)
-        if (parentid) {
-            let parentIndex = 0
-            if (parentid === 'parent') {
-                for (let i = 0; i < copyArray.length; i++) {
-                    if (copyArray[i].id === linkid) {
-                        parentIndex = i
-                        i = copyArray.length
-                    }
+        let newId = this.state.chapter + '.' + this.makeid(1) + '.' + this.makeid(10)
+
+        //Sidebar
+        if (parentIndex || parentIndex === 0) {
+            let item = copyArray[parentIndex]
+            if (!index && index !== 0) {
+                if (!item.inner) {
+                    item.inner = []
                 }
-                if (copyArray[parentIndex].inner) {
-                    copyArray[parentIndex].inner.unshift({ id: newId, linkid: newId, nextid: copyArray[0].linkid })
-                } else {
-                    copyArray[parentIndex].inner = [{ id: newId, linkid: newId, nextid: null }]
-                }
-                copyArray[parentIndex].nextid = newId
-                copyArray[parentIndex].endid = newId
-                copyArray[parentIndex].edited = true
+                item.inner.unshift({ linkid: newId, nextid: null, edited: true })
+                item.nextid = newId
+                item.endid = newId
+                item.edited = true
             } else {
-                for (let i = 0; i < copyArray.length; i++) {
-                    if (copyArray[i].id === parentid) {
-                        parentIndex = i
-                        i = copyArray.length
-                    }
+                item.inner.splice(index + 1, 0, { linkid: newId, nextid: item.inner[index + 1] ? item.inner[index + 1].linkid : null, edited: true })
+                if (parentIndex || parentIndex === 0) {
+                    item.inner[index].nextid = newId
+                    item.inner[index].edited = true
                 }
-                for (let i = 0; i < copyArray[parentIndex].inner.length; i++) {
-                    if (copyArray[parentIndex].inner[i].linkid === linkid) {
-                        index = i + 1
-                        previousIndex = i
-                        i = copyArray[parentIndex].inner.length
-                    }
-                }
-                if (copyArray[parentIndex].inner.length === index) {
-                    copyArray[parentIndex].inner.push({ id: newId, linkid: newId, nextid: null })
-                    copyArray[parentIndex].inner[previousIndex].nextid = newId
-                    copyArray[parentIndex].endid = newId
-                    copyArray[parentIndex].edited = true
-                } else {
-                    copyArray[parentIndex].inner.splice(index, 0, { id: newId, linkid: newId, nextid: copyArray[parentIndex].inner[index].linkid })
-                    copyArray[parentIndex].inner[previousIndex].nextid = newId
-                }
-                copyArray[parentIndex].inner[previousIndex].edited = true
-                copyArray[parentIndex].inner[index].edited = true
             }
+            //If Last Item
+            if (item.inner[item.inner.length - 1].linkid !== item.endid) {
+                item.endid = newId
+            }
+            //Add First Item
+        } else if (!index && index !== 0) {
+            copyArray.unshift({ linkid: newId, nextid: copyArray[0] ? copyArray[0].linkid : null, edited: true })
         } else {
-            if (linkid) {
-                for (let i = 0; i < copyArray.length; i++) {
-                    if (copyArray[i].linkid === linkid) {
-                        index = i + 1
-                        previousIndex = i
-                        i = copyArray.length
-                    }
-                }
-                if (copyArray.length === index) {
-                    copyArray.push({ id: newId, linkid: newId, nextid: null })
+            copyArray.splice(index + 1, 0, { linkid: newId, nextid: copyArray[index + 1] ? copyArray[index + 1].linkid : null, edited: true })
+            if (index || index === 0) {
+                //If Sidebar is Item Before
+                if (copyArray[index].linkid.split('.')[1] === 'sb' || copyArray[index].linkid.split('.')[1] === 'a') {
+                    let innerArray = copyArray[index].inner
+                    innerArray[innerArray.length - 1].nextid = newId
+                    innerArray[innerArray.length - 1].edited = true
                 } else {
-                    copyArray.splice(index, 0, { id: newId, linkid: newId, nextid: copyArray[index].linkid })
+                    copyArray[index].nextid = newId
+                    copyArray[index].edited = true
                 }
-                copyArray[previousIndex] = Object.assign({}, copyArray[previousIndex], { nextid: newId, edited: true })
-            } else {
-                copyArray.unshift({ id: newId, linkid: copyArray[0] ? newId : `${this.state.chapter}.p.1`, nextid: copyArray[0] ? copyArray[0].linkid : null })
             }
         }
+
         this.setState({ main: copyArray }, _ => window.scrollTo(0, document.body.scrollHeight))
     }
 
-    editItem = (type, value, parentid, linkid) => {
+    editItemType = (value, index, parentIndex) => {
         let copyArray = _.cloneDeep(this.state.main)
-        if (parentid) {
-            if (type === 'linkid') {
-                for (let i = 0; i < copyArray.length; i++) {
-                    if (copyArray[i].id === parentid) {
-                        for (let x = 0; x < copyArray[i].inner.length; x++) {
-                            if (copyArray[i].inner[x].linkid === linkid) {
-                                if (copyArray[i].endid === copyArray[i].inner[x].linkid) {
-                                    copyArray[i].endid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
-                                    copyArray[i].edited = true
-                                }
-                                copyArray[i].inner[x].linkid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
-                                copyArray[i].inner[x].edited = true
-                                if (copyArray[i].inner[x - 1]) {
-                                    copyArray[i].inner[x - 1].nextid = copyArray[i].inner[x].linkid
-                                    copyArray[i].inner[x - 1].edited = true
-                                }
-                                if (value === 'p') {
-                                    copyArray[i].inner[x].body = []
-                                }
-                                x = copyArray[i].inner.length
-                            }
-                        }
-                        i = copyArray.length
-                    }
-                }
-            } else if (type === 'p') {
-                for (let i = 0; i < copyArray.length; i++) {
-                    if (copyArray[i].id === parentid) {
-                        for (let x = 0; x < copyArray[i].inner.length; x++) {
-                            if (copyArray[i].inner[x].linkid === linkid) {
-                                if (copyArray[i].endid === copyArray[i].inner[x].linkid) {
-                                    copyArray[i].endid = this.state.chapter + '.' + type + '.' + copyArray[i].inner[x].linkid.split('.')[2]
-                                    copyArray[i].edited = true
-                                }
-                                copyArray[i].inner[x].body = value
-                                copyArray[i].inner[x].edited = true
-                                x = copyArray[i].inner.length
-                            }
-                        }
-                        i = copyArray.length
-                    }
-                }
-            } else if (type) {
-                for (let i = 0; i < copyArray.length; i++) {
-                    if (copyArray[i].id === parentid) {
-                        for (let x = 0; x < copyArray[i].inner.length; x++) {
-                            if (copyArray[i].endid === copyArray[i].inner[x].linkid) {
-                                copyArray[i].endid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
-                            }
-                            if (copyArray[i].inner[x].linkid === linkid) {
-                                copyArray[i].inner[x][value] = value
-                                copyArray[i].inner[x].edited = true
-                                x = copyArray[i].inner.length
-                            }
-                        }
-                        i = copyArray.length
-                    }
-                }
+            , splitId = null
+            , newId = null
+            , item = null;
+
+        if (parentIndex || parentIndex === 0) {
+            item = copyArray[parentIndex].inner
+            splitId = item[index].linkid.split('.')
+            splitId[1] = value.trim()
+            newId = splitId.join('.')
+            item[index].linkid = newId
+            item[index].edited = true
+            if (item[index - 1]) {
+                item[index - 1].nextid = newId
+                item[index - 1].edited = true
             } else {
-                for (let i = 0; i < copyArray.length; i++) {
-                    if (copyArray[i].id === parentid) {
-                        for (let x = 0; x < copyArray[i].inner.length; x++) {
-                            if (copyArray[i].endid === copyArray[i].inner[x].linkid) {
-                                copyArray[i].endid = this.state.chapter + '.' + value + '.' + copyArray[i].inner[x].linkid.split('.')[2]
-                            }
-                            if (copyArray[i].inner[x].linkid === linkid) {
-                                copyArray[i].inner[x].body = value
-                                copyArray[i].inner[x].edited = true
-                                x = copyArray[i].inner.length
-                            }
-                        }
-                        i = copyArray.length
-                    }
-                }
+                item.nextid = newId
+                item.edited = true
             }
         } else {
-            if (type === 'linkid') {
-                for (let i = 0; i < copyArray.length; i++) {
-                    if (copyArray[i].linkid === linkid) {
-                        copyArray[i].linkid = this.state.chapter + '.' + value + '.' + copyArray[i].linkid.split('.')[2]
-                        copyArray[i].edited = true
-                        if (copyArray[i - 1]) {
-                            copyArray[i - 1].nextid = this.state.chapter + '.' + value + '.' + copyArray[i].linkid.split('.')[2]
-                            copyArray[i - 1].edited = true
-                        }
-                        if (value === 'p') {
-                            copyArray[i].body = ['']
-                        }
-                        i = copyArray.length
-                    }
-                }
-            } else if (type === 'p') {
-                for (let i = 0; i < copyArray.length; i++) {
-                    if (copyArray[i].linkid === linkid) {
-                        copyArray[i].body = value
-                        copyArray[i].edited = true
-                        i = copyArray.length
-                    }
-                }
-            } else if (type) {
-                for (let i = 0; i < copyArray.length; i++) {
-                    if (copyArray[i].linkid === linkid) {
-                        copyArray[i][type] = value
-                        copyArray[i].edited = true
-                        i = copyArray.length
-                    }
-                }
-            } else {
-                for (let i = 0; i < copyArray.length; i++) {
-                    if (copyArray[i].linkid === linkid) { 
-                        copyArray[i].body = value
-                        copyArray[i].edited = true
-                        i = copyArray.length
-                    }
+            splitId = copyArray[index].linkid.split('.')
+            splitId[1] = value.trim()
+            newId = splitId.join('.')
+            copyArray[index].linkid = newId
+            copyArray[index].edited = true
+            if (copyArray[index - 1]) {
+                if (copyArray[index - 1].linkid.split('.')[1] === 'sb' || copyArray[index - 1].linkid.split('.')[1] === 'a') {
+                    item = copyArray[index - 1].inner
+                    item[item.length - 1].nextid = newId
+                    item[item.length - 1].edited = true
+                } else if (copyArray[index - 1]) {
+                    copyArray[index - 1].nextid = newId
+                    copyArray[index - 1].edited = true
                 }
             }
         }
+
+        this.setState({ main: copyArray })
+    }
+
+    editItemValue = (type, value, index, parentIndex) => {
+        let copyArray = _.cloneDeep(this.state.main)
+        , item = null;
+
+        if (parentIndex || parentIndex === 0) {
+            item = copyArray[parentIndex].inner
+            item[index][type] = value
+            item[index].edited = true
+        } else {
+            copyArray[index][type] = value
+            copyArray[index].edited = true
+        }
+
         this.setState({ main: copyArray })
     }
 
     deleteItem = (linkid, parentid) => {
-        let copyArray = _.cloneDeep(this.state.main)
-        if (parentid) {
-            for (let i = 0; i < copyArray.length; i++) {
-                if (copyArray[i].linkid === parentid) {
-                    for (let x = 0; x < copyArray[i].inner.length; x++) {
-                        if (copyArray[i].inner.length === 1) {
-                            copyArray[i].inner.pop()
-                            copyArray[i].endid = null
-                            copyArray[i].nextid = null
-                            copyArray[i].edited = true
-                        } else {
-                            if (!copyArray[i].inner[x + 1].nextid) {
-                                copyArray[i].inner[x].nextid = null
-                            } else {
-                                copyArray[i].inner[x - 1].nextid = copyArray[i].inner[x + 1].linkid
-                                copyArray[i].inner[x - 1].edited = true
-                            }
-                            copyArray[i].inner.splice(x + 1, 1)
-                            copyArray[i].endid = copyArray[i].inner[copyArray[i].inner.length - 1].linkid
-                        }
-                        x = copyArray[i].inner.length
-                    }
-                    i = copyArray.length
-                }
-            }
-        } else {
-            for (let i = 0; i < copyArray.length; i++) {
-                if (copyArray[i].linkid === linkid) {
-                    copyArray[i - 1].nextid = copyArray[i + 1].linkid
-                    copyArray[i - 1].edited = true
-                    copyArray.splice(i, 1)
-                    i = copyArray.length
-                }
-            }
-        }
 
-        this.setState({ main: copyArray })
     }
 
     saveChanges = () => {
@@ -330,19 +205,19 @@ console.log(linkid, parentid)
     }
 
     render() {
-        let display = this.state.main.map(val => {
+        let display = this.state.main.map((val, index) => {
             let sbinner = <div></div>
-            if (val.linkid.split('.')[1] === 'sb') {
+            if (val.linkid.split('.')[1] === 'sb' || val.linkid.split('.')[1] === 'a') {
                 if (val.inner) {
-                    sbinner = val.inner.map(inside => {
-                        return <Display key={inside.id + inside.linkid} id={inside.id} linkid={inside.linkid} body={inside.body} right={inside.rightbody} left={inside.leftbody} source={inside.source} alt={inside.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} parentid={val.id} deleteItem={this.deleteItem} />
+                    sbinner = val.inner.map((inside, insideIndex) => {
+                        return <Display key={inside.id + inside.linkid} index={insideIndex} parentIndex={index} linkid={inside.linkid} body={inside.body} right={inside.rightbody} left={inside.leftbody} source={inside.source} alt={inside.alt} insertNewItem={this.insertNewItem} editItemType={this.editItemType} editItemValue={this.editItemValue} deleteItem={this.deleteItem} />
                     })
                 }
                 return (
                     <div key={val.id + val.linkid} className="displayItemShell">
-                        <Display linkid={val.linkid} id={val.id} body={val.body} right={val.rightbody} left={val.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} deleteItem={this.deleteItem} />
+                        <Display linkid={val.linkid} index={index} body={val.body} right={val.rightbody} left={val.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItemType={this.editItemType} editItemValue={this.editItemValue} deleteItem={this.deleteItem} />
                         <div className="displayItemShell">
-                            <button onClick={_ => this.insertNewItem(val.id, 'parent')}>Add to sidebar</button>
+                            <button onClick={_ => this.insertNewItem(null, 0)}>Add to sidebar</button>
                             {sbinner}
                         </div>
                     </div>
@@ -350,7 +225,7 @@ console.log(linkid, parentid)
             }
             return (
                 <div key={val.id + val.linkid} className="displayItemShell">
-                    <Display linkid={val.linkid} id={val.id} body={val.body} right={val.rightbody} left={val.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItem={this.editItem} deleteItem={this.deleteItem} />
+                    <Display linkid={val.linkid} index={index} body={val.body} right={val.rightbody} left={val.leftbody} source={val.source} alt={val.alt} insertNewItem={this.insertNewItem} editItemType={this.editItemType} editItemValue={this.editItemValue} deleteItem={this.deleteItem} />
                 </div>
             )
 
@@ -362,13 +237,13 @@ console.log(linkid, parentid)
                     <input type="text" placeholder={`currently on chapter ${this.state.chapter}`} onChange={e => this.setState({ chapter: e.target.value })} />
                     <button onClick={this.getNewChapter}>GO!</button>
                     <button onClick={this.saveChanges}>Save</button>
-                    <br/>
-                    <button onClick={_=>window.scrollTo(0,document.body.scrollHeight)}>To Bottom</button>
+                    <br />
+                    <button onClick={_ => window.scrollTo(0, document.body.scrollHeight)}>To Bottom</button>
                 </div>
                 <div className="displayShell">
-                    <button onClick={_ => this.insertNewItem()}>Add Below</button>
+                    <button onClick={_ => this.insertNewItem(null)}>Add Below</button>
                     {display}
-                    <button onClick={_=>console.log(this.state.main)}>Log Chapter Array</button>
+                    <button onClick={_ => console.log(this.state.main)}>Log Chapter Array</button>
                 </div>
             </div>
         )

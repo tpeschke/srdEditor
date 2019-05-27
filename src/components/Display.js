@@ -1,38 +1,34 @@
 import React from 'react'
 
-export default function Display({ body, linkid, right, left, source, alt, insertNewItem, editItem, parentid, id, deleteItem }) {
+export default function Display({ body, linkid, right, left, source, alt, insertNewItem, editItemValue, editItemType, parentIndex, index, deleteItem }) {
     let inner = <div></div>;
     switch (linkid.split('.')[1]) {
-        case 'p':
-            inner = <textarea type="text" value={body} onChange={e => editItem('p', e.target.value, parentid, linkid)} />
-            break;
         case 'c':
         case 'pc':
             inner = (<div className="doubleShell">
-                <textarea type="text" value={left} onChange={e => editItem('leftbody', e.target.value, parentid, linkid)} />
-                <textarea type="text" value={right} onChange={e => editItem('rightbody', e.target.value, parentid, linkid)} />
+                <textarea type="text" value={left} onChange={e => editItemValue('leftbody', e.target.value, index, parentIndex)} />
+                <textarea type="text" value={right} onChange={e => editItemValue('rightbody', e.target.value, index, parentIndex)} />
             </div>)
             break;
         case 'i':
             inner = (<div className="doubleShell">
-                <textarea type="text" value={source} onChange={e => editItem('source', e.target.value, parentid, linkid)} />
-                <textarea type="text" value={alt} onChange={e => editItem('alt', e.target.value, parentid, linkid)} />
+                <textarea type="text" value={source} onChange={e => editItemValue('source', e.target.value, index, parentIndex)} />
+                <textarea type="text" value={alt} onChange={e => editItemValue('alt', e.target.value, index, parentIndex)} />
             </div>)
             break;
         case 'ab':
-        case 'a':
         case 's':
             inner = <div className="middeBridge"></div>
             break;
         default:
-            inner = <textarea type="text" value={body} onChange={e => editItem(null, e.target.value, parentid, linkid)} />
+            inner = <textarea type="text" value={body} onChange={e => editItemValue('body', e.target.value, index, parentIndex)} />
     }
     return (
         <div className="displayItem">
-            <input type="text" value={linkid.split('.')[1]} onChange={e => editItem('linkid', e.target.value, parentid, linkid)} />
+            <input type="text" value={linkid.split('.')[1]} onChange={e => editItemType(e.target.value, index, parentIndex)} />
             {inner}
             <div>
-                <button onClick={_ => insertNewItem(linkid, parentid)}>Add Below</button>
+                <button onClick={_ => insertNewItem(index, parentIndex)}>Add Below</button>
                 {/* <button onClick={_ => deleteItem(linkid, parentid)}>Delete</button> */}
             </div>
         </div>

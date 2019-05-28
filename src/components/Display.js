@@ -29,7 +29,7 @@ export default function Display({ body, linkid, right, left, source, alt, insert
             {inner}
             <div>
                 <button onClick={_ => insertNewItem(index, parentIndex)}>Add Below</button>
-                {/* <button onClick={_ => deleteItem(linkid, parentid)}>Delete</button> */}
+                <button onClick={_ => deleteItem(index, parentIndex)}>Delete</button>
             </div>
         </div>
     )

@@ -8,7 +8,7 @@ export default class Home extends Component {
         super()
 
         this.state = {
-            main: [{ linkid: '9.p.1' }],
+            main: [{ linkid: '9.p.1', nextid: '9.s.1' },{ linkid: '9.s.1', nextid: '9.t.1' },{ linkid: '9.t.1', nextid: '9.v.1' },{ linkid: '9.v.1', nextid: null }],
             side: [],
             deleteList: [],
             chapter: 9
@@ -79,15 +79,13 @@ export default class Home extends Component {
 
         //Sidebar
         if (parentIndex || parentIndex === 0) {
-            console.log(parentIndex)
             let item = copyArray[parentIndex]
             if (!index && index !== 0) {
                 if (!item.inner) {
                     item.inner = []
                 }
-                item.inner.unshift({ linkid: newId, nextid: null, edited: true })
+                item.inner.unshift({ linkid: newId, nextid: copyArray[parentIndex + 1].linkid, edited: true })
                 item.nextid = newId
-                item.endid = newId
                 item.edited = true
             } else {
                 item.inner.splice(index + 1, 0, { linkid: newId, nextid: item.inner[index + 1] ? item.inner[index + 1].linkid : null, edited: true })
@@ -179,7 +177,33 @@ export default class Home extends Component {
     }
 
     deleteItem = (index, parentIndex) => {
+        let copyMain = _.cloneDeep(this.state.main)
+        let copyDelete = _.cloneDeep(this.state.deleteList)
+        let deletedItem = null
+        if (parentIndex || parentIndex === 0) {
+            let item = copyMain[parentIndex]
+            deletedItem = item.inner.splice(index, 1)[0]
+            copyDelete.push(deletedItem.linkid)
+            if (item.inner.length === 0) {
+                item.edited = true
+                item.endid = null
+                item.nextid = copyMain[parentIndex + 1] ? copyMain[parentIndex + 1].linkid : null
+            } else if (index === 0) {
+                item.edited = true
+                item.nextid = item.inner[0].linkid
+            } else if (index === item.inner.length) {
+                item.inner[index - 1].nextid = deletedItem.nextid
+                item.endid = item.inner[index - 1].linkid
+                item.edited = true
+                item.inner[index - 1].edited = true
+            }
+        } else {
+            deletedItem = copyMain.splice(index, 1)[0]
+            copyDelete.push(deletedItem.linkid)
+            copyMain[index - 1].nextid = deletedItem.nextid
+        }
 
+        this.setState({main: copyMain, deleteItem: copyDelete}, _ => console.log(copyMain, copyDelete))
     }
 
     saveChanges = () => {
@@ -200,7 +224,7 @@ export default class Home extends Component {
             }
         })
 
-        axios.patch('/saveChapter', { auth: process.env.REACT_APP_AUTH, chapter: savedArray }).then(_ => {
+        axios.patch('/saveChapter', { auth: process.env.REACT_APP_AUTH, chapter: savedArray, delete: this.state.deleteList }).then(_ => {
             this.setState({ main: copyArray })
         })
     }

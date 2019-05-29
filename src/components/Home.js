@@ -8,15 +8,15 @@ export default class Home extends Component {
         super()
 
         this.state = {
-            main: [{ linkid: '9.p.1', nextid: '9.s.1' },{ linkid: '9.s.1', nextid: '9.t.1' },{ linkid: '9.t.1', nextid: '9.v.1' },{ linkid: '9.v.1', nextid: null }],
+            main: [],
             side: [],
             deleteList: [],
-            chapter: 9
+            chapter: 8
         }
     }
 
     componentWillMount() {
-        // this.getNewChapter()
+        this.getNewChapter()
     }
 
     getNewChapter = () => {
@@ -75,7 +75,7 @@ export default class Home extends Component {
 
     insertNewItem = (index, parentIndex) => {
         let copyArray = _.cloneDeep(this.state.main)
-        let newId = this.state.chapter + '.' + this.makeid(1) + '.' + this.makeid(10)
+        let newId = this.state.chapter + '.p.' + this.makeid(10)
 
         //Sidebar
         if (parentIndex || parentIndex === 0) {
@@ -84,7 +84,7 @@ export default class Home extends Component {
                 if (!item.inner) {
                     item.inner = []
                 }
-                item.inner.unshift({ linkid: newId, nextid: copyArray[parentIndex + 1].linkid, edited: true })
+                item.inner.unshift({ linkid: newId, nextid: copyArray[parentIndex + 1] ? copyArray[parentIndex + 1].linkid : null, edited: true })
                 item.nextid = newId
                 item.edited = true
             } else {
@@ -183,7 +183,9 @@ export default class Home extends Component {
         if (parentIndex || parentIndex === 0) {
             let item = copyMain[parentIndex]
             deletedItem = item.inner.splice(index, 1)[0]
-            copyDelete.push(deletedItem.linkid)
+            if (!isNaN(deletedItem.linkid)) {
+                copyDelete.push(deletedItem.linkid)
+            }
             if (item.inner.length === 0) {
                 item.edited = true
                 item.endid = null
@@ -199,7 +201,9 @@ export default class Home extends Component {
             }
         } else {
             deletedItem = copyMain.splice(index, 1)[0]
-            copyDelete.push(deletedItem.linkid)
+            if (!isNaN(deletedItem.linkid)) {
+                copyDelete.push(deletedItem.linkid)
+            }
             copyMain[index - 1].nextid = deletedItem.nextid
         }
 
@@ -224,8 +228,8 @@ export default class Home extends Component {
             }
         })
 
-        axios.patch('/saveChapter', { auth: process.env.REACT_APP_AUTH, chapter: savedArray, delete: this.state.deleteList }).then(_ => {
-            this.setState({ main: copyArray })
+        axios.patch('http://localhost:3333/saveChapter', { auth: process.env.REACT_APP_AUTH, chapter: savedArray, delete: this.state.deleteList }).then(_ => {
+            this.setState({ main: copyArray, deleteList: [] })
         })
     }
 

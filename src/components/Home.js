@@ -11,7 +11,7 @@ export default class Home extends Component {
             main: [],
             side: [],
             deleteList: [],
-            chapter: 8
+            chapter: 11
         }
     }
 

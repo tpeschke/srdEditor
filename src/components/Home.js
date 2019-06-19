@@ -11,7 +11,7 @@ export default class Home extends Component {
             main: [],
             side: [],
             deleteList: [],
-            chapter: 11
+            chapter: 15
         }
     }
 
@@ -28,7 +28,7 @@ export default class Home extends Component {
                     let content = ''
                     if (val.linkid.split('.')[1] === 'p') {
                         for (let i = 0; i < val.body.length; i++) {
-                            if (val.body[i].substring(0, 2) === '+)' || val.body[i].substring(0, 7) === 'Chapter') {
+                            if (val.body[i].substring(0, 2) === '+)' || val.body[i].substring(0, 7) === 'Chapter' || val.body[i].substring(0, 2) === '-)') {
                                 content = content + val.body[i] + '|'
                             } else if (val.body[i + 1] && val.body[i + 1].substring(0, 7) === 'Chapter') {
                                 content = content + val.body[i] + '|'
@@ -42,7 +42,7 @@ export default class Home extends Component {
                             if (para.linkid.split('.')[1] === 'p') {
                                 content = ''
                                 for (let i = 0; i < para.body.length; i++) {
-                                    if (para.body[i].substring(0, 2) === '+)' || para.body[i].substring(0, 7) === 'Chapter') {
+                                    if (para.body[i].substring(0, 2) === '+)' || para.body[i].substring(0, 7) === 'Chapter' || para.body[i].substring(0, 2) === '-)') {
                                         content = content + para.body[i] + '|'
                                     } else if (para.body[i + 1] && para.body[i + 1].substring(0, 7) === 'Chapter') {
                                         content = content + para.body[i] + '|'
@@ -116,7 +116,8 @@ export default class Home extends Component {
             }
         }
 
-        this.setState({ main: copyArray }, _ => window.scrollTo(0, document.body.scrollHeight))
+        // this.setState({ main: copyArray }, _ => window.scrollTo(0, document.body.scrollHeight))
+        this.setState({ main: copyArray })
     }
 
     editItemType = (value, index, parentIndex) => {

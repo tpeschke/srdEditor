@@ -53,6 +53,7 @@ async function updateSearch(endpoint) {
 
                 // check if it's new
                 if (isNaN(id.substring(0, 1)) || id === '') {
+                    console.log(id, section)
                     if (type.includes('h') && section[1]) {
                         // console.log(newhtml[i])
                         if (section[1].includes('CrP')) {
@@ -70,7 +71,7 @@ async function updateSearch(endpoint) {
                     newid = endpoint + type + newid
                     searchId = endpoint + '.' + type + '.' + newid
 
-                    db.query('insert into srdbasic (linkid, body) values ($1, $2)',[searchId, section]).then();
+                    db.query('insert into srdbasic (linkid, body) values ($1, $2)',[searchId, section]).then(res => console.log(res));
                     toCompare.push(searchId)
 
                     html = html.replace(id, newid)

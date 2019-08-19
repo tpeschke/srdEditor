@@ -35,22 +35,34 @@ async function updateSearch(endpoint) {
         for (i = 0; i <= newhtml.length - 1; i++) {
             //find the id
             if (newhtml[i].includes('id=')) {
-                let id = newhtml[i].match(/id='(.*?)'|id="(.*?)"/gm)[0].substring(4)
-                id = id.substring(0, id.length - 1)
-                
+                let id = newhtml[i].match(/id='(.*?)'|id="(.*?)"/gm)
+
+                // sometimes the id doesn't have quotation marks so this is checking
+                if (id && id[0]) {
+                    id = id[0].substring(4)
+                    id = id.substring(0, id.length - 1)
+                } else {
+                    id = newhtml[i].match(/id=(.*?) /gm)[0].substring(3).trim()
+                }
+
                 // strip final bits of HTML
                 let section = newhtml[i].replace(/(\r\n|\n|\r)/gm,'').match(/<h.*?>(.*?)<\/h|<p.*?>(.*?)<\/p/g)
                 section = section[0].replace(/<strong.*?>|<\/strong>|<a.*?>|<\/a>/g, '')
                 let type = section.split(' ')[0].substring(1)
                 section = section.split('>')[1].split('<')[0]
-                
+
                 // check if it's new
                 if (isNaN(id.substring(0, 1)) || id === '') {
-
                     if (type.includes('h') && section[1]) {
                         // console.log(newhtml[i])
-                        type = 'pc'
-                    } else if (type.includes('h') || type.includes('p')) {
+                        if (section[1].includes('CrP')) {
+                            type = 'pc'
+                        } else {
+                            type = 'c'
+                        }
+                    } else if (type.includes('h3')) {
+                        type = type.substring(0, 2)
+                    }else if (type.includes('h') || type.includes('p')) {
                         type = type.substring(0, 1)
                     }
 
@@ -67,7 +79,7 @@ async function updateSearch(endpoint) {
                 } else {
                     let searchId = ''
                     // check for generated ids
-                    if (id.length > 5) {
+                    if (id.length > 10) {
                         searchId = id.substring(0, `${endpoint}`.length) + '.' + id.substring(`${endpoint}`.length, id.length - 10) + '.' + id.substring(id.length - 10)
                     // check for old id
                     } else {
@@ -81,6 +93,7 @@ async function updateSearch(endpoint) {
                         searchId = id.substring(0, `${endpoint}`.length) + '.' + id.substring(`${endpoint}`.length, startIndex) + '.' + id.substring(startIndex)
                     }
 
+                    // db.query('insert into srdbasic (linkid, body) values ($1, $2)',[searchId, section]).then();
                     db.query('update srdbasic set body = $1 where linkid = $2',[section, searchId]).then();
                     toCompare.push(searchId)
                 }
@@ -95,11 +108,13 @@ async function updateSearch(endpoint) {
                 }
             })
 
-            fs.writeFile(`../chapter${endpoint}.html`, html, (err) => {
+            fs.writeFile(`../bonfireSRD/src/app/chapter-${chapterName}/chapter-${chapterName}.component.html`, html, (err) => {
                 if (err) console.log(err);
                 console.log(`Successfully Wrote Chapter ${endpoint}.`);
                 if (endpoint !== 15) {
                     updateSearch(endpoint + 1)
+                } else {
+                    console.log('ALL DONE')
                 }
             });
         });

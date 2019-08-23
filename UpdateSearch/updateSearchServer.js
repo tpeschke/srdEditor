@@ -27,7 +27,7 @@ async function updateSearch(endpoint) {
 
     let html = "";
 
-    fs.readFile(`../bonfireSRD/src/app/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
+    fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
         if (err) { console.log(err) }
         html = data.replace(/ _ngcontent-c2=""/g, '');
         newhtml = html.split(/anchor"|anchor'/)
@@ -48,55 +48,24 @@ async function updateSearch(endpoint) {
                 // strip final bits of HTML
                 let section = newhtml[i].replace(/(\r\n|\n|\r)/gm,'').match(/<h.*?>(.*?)<\/h|<p.*?>(.*?)<\/p/g)
                 section = section[0].replace(/<strong.*?>|<\/strong>|<a.*?>|<\/a>/g, '')
-                let type = section.split(' ')[0].substring(1)
                 section = section.split('>')[1].split('<')[0]
 
                 // check if it's new
                 if (isNaN(id.substring(0, 1)) || id === '') {
-                    console.log(id, section)
-                    if (type.includes('h') && section[1]) {
-                        // console.log(newhtml[i])
-                        if (section[1].includes('CrP')) {
-                            type = 'pc'
-                        } else {
-                            type = 'c'
-                        }
-                    } else if (type.includes('h3')) {
-                        type = type.substring(0, 2)
-                    }else if (type.includes('h') || type.includes('p')) {
-                        type = type.substring(0, 1)
-                    }
 
                     newid = makeid(10)
-                    newid = endpoint + type + newid
-                    searchId = endpoint + '.' + type + '.' + newid
+                    newid = endpoint + newid
 
-                    db.query('insert into srdbasic (linkid, body) values ($1, $2)',[searchId, section]).then(res => console.log(res));
-                    toCompare.push(searchId)
+                    db.query('insert into srdbasic (linkid, body) values ($1, $2)',[newid, section]).then(res => console.log(res));
+                    toCompare.push(newid)
 
                     html = html.replace(id, newid)
 
                 //If not, add to compare list
                 } else {
-                    let searchId = ''
-                    // check for generated ids
-                    if (id.length > 10) {
-                        searchId = id.substring(0, `${endpoint}`.length) + '.' + id.substring(`${endpoint}`.length, id.length - 10) + '.' + id.substring(id.length - 10)
-                    // check for old id
-                    } else {
-                        let startIndex = 0;
-                        for (let i = 0; i < id.length; i++) {
-                            if (+id.substring(i)) {
-                                startIndex = i;
-                                i = id.length + 1
-                            }
-                        }
-                        searchId = id.substring(0, `${endpoint}`.length) + '.' + id.substring(`${endpoint}`.length, startIndex) + '.' + id.substring(startIndex)
-                    }
-
-                    // db.query('insert into srdbasic (linkid, body) values ($1, $2)',[searchId, section]).then();
-                    db.query('update srdbasic set body = $1 where linkid = $2',[section, searchId]).then();
-                    toCompare.push(searchId)
+                    // db.query('insert into srdbasic (linkid, body) values ($1, $2)',[id, section]).then();
+                    db.query('update srdbasic set body = $1 where linkid = $2',[section, id]).then();
+                    toCompare.push(id)
                 }
             }
         }
@@ -109,7 +78,8 @@ async function updateSearch(endpoint) {
                 }
             })
 
-            fs.writeFile(`../bonfireSRD/src/app/chapter-${chapterName}/chapter-${chapterName}.component.html`, html, (err) => {
+            fs.writeFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, html, (err) => {
+            // fs.writeFile(`./chapter-${chapterName}.component.html`, html, (err) => {
                 if (err) console.log(err);
                 console.log(`Successfully Wrote Chapter ${endpoint}.`);
                 if (endpoint !== 15) {

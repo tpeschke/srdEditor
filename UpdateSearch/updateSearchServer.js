@@ -27,82 +27,82 @@ function makeid(length) {
 }
 
 async function updateSearch(endpoint) {
-    const db = app.get('db')
-        , chapterName = numWords(endpoint)
+    // const db = app.get('db')
+    //     , chapterName = numWords(endpoint)
 
-    let html = "";
+    // let html = "";
 
-    fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
-        if (err) { console.log(err) }
-        html = data.replace(/ _ngcontent-c2=""/g, '');
-        newhtml = html.split(/anchor"|anchor'|anchor /)
+    // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
+    //     if (err) { console.log(err) }
+    //     html = data.replace(/ _ngcontent-c2=""/g, '');
+    //     newhtml = html.split(/anchor"|anchor'|anchor /)
 
-        for (i = 0; i <= newhtml.length - 1; i++) {
-            //find the id
-            if (newhtml[i].includes('id=')) {
-                let id = newhtml[i].match(/id='(.*?)'|id="(.*?)"/gm)
+    //     for (i = 0; i <= newhtml.length - 1; i++) {
+    //         //find the id
+    //         if (newhtml[i].includes('id=')) {
+    //             let id = newhtml[i].match(/id='(.*?)'|id="(.*?)"/gm)
 
-                // sometimes the id doesn't have quotation marks so this is checking
-                if (id && id[0]) {
-                    id = id[0].substring(4)
-                    id = id.substring(0, id.length - 1)
-                } else {
-                    id = newhtml[i].match(/id=(.*?) /gm)[0].substring(3).trim()
-                }
+    //             // sometimes the id doesn't have quotation marks so this is checking
+    //             if (id && id[0]) {
+    //                 id = id[0].substring(4)
+    //                 id = id.substring(0, id.length - 1)
+    //             } else {
+    //                 id = newhtml[i].match(/id=(.*?) /gm)[0].substring(3).trim()
+    //             }
 
-                // strip final bits of HTML
-                let section = newhtml[i].replace(/(\r\n|\n|\r)/gm, '').match(/<h.*?>(.*?)<\/h|<p.*?>(.*?)<\/p/g)
-                // this will also catch images with ids but it will result in section being null so this is just tell it to ignore those
-                if (section) {
-                    section = section[0].replace(/<strong.*?>|<\/strong>|<a.*?>|<\/a>/g, '')
-                    section = section.split('>')[1].split('<')[0]
+    //             // strip final bits of HTML
+    //             let section = newhtml[i].replace(/(\r\n|\n|\r)/gm, '').match(/<h.*?>(.*?)<\/h|<p.*?>(.*?)<\/p/g)
+    //             // this will also catch images with ids but it will result in section being null so this is just tell it to ignore those
+    //             if (section) {
+    //                 section = section[0].replace(/<strong.*?>|<\/strong>|<a.*?>|<\/a>/g, '')
+    //                 section = section.split('>')[1].split('<')[0]
 
-                    // check if it's new
-                    if (isNaN(id.substring(0, 1)) || id === '') {
+    //                 // check if it's new
+    //                 if (isNaN(id.substring(0, 1)) || id === '') {
 
-                        newid = makeid(10)
-                        newid = endpoint + newid
+    //                     newid = makeid(10)
+    //                     newid = endpoint + newid
 
-                        db.query('insert into srdbasic (linkid, body) values ($1, $2)', [newid, section]).then(res => console.log(res));
-                        toCompare.push(newid)
-                        let regexId = new RegExp(`${id}`, "g")
-                        html = html.replace(regexId, newid)
+    //                     db.query('insert into srdbasic (linkid, body) values ($1, $2)', [newid, section]).then(res => console.log(res));
+    //                     toCompare.push(newid)
+    //                     let regexId = new RegExp(`${id}`, "g")
+    //                     html = html.replace(regexId, newid)
 
-                        //If not, add to compare list
-                    } else {
-                        // db.query('insert into srdbasic (linkid, body) values ($1, $2)',[id, section]).then();
-                        db.query('update srdbasic set body = $1 where linkid = $2', [section, id]).then();
-                        toCompare.push(id)
-                    }
-                }
-            }
-        }
+    //                     //If not, add to compare list
+    //                 } else {
+    //                     // db.query('insert into srdbasic (linkid, body) values ($1, $2)',[id, section]).then();
+    //                     db.query('update srdbasic set body = $1 where linkid = $2', [section, id]).then();
+    //                     toCompare.push(id)
+    //                 }
+    //             }
+    //         }
+    //     }
 
         if (endpoint === 12) {
             updateGreatLibrary()
         }
 
         // Clean up
-        db.query("select linkid from srdbasic where linkid like ('%' || $1 || '%')", [`${endpoint}.`]).then(deleteArray => {
-            deleteArray.forEach(({ linkid }) => {
-                if (!toCompare.includes(linkid)) {
-                    db.query('delete from srdbasic where linkid = $1', [linkid]).then();
-                }
-            })
+        // db.query("select linkid from srdbasic where linkid like ('%' || $1 || '%')", [`${endpoint}.`]).then(deleteArray => {
+        //     deleteArray.forEach(({ linkid }) => {
+        //         if (!toCompare.includes(linkid)) {
+        //             db.query('delete from srdbasic where linkid = $1', [linkid]).then();
+        //         }
+        //     })
 
-            fs.writeFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, html, (err) => {
-                // fs.writeFile(`./chapter-${chapterName}.component.html`, html, (err) => {
-                if (err) console.log(err);
-                console.log(`Successfully Wrote Chapter ${endpoint}.`);
-                if (endpoint !== 15) {
-                    updateSearch(endpoint + 1)
-                } else {
-                    console.log('ALL DONE')
-                }
-            });
-        });
+        //     fs.writeFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, html, (err) => {
+        //         // fs.writeFile(`./chapter-${chapterName}.component.html`, html, (err) => {
+        //         if (err) console.log(err);
+        //         console.log(`Successfully Wrote Chapter ${endpoint}.`);
+        //         if (endpoint !== 15) {
+        //             updateSearch(endpoint + 1)
+        //         } else {
+        //             console.log('ALL DONE')
+        //         }
+        //     });
+        // });
 
-    });
+    // });
 }
 
 function updateGreatLibrary() {
@@ -143,11 +143,6 @@ function updateGreatLibrary() {
                 insertOrUpdateSpell(spellArray, checkList, 0, db, orderList)
             })
         })
-
-        fs.writeFile(`./spellList.txt`, spellArray, (err) => {
-            if (err) console.log(err);
-            console.log(`Spell list written`);
-        });
     })
 }
 
@@ -171,7 +166,7 @@ function insertOrUpdateSpell(spellList, checkList, index, db, orderList) {
 }
 
 function insertSpellOrders(spellListObj, spellOrders, spellId, index) {
-    if (index === spellOrders.length - 1) {
+    if (index === spellOrders.length) {
         spellListObj.db.query('select Count(id) from glspellpositive where spellid = $1', [spellId]).then(effectLength => {
             insertSpellEffects(spellListObj, spellId, 'positive', 0, +effectLength[0].count)
         })
@@ -376,7 +371,7 @@ function formatSpells() {
 massive(connection).then(dbI => {
     app.set('db', dbI)
     app.listen(4343, _ => {
-        updateSearch(1)
+        updateSearch(12)
         // updateQuickNav(12)
         // formatNewSections()
         // formatSpells()

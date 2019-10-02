@@ -84,7 +84,7 @@ async function updateSearch(endpoint) {
         updateGreatLibraryMiracles()
     }
 
-    Clean up
+    // Clean up
         db.query("select linkid from srdbasic where linkid like ('%' || $1 || '%')", [`${endpoint}.`]).then(deleteArray => {
             deleteArray.forEach(({ linkid }) => {
                 if (!toCompare.includes(linkid)) {

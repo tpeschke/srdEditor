@@ -78,11 +78,13 @@ async function updateSearch(endpoint) {
             }
         }
 
-        if (endpoint === 12) {
-            updateGreatLibrary()
-        }
+    if (endpoint === 12) {
+        updateGreatLibrarySpells()
+    } else if (endpoint === 13) {
+        updateGreatLibraryMiracles()
+    }
 
-        // Clean up
+    Clean up
         db.query("select linkid from srdbasic where linkid like ('%' || $1 || '%')", [`${endpoint}.`]).then(deleteArray => {
             deleteArray.forEach(({ linkid }) => {
                 if (!toCompare.includes(linkid)) {
@@ -101,11 +103,11 @@ async function updateSearch(endpoint) {
                 }
             });
         });
-
+    
     });
 }
 
-function updateGreatLibrary() {
+function updateGreatLibrarySpells() {
     const db = app.get('db')
 
     fs.readFile(`../bonfireSRD/src/app/chapters/chapter-twelve/chapter-twelve.component.html`, "utf-8", (err, data) => {
@@ -151,7 +153,7 @@ function insertOrUpdateSpell(spellList, checkList, index, db, orderList) {
     let checkListVersion = checkList.find(obj => obj.name === spell[0])
 
     if (index === spellList.length - 1) {
-        console.log('db updated')
+        console.log('spells updated')
     } else if (checkListVersion) {
         console.log(spell[0])
         db.query('update glspells set name = $1, base_cost = $2, components = $3, duration = $4, aoe = $5 where name = $1', [spell[0], spell[2], spell[3], spell[4], spell[5], spell[6]]).then(_ => {
@@ -159,8 +161,8 @@ function insertOrUpdateSpell(spellList, checkList, index, db, orderList) {
         })
     } else {
         console.log(spell[0])
-        db.query('insert into glspells (name, base_cost, components, duration, aoe) values ($1, $2, $3, $4, $5)', [spell[0], spell[2], spell[3], spell[4], spell[5], spell[6]]).then(_ => {
-            insertSpellOrders({ spellList, checkList, index, db, orderList, spell }, spell[1], checkListVersion.id, 0)
+        db.query('insert into glspells (name, base_cost, components, duration, aoe) values ($1, $2, $3, $4, $5); select id from glspells where name = $1', [spell[0], spell[2], spell[3], spell[4], spell[5], spell[6]]).then(newSpell => {
+            insertSpellOrders({ spellList, checkList, index, db, orderList, spell }, spell[1], newSpell[0].id, 0)
         })
     }
 }
@@ -200,7 +202,7 @@ function insertSpellEffects(spellListObj, spellId, effectType, effectIndex, effe
     } else if (effectIndex <= spellEffect.length - 1 && spellEffect[effectIndex] !== '') {
         if (effectLength === 0) {
             insertSpellEffects(spellListObj, spellId, effectType, ++effectIndex, ++effectLength)
-        } else {   
+        } else {
             spellListObj.db.query(`update glspell${effectType} set effect = $3 where spellid = $1 and index = $2`, [spellId, effectIndex, spellEffect[effectIndex]]).then(_ => {
                 insertSpellEffects(spellListObj, spellId, effectType, ++effectIndex, effectLength)
             })
@@ -214,6 +216,116 @@ function insertSpellEffects(spellListObj, spellId, effectType, effectIndex, effe
             let { spellList, checkList, index, db, orderList } = spellListObj
             insertOrUpdateSpell(spellList, checkList, ++index, db, orderList)
         }
+    }
+}
+
+function updateGreatLibraryMiracles() {
+    const db = app.get('db')
+
+    fs.readFile(`../bonfireSRD/src/app/chapters/chapter-thirteen/chapter-thirteen.component.html`, "utf-8", (err, data) => {
+        if (err) { console.log(err) }
+
+        // Update Miracles
+        let miracleArray = []
+        let miracleList = data.split('base rules.</p>')[1].split('<h3>')
+
+        for (i = 1; i < miracleList.length; i++) {
+            let miracle = miracleList[i].split("strong class='orangeHeader'").map((val, index) => {
+                if (val.includes("EFFECT")) {
+                    // breaks up the effect sections
+                    val = val.split('</p>').map(innerVal => {
+                        // strip HTML, line breaks, and remove multiple spaces from those sections
+                        return innerVal.replace(/<(?:.|\n)*?>|<|>|\r\n|\n|\r/gm, '').replace(/\s\s+/g, ' ').trim().replace(/EFFECT /g, '')
+                    })
+                } else {
+                    // strip HTML, line breaks, and remove multiple spaces
+                    val = val.replace(/<(?:.|\n)*?>|<|>|\r\n|\n|\r/gm, '').replace(/\s\s+/g, ' ').trim().replace(/BASE INVOCATION DIE /g, '')
+
+                    if (index === 1) {
+                        val = val.split(' | ')
+                    }
+                }
+
+                return val
+            })
+
+            miracleArray.push(miracle)
+        }
+
+        db.query('select name, id from glmiracles').then(checkList => {
+            db.query('select * from gldomains').then(domainList => {
+                insertOrUpdateMiracle(miracleArray, checkList, 0, db, domainList)
+            })
+        })
+    })
+}
+
+function insertOrUpdateMiracle(miracleList, checkList, index, db, domainList) {
+    let miracle = miracleList[index]
+    let checkListVersion = null
+    if (miracle) {
+        checkListVersion = checkList.find(obj => obj.name === miracle[0])
+    }
+
+    if (index === miracleList.length) {
+        console.log('miracles updated')
+    } else if (checkListVersion) {
+        console.log(miracle[0])
+        db.query('update glmiracles set invocationdie = $2 where name = $1', [miracle[0], miracle[2]]).then(_ => {
+            insertMiracleDomains({ miracleList, checkList, index, db, domainList, miracle }, miracle[1], checkListVersion.id, 0)
+        })
+    } else {
+        console.log(miracle[0])
+        db.query('insert into glmiracles (name, invocationdie) values ($1, $2); select id from glmiracles where name = $1', [miracle[0], miracle[2]]).then(newMiracle => {
+            insertMiracleDomains({ miracleList, checkList, index, db, domainList, miracle }, miracle[1], newMiracle[0].id, 0)
+        })
+    }
+}
+
+function insertMiracleDomains(miraclesListObj, miraclesDomains, miraclesId, index) {
+    if (index === miraclesDomains.length) {
+        miraclesListObj.db.query('select Count(id) from glmiracleeffects where miracleid = $1', [miraclesId]).then(effectLength => {
+            insertMiracleEffects(miraclesListObj, miraclesId, 0, +effectLength[0].count)
+        })
+    } else {
+        let { db, domainList } = miraclesListObj
+        db.query('select * from glmiracledomains where miracleid = $1', [miraclesId]).then(currentDomainListFormiracles => {
+            let idArray = miraclesDomains.map(val => domainList.find(obj => obj.name === val).id)
+
+            if (!currentDomainListFormiracles.find(obj => obj.domainid === idArray[index])) {
+                db.query('insert into glmiracledomains (miracleid, domainid) values ($1, $2)', [miraclesId, idArray[index]]).then(_ => {
+                    insertMiracleDomains(miraclesListObj, miraclesDomains, miraclesId, ++index)
+                })
+            } else {
+                insertMiracleDomains(miraclesListObj, miraclesDomains, miraclesId, ++index)
+            }
+        })
+    }
+}
+
+function insertMiracleEffects(miracleListObj, miracleId, effectIndex, effectLength) {
+
+    let miracleEffect = miracleListObj.miracle[3]
+
+    if (effectLength > miracleEffect.length) {
+        miracleListObj.db.query(`delete from glmiracleeffects where miracleid = $1 and index > $2`, [miracleId, miracleEffect.length - 1]).then(_ => {
+            insertMiracleEffects(miracleListObj, miracleId, effectIndex, effectIndex)
+        })
+    } else if (effectLength <= effectIndex && effectIndex <= miracleEffect.length - 1 && miracleEffect[effectIndex] !== '') {
+        miracleListObj.db.query(`insert into glmiracleeffects (miracleid, index, effect) values ($1, $2, $3)`, [miracleId, effectIndex, miracleEffect[effectIndex]]).then(_ => {
+            insertMiracleEffects(miracleListObj, miracleId, ++effectIndex, effectLength)
+        })
+    } else if (effectIndex <= miracleEffect.length - 1 && miracleEffect[effectIndex] !== '') {
+        if (effectLength === 0) {
+            insertMiracleEffects(miracleListObj, miracleId, ++effectIndex, ++effectLength)
+        } else {
+            miracleListObj.db.query(`update glmiracleeffects set effect = $3 where miracleid = $1 and index = $2`, [miracleId, effectIndex, miracleEffect[effectIndex]]).then(_ => {
+                insertMiracleEffects(miracleListObj, miracleId, ++effectIndex, effectLength)
+            })
+        }
+    } else {
+        let { miracleList, checkList, index, db, domainList } = miracleListObj
+        insertOrUpdateMiracle(miracleList, checkList, ++index, db, domainList)
     }
 }
 
@@ -310,71 +422,12 @@ function formatNewSections() {
     })
 }
 
-function formatSpells() {
-    let formattedArray = []
-
-    fs.readFile(`../spells.txt`, "utf-8", (err, data) => {
-        data.split('    ').forEach(val => {
-            val.split('\n').forEach((innerVal, i, array) => {
-                let cleanedVal = innerVal.replace(/\n|\r/ig, '')
-                let newId = makeid(10)
-                if (cleanedVal === '') {
-                    formattedArray.push('<div class="space"></div>')
-                } else if (cleanedVal.substring(0, 6) === 'ORDERS') {
-                    let orders = cleanedVal.split(':')[1].replace(/,/ig, " |")
-                    formattedArray.push(`<div class='paragraphShell anchor'>
-                    <div id='${newId}' class='anchorTag'></div>
-                    <app-bm-chapter-icon [id]="'${newId}'"></app-bm-chapter-icon>
-                    <p><strong class='orangeHeader'>ORDERS</strong> ${orders}</p>
-                  </div>`)
-                } else if (cleanedVal.substring(0, 9) === "BASE COST" || cleanedVal.substring(0, 10) === "COMPONENTS" || cleanedVal.substring(0, 8) === "DURATION" || cleanedVal.substring(0, 6) === "RADIUS" || cleanedVal.substring(0, 8) === "POSITIVE" || cleanedVal.substring(0, 8) === "NEGATIVE") {
-                    cleanedVal = cleanedVal.split(':')
-                    let heading = cleanedVal[0]
-                    let value = cleanedVal[1]
-                    formattedArray.push(`<div class='paragraphShell anchor'>
-                    <div id='${newId}' class='anchorTag'></div>
-                    <app-bm-chapter-icon [id]="'${newId}'"></app-bm-chapter-icon>
-                    <p><strong class='orangeHeader'>${heading}</strong> ${value}</p>
-                  </div>`)
-                } else if (cleanedVal.toUpperCase() === cleanedVal) {
-                    formattedArray.push(`<div class='anchor'>
-                    <div id='${newId}' class='anchorTag'></div>
-                    <app-bm-chapter-icon [id]="'${newId}'"></app-bm-chapter-icon>
-                    <h3>${cleanedVal}</h3>
-                  </div>`)
-                } else {
-                    if (i === array.length) {
-                        formattedArray.push(`<div class='paragraphShell anchor marginBottom'>
-                        <div id='${newId}' class='anchorTag'></div>
-                        <app-bm-chapter-icon [id]="'${newId}'"></app-bm-chapter-icon>
-                        <p>${cleanedVal}</p>
-                      </div>`)
-                    } else {
-                        formattedArray.push(`<div class='paragraphShell anchor'>
-                        <div id='${newId}' class='anchorTag'></div>
-                        <app-bm-chapter-icon [id]="'${newId}'"></app-bm-chapter-icon>
-                        <p>${cleanedVal}</p>
-                      </div>`)
-                    }
-                }
-            })
-        })
-
-        fs.writeFile(`../formatedSpells.html`, formattedArray.join(''), (err) => {
-            // fs.writeFile(`./chapter-${chapterName}.component.html`, html, (err) => {
-            if (err) console.log(err);
-            console.log(`All Done.`);
-        });
-    })
-}
-
 massive(connection).then(dbI => {
     app.set('db', dbI)
     app.listen(4343, _ => {
         updateSearch(1)
-        // updateQuickNav(12)
+        // updateQuickNav(13)
         // formatNewSections()
-        // formatSpells()
         console.log(`The night lays like a lullaby on the earth 4343`)
     })
 })

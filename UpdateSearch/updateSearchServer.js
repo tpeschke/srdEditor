@@ -3,9 +3,9 @@ const { connection } = require('./servStuff')
     , bodyParser = require('body-parser')
     , cors = require('cors')
     , massive = require('massive')
-    , toCompare = []
     , fs = require('fs')
     , numWords = require('num-words')
+    , _ = require('lodash')
 
 const app = new express()
 app.use(bodyParser.json())
@@ -27,84 +27,128 @@ function makeid(length) {
 }
 
 async function updateSearch(endpoint) {
-    const db = app.get('db')
-        , chapterName = numWords(endpoint)
+    const chapterName = numWords(endpoint)
 
     let html = "";
 
+    // I think I need to retrieve both the advanced and basic html, stripe it and create objects with the body and id
+    // Then run through the array and see which are in the advanced array and which are in the basic and do the insert 
+    // or update query from there
+    // which means if I add another basic rule, I'll have to add it, with an identical id to both the basic and advaced array :/
+
     fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
         if (err) { console.log(err) }
-        html = data.replace(/ _ngcontent-c2=""/g, '');
-        newhtml = html.split(/anchor"|anchor'|anchor /)
+        fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (adverr, advData) => {
+            if (adverr) { console.log(err) }
+            let toBasicCompare = []
+                , toAdvancedCompare = []
+                , finalCompare = []
 
-        for (i = 0; i <= newhtml.length - 1; i++) {
-            //find the id
-            if (newhtml[i].includes('id=')) {
-                let id = newhtml[i].match(/id='(.*?)'|id="(.*?)"/gm)
+            toBasicCompare = cleanHTML(data, endpoint)
+            toAdvancedCompare = cleanHTML(advData, endpoint)
 
-                // sometimes the id doesn't have quotation marks so this is checking
-                if (id && id[0]) {
-                    id = id[0].substring(4)
-                    id = id.substring(0, id.length - 1)
+            toAdvancedCompare.forEach(advParagraph => {
+                if (_.find(toBasicCompare, { id: advParagraph.id })) {
+                    insertOrUpdateSearch(advParagraph, "basic", finalCompare, endpoint)
                 } else {
-                    id = newhtml[i].match(/id=(.*?) /gm)[0].substring(3).trim()
-                }
-
-                // strip final bits of HTML
-                let section = newhtml[i].replace(/(\r\n|\n|\r)/gm, '').match(/<h.*?>(.*?)<\/h|<p.*?>(.*?)<\/p/g)
-                // this will also catch images with ids but it will result in section being null so this is just tell it to ignore those
-                if (section) {
-                    section = section[0].replace(/<strong.*?>|<\/strong>|<a.*?>|<\/a>/g, '')
-                    section = section.split('>')[1].split('<')[0]
-
-                    // check if it's new
-                    if (isNaN(id.substring(0, 1)) || id === '') {
-
-                        newid = makeid(10)
-                        newid = endpoint + newid
-
-                        db.query('insert into srdbasic (linkid, body) values ($1, $2)', [newid, section]).then(res => console.log(res));
-                        toCompare.push(newid)
-                        let regexId = new RegExp(`${id}`, "g")
-                        html = html.replace(regexId, newid)
-
-                        //If not, add to compare list
-                    } else {
-                        // db.query('insert into srdbasic (linkid, body) values ($1, $2)',[id, section]).then();
-                        db.query('update srdbasic set body = $1 where linkid = $2', [section, id]).then();
-                        toCompare.push(id)
-                    }
-                }
-            }
-        }
-
-    if (endpoint === 12) {
-        updateGreatLibrarySpells()
-    } else if (endpoint === 13) {
-        updateGreatLibraryMiracles()
-    }
-
-    // Clean up
-        db.query("select linkid from srdbasic where linkid like ('%' || $1 || '%')", [`${endpoint}.`]).then(deleteArray => {
-            deleteArray.forEach(({ linkid }) => {
-                if (!toCompare.includes(linkid)) {
-                    db.query('delete from srdbasic where linkid = $1', [linkid]).then();
+                    insertOrUpdateSearch(advParagraph, "advanced", finalCompare, endpoint)
                 }
             })
 
-            fs.writeFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, html, (err) => {
-                // fs.writeFile(`./chapter-${chapterName}.component.html`, html, (err) => {
-                if (err) console.log(err);
-                console.log(`Successfully Wrote Chapter ${endpoint}.`);
-                if (endpoint !== 15) {
-                    updateSearch(endpoint + 1)
-                } else {
-                    console.log('ALL DONE')
-                }
-            });
-        });
-    
-    });
+            Promise.all(finalCompare).then(finalIdArray => {
+                console.log(finalIdArray)
+                //replace
+                
+            //     updateGreatLibrarySpells()
+            // } else if (endpoint === 13) {
+            //     updateGreatLibraryMiracles()
+            // }
+
+            // Clean up
+            // db.query("select linkid from srdbasic where linkid like ('%' || $1 || '%')", [`${endpoint}.`]).then(deleteArray => {
+            //     deleteArray.forEach(({ linkid }) => {
+            //         if (!toCompare.includes(linkid)) {
+            //             db.query('delete from srdbasic where linkid = $1', [linkid]).then();
+            //         }
+            //     })
+
+            //     // fs.writeFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, html, (err) => {
+            //         fs.writeFile(`./chapter-${chapterName}.component.html`, html, (err) => {
+            //         if (err) console.log(err);
+            //         console.log(`Successfully Wrote Chapter ${endpoint}.`);
+            //         if (endpoint !== 15) {
+            //             updateSearch(endpoint + 1)
+            //         } else {
+            //             console.log('ALL DONE')
+            //         }
+            //     });
+            // });
+
+            })
+        })
+    })
+}
+
+function cleanHTML(data) {
+    html = data.replace(/ _ngcontent-c2=""/g, '');
+    newhtml = html.split(/anchor"|anchor'|anchor /)
+    let toCompare = []
+
+    for (i = 0; i <= newhtml.length - 1; i++) {
+        //find the id
+        if (newhtml[i].includes('id=')) {
+            let id = newhtml[i].match(/id='(.*?)'|id="(.*?)"/gm)
+
+            // sometimes the id doesn't have quotation marks so this is checking
+            if (id && id[0]) {
+                id = id[0].substring(4)
+                id = id.substring(0, id.length - 1)
+            } else {
+                id = newhtml[i].match(/id=(.*?) /gm)[0].substring(3).trim()
+            }
+
+            // strip final bits of HTML
+            let section = newhtml[i].replace(/(\r\n|\n|\r)/gm, '').replace(/\s\s+/g, ' ').match(/<h.*?>(.*?)<\/h|<p.*?>(.*?)<\/p/g)
+            // this will also catch images with ids but it will result in section being null so this is just tell it to ignore those
+            if (section) {
+                section = section[0].replace(/<strong.*?>|<\/strong>|<a.*?>|<\/a>/g, '')
+                section = section.split('>')[1].split('<')[0]
+
+                toCompare.push({ id, section })
+            }
+        }
+    }
+
+    return toCompare
+}
+
+async function insertOrUpdateSearch(paragraph, type, toCompare, endpoint) {
+    const db = app.get('db')
+        , {id, section} = paragraph
+
+    // check if it's new
+    if (isNaN(id.substring(0, 1)) || id === '') {
+
+        newid = makeid(10)
+        newid = endpoint + newid
+
+        toCompare.push(db.query(`insert into srd${type} (linkid, body) values ($1, $2) returning linkid`, [newid, section]).then(res => {
+            return res[0].linkid
+            if (type === 'basic') {
+
+            } else if (type === 'advance') {
+                // let regexId = new RegExp(`${id}`, "g")
+                // html = html.replace(regexId, newid)
+            }
+        }));
+    } else {
+        // pull the the old body for basic to get it ready for the update section
+        // I might need to make two htmls and make them global for the final search and replace
+        toCompare.push(db.query(`update srd${type} set body = $1 where linkid = $2`, [section, id]).then(_ => {
+            return id
+        }));
+    }
+
 }
 
 function updateGreatLibrarySpells() {
@@ -425,7 +469,7 @@ function formatNewSections() {
 massive(connection).then(dbI => {
     app.set('db', dbI)
     app.listen(4343, _ => {
-        updateSearch(1)
+        updateSearch(3)
         // updateQuickNav(13)
         // formatNewSections()
         console.log(`The night lays like a lullaby on the earth 4343`)

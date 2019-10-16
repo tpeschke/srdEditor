@@ -27,10 +27,10 @@ function makeid(length) {
 }
 
 async function updateSearch(endpoint) {
-    const chapterName = numWords(endpoint)
+    const db = app.get('db')
+        , chapterName = numWords(endpoint)
 
-    let html = "";
-
+    let html = { basic: '', advanced: '' }
     // I think I need to retrieve both the advanced and basic html, stripe it and create objects with the body and id
     // Then run through the array and see which are in the advanced array and which are in the basic and do the insert 
     // or update query from there
@@ -38,8 +38,11 @@ async function updateSearch(endpoint) {
 
     fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
         if (err) { console.log(err) }
+        html.basic = data
         fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (adverr, advData) => {
             if (adverr) { console.log(err) }
+
+            html.advanced = advData
             let toBasicCompare = []
                 , toAdvancedCompare = []
                 , finalCompare = []
@@ -48,41 +51,57 @@ async function updateSearch(endpoint) {
             toAdvancedCompare = cleanHTML(advData, endpoint)
 
             toAdvancedCompare.forEach(advParagraph => {
+                // this step also replaces the html since I didn't want to loop through the entire array another time
                 if (_.find(toBasicCompare, { id: advParagraph.id })) {
-                    insertOrUpdateSearch(advParagraph, "basic", finalCompare, endpoint)
-                } else {
-                    insertOrUpdateSearch(advParagraph, "advanced", finalCompare, endpoint)
+                    insertOrUpdateSearch(advParagraph, "basic", finalCompare, endpoint, html)
+                } else if (_.find(toAdvancedCompare, { id: advParagraph.id })) {
+                    insertOrUpdateSearch(advParagraph, "advanced", finalCompare, endpoint, html)
                 }
             })
 
             Promise.all(finalCompare).then(finalIdArray => {
-                console.log(finalIdArray)
-                //replace
-                
-            //     updateGreatLibrarySpells()
-            // } else if (endpoint === 13) {
-            //     updateGreatLibraryMiracles()
-            // }
+                if (endpoint === 12) {
+                    updateGreatLibrarySpells()
+                } else if (endpoint === 13) {
+                    updateGreatLibraryMiracles()
+                }
 
-            // Clean up
-            // db.query("select linkid from srdbasic where linkid like ('%' || $1 || '%')", [`${endpoint}.`]).then(deleteArray => {
-            //     deleteArray.forEach(({ linkid }) => {
-            //         if (!toCompare.includes(linkid)) {
-            //             db.query('delete from srdbasic where linkid = $1', [linkid]).then();
-            //         }
-            //     })
+                // Clean up
+                db.query("select linkid from srdbasic where linkid like ('%' || $1 || '%')", [`${endpoint}`]).then(deleteArray => {
+                    db.query("select linkid from srdadvanced where linkid like ('%' || $1 || '%')", [`${endpoint}`]).then(advDelete => {
+                        let completeDelete = [...deleteArray, ...advDelete];
+                        (function deleteThem(index) {
+                            let deleteObj = true
+                            , linkid = completeDelete[index].linkid
+                            finalIdArray.forEach(val => {
+                                if (linkid === val.id) {
+                                    deleteObj = false
+                                }
+                            })
 
-            //     // fs.writeFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, html, (err) => {
-            //         fs.writeFile(`./chapter-${chapterName}.component.html`, html, (err) => {
-            //         if (err) console.log(err);
-            //         console.log(`Successfully Wrote Chapter ${endpoint}.`);
-            //         if (endpoint !== 15) {
-            //             updateSearch(endpoint + 1)
-            //         } else {
-            //             console.log('ALL DONE')
-            //         }
-            //     });
-            // });
+                            if (deleteObj) {
+                                db.query(`delete from srdbasic where linkid = $1`, [linkid]).then(_ => {
+                                    db.query(`delete from srdadvanced where linkid = $1`, [linkid]).then(_ => {
+                                        deleteThem(++index)
+                                    })
+                                })
+                            }
+                        })(0)
+                        // fs.writeFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, html.basic, (err) => {
+                        // fs.writeFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, html.basic, (err) => {
+                        fs.writeFile(`./chapter-${chapterName}-advanced.component.html`, html.advanced, (err) => {
+                            // fs.writeFile(`./chapter-${chapterName}.component.html`, html.advanced, (err) => {
+                            if (err) console.log(err);
+                            console.log(`Successfully Wrote Chapter ${endpoint}.`);
+                            // if (endpoint !== 15) {
+                            //     updateSearch(endpoint + 1)
+                            // } else {
+                            //     console.log('ALL DONE')
+                            // }
+                            // });
+                        });
+                    });
+                })
 
             })
         })
@@ -122,9 +141,9 @@ function cleanHTML(data) {
     return toCompare
 }
 
-async function insertOrUpdateSearch(paragraph, type, toCompare, endpoint) {
+async function insertOrUpdateSearch(paragraph, type, toCompare, endpoint, html) {
     const db = app.get('db')
-        , {id, section} = paragraph
+        , { id, section } = paragraph
 
     // check if it's new
     if (isNaN(id.substring(0, 1)) || id === '') {
@@ -133,19 +152,20 @@ async function insertOrUpdateSearch(paragraph, type, toCompare, endpoint) {
         newid = endpoint + newid
 
         toCompare.push(db.query(`insert into srd${type} (linkid, body) values ($1, $2) returning linkid`, [newid, section]).then(res => {
-            return res[0].linkid
+            let regexId = new RegExp(`${id}`, "g")
             if (type === 'basic') {
-
-            } else if (type === 'advance') {
-                // let regexId = new RegExp(`${id}`, "g")
-                // html = html.replace(regexId, newid)
+                html.basic = html.basic.replace(regexId, res[0].linkid)
+                html.advanced = html.advanced.replace(regexId, res[0].linkid)
+            } else if (type === 'advanced') {
+                html.advanced = html.advanced.replace(regexId, res[0].linkid)
             }
+            return { id: res[0].linkid, type }
         }));
     } else {
         // pull the the old body for basic to get it ready for the update section
         // I might need to make two htmls and make them global for the final search and replace
         toCompare.push(db.query(`update srd${type} set body = $1 where linkid = $2`, [section, id]).then(_ => {
-            return id
+            return { id, type }
         }));
     }
 

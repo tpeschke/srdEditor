@@ -72,7 +72,7 @@ async function updateSearch(endpoint) {
                         let completeDelete = [...deleteArray, ...advDelete];
                         (function deleteThem(index) {
                             let deleteObj = true
-                            , linkid = completeDelete[index].linkid
+                                , linkid = completeDelete[index].linkid
                             finalIdArray.forEach(val => {
                                 if (linkid === val.id) {
                                     deleteObj = false
@@ -87,18 +87,17 @@ async function updateSearch(endpoint) {
                                 })
                             }
                         })(0)
-                        // fs.writeFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, html.basic, (err) => {
-                        // fs.writeFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, html.basic, (err) => {
-                        fs.writeFile(`./chapter-${chapterName}-advanced.component.html`, html.advanced, (err) => {
-                            // fs.writeFile(`./chapter-${chapterName}.component.html`, html.advanced, (err) => {
-                            if (err) console.log(err);
-                            console.log(`Successfully Wrote Chapter ${endpoint}.`);
-                            // if (endpoint !== 15) {
-                            //     updateSearch(endpoint + 1)
-                            // } else {
-                            //     console.log('ALL DONE')
-                            // }
-                            // });
+                        fs.writeFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, html.basic, (err) => {
+                            fs.writeFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, html.advanced, (err) => {
+                                if (err) console.log(err);
+                                console.log(`Successfully Wrote Chapter ${endpoint}.`);
+                                // if (endpoint !== 15) {
+                                //     updateSearch(endpoint + 1)
+                                // } else {
+                                //     console.log('ALL DONE')
+                                // }
+                                // });
+                            });
                         });
                     });
                 })
@@ -399,7 +398,8 @@ async function updateQuickNav(endpoint) {
 
     let html = "";
 
-    fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
+    fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (err, data) => {
+        // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
         if (err) { console.log(err) }
         html = data.replace(/ _ngcontent-c2=""/g, '');
         newhtml = html.split(/anchor"|anchor'|anchor /)
@@ -420,7 +420,7 @@ async function updateQuickNav(endpoint) {
 
 
                 // strip final bits of HTML
-                let section = newhtml[i].replace(/(\r\n|\n|\r)/gm, '').match(/<h.*?>(.*?)<\/h|<p.*?>(.*?)<\/p/g)[0].replace(/<h.*?>|<\/h/g, '')
+                let section = newhtml[i].replace(/(\r\n|\n|\r)/gm, '').match(/<h.*?>(.*?)<\/h|<p.*?>(.*?)<\/p|<img.*?>/g)[0].replace(/<h.*?>|<\/h/g, '')
 
                 if (newhtml[i].indexOf('<h3>') !== -1) {
                     quickNav = quickNav + `{linkid: 'hg', body: '${section}', jump: '${id}'}, `
@@ -440,31 +440,34 @@ async function updateQuickNav(endpoint) {
 function formatNewSections() {
     let formattedArray = []
 
-    fs.readFile(`../Untitleddocument.txt`, "utf-8", (err, data) => {
+    fs.readFile(`./Warrior.txt`, "utf-8", (err, data) => {
 
         data.split('|').forEach(val => {
+            let newId = makeid(10)
             if (val.substring(0, 1) === 'h') {
                 formattedArray.push(`<div class='anchor'>
-                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}' class='anchorTag'></div>
-                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}'"></app-bm-chapter-icon>
+                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
                         <h3>${val.substring(1).toUpperCase()}</h3>
                     </div>`)
             } else if (val.substring(0, 1) === 'p') {
                 formattedArray.push(`<div class='paragraphShell anchor'>
-                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}' class='anchorTag'></div>
-                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}'"></app-bm-chapter-icon>
+                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
                         <p>${val.substring(1)}</p>
                     </div>`)
             } else if (val.substring(0, 1) === 'l') {
                 formattedArray.push(`<div class='paragraphShell anchor marginBottom'>
-                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}' class='anchorTag'></div>
-                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}'"></app-bm-chapter-icon>
+                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
                         <p>${val.substring(1)}</p>
                     </div>`)
             } else if (val.substring(0, 1) === 's') {
                 formattedArray.push(`<div class="anchor">
-                        <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}" class="anchorTag"></div>
-                        <h1>${val.substring(1).toProperCase(true)}</h1>
+                        <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}header" class="anchorTag"></div>
+                        <h1>${val.substring(1).toUpperCase()}</h1>
+                        <h4 class="advancedHeader" id="advancedHead">🜂 Advanced Rule</h4>
+                        <div class="underline"></div>
                     </div>`)
             } else if (val.substring(0, 1) === 'm') {
                 formattedArray.push(`<div class="anchor marginBottom">
@@ -489,8 +492,8 @@ function formatNewSections() {
 massive(connection).then(dbI => {
     app.set('db', dbI)
     app.listen(4343, _ => {
-        updateSearch(3)
-        // updateQuickNav(13)
+        // updateSearch(4)
+        updateQuickNav(4)
         // formatNewSections()
         console.log(`The night lays like a lullaby on the earth 4343`)
     })

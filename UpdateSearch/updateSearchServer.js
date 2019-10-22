@@ -31,16 +31,12 @@ async function updateSearch(endpoint) {
         , chapterName = numWords(endpoint)
 
     let html = { basic: '', advanced: '' }
-    // I think I need to retrieve both the advanced and basic html, stripe it and create objects with the body and id
-    // Then run through the array and see which are in the advanced array and which are in the basic and do the insert 
-    // or update query from there
-    // which means if I add another basic rule, I'll have to add it, with an identical id to both the basic and advaced array :/
 
     fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
-        if (err) { console.log(err) }
+        if (err) { console.log("basic", err) }
         html.basic = data
         fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (adverr, advData) => {
-            if (adverr) { console.log(err) }
+            if (adverr) { console.log("adv", adverr) }
 
             html.advanced = advData
             let toBasicCompare = []
@@ -48,16 +44,24 @@ async function updateSearch(endpoint) {
                 , finalCompare = []
 
             toBasicCompare = cleanHTML(data, endpoint)
-            toAdvancedCompare = cleanHTML(advData, endpoint)
+            if (html.advanced) {
+                toAdvancedCompare = cleanHTML(advData, endpoint)
+            }
 
-            toAdvancedCompare.forEach(advParagraph => {
-                // this step also replaces the html since I didn't want to loop through the entire array another time
-                if (_.find(toBasicCompare, { id: advParagraph.id })) {
-                    insertOrUpdateSearch(advParagraph, "basic", finalCompare, endpoint, html)
-                } else if (_.find(toAdvancedCompare, { id: advParagraph.id })) {
-                    insertOrUpdateSearch(advParagraph, "advanced", finalCompare, endpoint, html)
-                }
-            })
+            if (html.advanced) {
+                toAdvancedCompare.forEach(advParagraph => {
+                    // this step also replaces the html since I didn't want to loop through the entire array another time
+                    if (_.find(toBasicCompare, { id: advParagraph.id })) {
+                        insertOrUpdateSearch(advParagraph, "basic", finalCompare, endpoint, html)
+                    } else if (_.find(toAdvancedCompare, { id: advParagraph.id })) {
+                        insertOrUpdateSearch(advParagraph, "advanced", finalCompare, endpoint, html)
+                    }
+                })
+            } else {
+                toBasicCompare.forEach(basicParagraph => {
+                    insertOrUpdateSearch(basicParagraph, "basic", finalCompare, endpoint, html)
+                })
+            }
 
             Promise.all(finalCompare).then(finalIdArray => {
                 if (endpoint === 12) {
@@ -91,11 +95,11 @@ async function updateSearch(endpoint) {
                             fs.writeFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, html.advanced, (err) => {
                                 if (err) console.log(err);
                                 console.log(`Successfully Wrote Chapter ${endpoint}.`);
-                                // if (endpoint !== 15) {
-                                //     updateSearch(endpoint + 1)
-                                // } else {
-                                //     console.log('ALL DONE')
-                                // }
+                                if (endpoint !== 15) {
+                                    updateSearch(endpoint + 1)
+                                } else {
+                                    console.log('ALL DONE')
+                                }
                                 // });
                             });
                         });
@@ -161,8 +165,7 @@ async function insertOrUpdateSearch(paragraph, type, toCompare, endpoint, html) 
             return { id: res[0].linkid, type }
         }));
     } else {
-        // pull the the old body for basic to get it ready for the update section
-        // I might need to make two htmls and make them global for the final search and replace
+        // toCompare.push(db.query(`insert into srd${type} (linkid, body) values ($1, $2) returning linkid`, [id, section]).then(_ => {
         toCompare.push(db.query(`update srd${type} set body = $1 where linkid = $2`, [section, id]).then(_ => {
             return { id, type }
         }));
@@ -440,7 +443,7 @@ async function updateQuickNav(endpoint) {
 function formatNewSections() {
     let formattedArray = []
 
-    fs.readFile(`./Warrior.txt`, "utf-8", (err, data) => {
+    fs.readFile(`./divine.txt`, "utf-8", (err, data) => {
 
         data.split('|').forEach(val => {
             let newId = makeid(10)
@@ -449,6 +452,7 @@ function formatNewSections() {
                         <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
                         <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
                         <h3>${val.substring(1).toUpperCase()}</h3>
+                        <h4>🜂 Advanced Rule</h4>
                     </div>`)
             } else if (val.substring(0, 1) === 'p') {
                 formattedArray.push(`<div class='paragraphShell anchor'>
@@ -476,6 +480,13 @@ function formatNewSections() {
                     </div>`)
             } else if (val.substring(0, 1) === 'c') {
                 formattedArray.push(`<strong class='orangeHeader'>${val.substring(1).toUpperCase()}</strong>`)
+            } else if (val.substring(0, 1) === 'q') {
+                pairedInfo = val.split(',')
+                formattedArray.push(`<div class="chartShell pairedShell anchor">
+                <div id="${newId}" class="anchorTag"></div>
+                <h3>${pairedInfo[0].substring(1)}</h3>
+                <h3> ${pairedInfo[1]}</h3>
+            </div>`)
             } else {
                 console.log('something when wrong', val)
             }
@@ -492,8 +503,8 @@ function formatNewSections() {
 massive(connection).then(dbI => {
     app.set('db', dbI)
     app.listen(4343, _ => {
-        // updateSearch(4)
-        updateQuickNav(4)
+        updateSearch(1)
+        // updateQuickNav(15)
         // formatNewSections()
         console.log(`The night lays like a lullaby on the earth 4343`)
     })

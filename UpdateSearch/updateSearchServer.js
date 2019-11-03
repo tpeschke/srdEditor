@@ -36,7 +36,6 @@ async function updateSearch(endpoint) {
         if (err) { console.log("basic", err) }
         html.basic = data
         fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (adverr, advData) => {
-            if (adverr) { console.log("adv", adverr) }
 
             html.advanced = advData
             let toBasicCompare = []
@@ -44,7 +43,7 @@ async function updateSearch(endpoint) {
                 , finalCompare = []
 
             toBasicCompare = cleanHTML(data, endpoint)
-            if (html.advanced) {
+            if (!adverr) {
                 toAdvancedCompare = cleanHTML(advData, endpoint)
             }
 
@@ -158,7 +157,9 @@ async function insertOrUpdateSearch(paragraph, type, toCompare, endpoint, html) 
             let regexId = new RegExp(`${id}`, "g")
             if (type === 'basic') {
                 html.basic = html.basic.replace(regexId, res[0].linkid)
-                html.advanced = html.advanced.replace(regexId, res[0].linkid)
+                if (html.advanced) {
+                    html.advanced = html.advanced.replace(regexId, res[0].linkid)
+                }
             } else if (type === 'advanced') {
                 html.advanced = html.advanced.replace(regexId, res[0].linkid)
             }

@@ -33,79 +33,41 @@ async function updateSearch(endpoint) {
     let html = { basic: '', advanced: '' }
 
     fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
-        if (err) { console.log("basic", err) }
-        html.basic = data
         fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (adverr, advData) => {
-
-            html.advanced = advData
-            let toBasicCompare = []
-                , toAdvancedCompare = []
-                , finalCompare = []
-
-            toBasicCompare = cleanHTML(data, endpoint)
-            if (!adverr) {
-                toAdvancedCompare = cleanHTML(advData, endpoint)
-            }
-
-            if (html.advanced) {
-                toAdvancedCompare.forEach(advParagraph => {
-                    // this step also replaces the html since I didn't want to loop through the entire array another time
-                    if (_.find(toBasicCompare, { id: advParagraph.id })) {
-                        insertOrUpdateSearch(advParagraph, "basic", finalCompare, endpoint, html)
-                    } else if (_.find(toAdvancedCompare, { id: advParagraph.id })) {
-                        insertOrUpdateSearch(advParagraph, "advanced", finalCompare, endpoint, html)
-                    }
-                })
-            } else {
-                toBasicCompare.forEach(basicParagraph => {
-                    insertOrUpdateSearch(basicParagraph, "basic", finalCompare, endpoint, html)
-                })
-            }
-
-            Promise.all(finalCompare).then(finalIdArray => {
-                if (endpoint === 12) {
-                    updateGreatLibrarySpells()
-                } else if (endpoint === 13) {
-                    updateGreatLibraryMiracles()
+            html.basic = data
+            let basicDataObject = cleanHTML(data, endpoint)
+            if (!advData) {
+                for (key in basicDataObject) {
+                    insertOrUpdateSearch(key, basicDataObject[key], 'basic', html)
                 }
+            } else {
+                html.advanced = advData
+                advancedDataObject = cleanHTML(advData, endpoint)
+                for (key in advancedDataObject) {
+                    insertOrUpdateAdvancedSearch(key, advancedDataObject[key], 'advanced', html, basicDataObject)
+                }
+            }
 
-                // Clean up
-                db.query("select linkid from srdbasic where linkid like ('%' || $1 || '%')", [`${endpoint}`]).then(deleteArray => {
-                    db.query("select linkid from srdadvanced where linkid like ('%' || $1 || '%')", [`${endpoint}`]).then(advDelete => {
-                        let completeDelete = [...deleteArray, ...advDelete];
-                        (function deleteThem(index) {
-                            let deleteObj = true
-                                , linkid = completeDelete[index].linkid
-                            finalIdArray.forEach(val => {
-                                if (linkid === val.id) {
-                                    deleteObj = false
-                                }
-                            })
+            // Promise.all(finalCompare).then(finalIdArray => {
+            //     if (endpoint === 12) {
+            //         updateGreatLibrarySpells()
+            //     } else if (endpoint === 13) {
+            //         updateGreatLibraryMiracles()
+            //     }
 
-                            if (deleteObj) {
-                                db.query(`delete from srdbasic where linkid = $1`, [linkid]).then(_ => {
-                                    db.query(`delete from srdadvanced where linkid = $1`, [linkid]).then(_ => {
-                                        deleteThem(++index)
-                                    })
-                                })
-                            }
-                        })(0)
-                        fs.writeFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, html.basic, (err) => {
-                            fs.writeFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, html.advanced, (err) => {
-                                if (err) console.log(err);
-                                console.log(`Successfully Wrote Chapter ${endpoint}.`);
-                                if (endpoint !== 15) {
-                                    updateSearch(endpoint + 1)
-                                } else {
-                                    console.log('ALL DONE')
-                                }
-                                // });
-                            });
-                        });
-                    });
-                })
-
-            })
+            fs.writeFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, html.basic, (err) => {
+                fs.writeFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, html.advanced, (err) => {
+                    if (err) console.log(err);
+                    console.log(`Successfully Wrote Chapter ${endpoint}.`);
+                    if (endpoint !== 15) {
+                        // Something is going on with chapter 12 and 13
+                        if (endpoint === 11) { endpoint = 13}
+                        updateSearch(endpoint + 1)
+                    } else {
+                        console.log('ALL DONE')
+                    }
+                });
+            });
         })
     })
 }
@@ -113,7 +75,7 @@ async function updateSearch(endpoint) {
 function cleanHTML(data) {
     html = data.replace(/ _ngcontent-c2=""/g, '');
     newhtml = html.split(/anchor"|anchor'|anchor /)
-    let toCompare = []
+    let dataObject = {}
 
     for (i = 0; i <= newhtml.length - 1; i++) {
         //find the id
@@ -135,17 +97,16 @@ function cleanHTML(data) {
                 section = section[0].replace(/<strong.*?>|<\/strong>|<a.*?>|<\/a>/g, '')
                 section = section.split('>')[1].split('<')[0]
 
-                toCompare.push({ id, section })
+                dataObject[id] = section
             }
         }
     }
 
-    return toCompare
+    return dataObject
 }
 
-async function insertOrUpdateSearch(paragraph, type, toCompare, endpoint, html) {
+function insertOrUpdateSearch(id, content, type, html) {
     const db = app.get('db')
-        , { id, section } = paragraph
 
     // check if it's new
     if (isNaN(id.substring(0, 1)) || id === '') {
@@ -153,25 +114,48 @@ async function insertOrUpdateSearch(paragraph, type, toCompare, endpoint, html) 
         newid = makeid(10)
         newid = endpoint + newid
 
-        toCompare.push(db.query(`insert into srd${type} (linkid, body) values ($1, $2) returning linkid`, [newid, section]).then(res => {
+        db.query(`insert into srd${type} (linkid, body) values ($1, $2) returning linkid`, [newid, content]).then(res => {
             let regexId = new RegExp(`${id}`, "g")
-            if (type === 'basic') {
-                html.basic = html.basic.replace(regexId, res[0].linkid)
-                if (html.advanced) {
-                    html.advanced = html.advanced.replace(regexId, res[0].linkid)
-                }
-            } else if (type === 'advanced') {
-                html.advanced = html.advanced.replace(regexId, res[0].linkid)
-            }
-            return { id: res[0].linkid, type }
-        }));
+            html[type] = html[type].replace(regexId, newid)
+        });
     } else {
-        // toCompare.push(db.query(`insert into srd${type} (linkid, body) values ($1, $2) returning linkid`, [id, section]).then(_ => {
-        toCompare.push(db.query(`update srd${type} set body = $1 where linkid = $2`, [section, id]).then(_ => {
-            return { id, type }
-        }));
+        if (content === 'd') {
+            // db.query(`delete from srd${type} where linkid = $1`, [id])
+        } else {
+            // db.query(`insert into srd${type} (linkid, body) values ($1, $2) returning linkid`, [id, content]).then(_ => {
+            // db.query(`update srd${type} set body = $1 where linkid = $2`, [content, id])
+        }
     }
+    return true
+}
 
+function insertOrUpdateAdvancedSearch(id, content, type, html, basicObject) {
+    const db = app.get('db')
+
+    // check if it's in basic
+    if (basicObject[id]) {
+        if (content === 'd') {
+            // db.query(`delete from srdbasic where linkid = $1`, [id])
+        } else if (isNaN(id.substring(0, 1)) || id === '') {
+            newid = makeid(10)
+            newid = endpoint + newid
+
+            // db.query(`insert into srdbasic (linkid, body) values ($1, $2) returning linkid`, [newid, content]).then(res => {
+            let regexId = new RegExp(`${id}`, "g")
+            html.basic = html.basic.replace(regexId, newid)
+            html.advanced = html.advanced.replace(regexId, newid)
+            // });
+        } else {
+            let regexReadied = basicObject[id].replace(/\?/ig, "\\?").replace(/\(/ig, "\\(").replace(/\)/ig, "\\)")
+            let regexContent = new RegExp(`${regexReadied}`, "g")
+            html.basic = html.basic.replace(regexContent, content)
+            // db.query(`update srdbasic set body = $1 where linkid = $2`, [content, id])
+        }
+        // check if it's new
+    } else {
+        insertOrUpdateSearch(id, content, type, html)
+    }
+    return true
 }
 
 function updateGreatLibrarySpells() {

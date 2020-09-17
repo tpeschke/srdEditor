@@ -5,7 +5,8 @@ const { connection } = require('./servStuff')
     , massive = require('massive')
     , fs = require('fs')
     , numWords = require('num-words')
-    , _ = require('lodash')
+    , _ = require('lodash');
+const { round } = require('lodash');
 
 const app = new express()
 app.use(bodyParser.json())
@@ -38,13 +39,13 @@ async function updateSearch(endpoint) {
             let basicDataObject = cleanHTML(data, endpoint)
             if (!advData) {
                 for (key in basicDataObject) {
-                    insertOrUpdateSearch(key, basicDataObject[key], 'basic', html)
+                    insertOrUpdateSearch(key, basicDataObject[key], 'basic', html, endpoint)
                 }
             } else {
                 html.advanced = advData
                 advancedDataObject = cleanHTML(advData, endpoint)
                 for (key in advancedDataObject) {
-                    insertOrUpdateAdvancedSearch(key, advancedDataObject[key], 'advanced', html, basicDataObject)
+                    insertOrUpdateAdvancedSearch(key, advancedDataObject[key], 'advanced', html, basicDataObject, endpoint)
                 }
             }
 
@@ -61,7 +62,7 @@ async function updateSearch(endpoint) {
                     console.log(`Successfully Wrote Chapter ${endpoint}.`);
                     if (endpoint !== 15) {
                         // Something is going on with chapter 12 and 13
-                        if (endpoint === 11) { endpoint = 13}
+                        if (endpoint === 11) { endpoint = 13 }
                         updateSearch(endpoint + 1)
                     } else {
                         console.log('ALL DONE')
@@ -105,7 +106,7 @@ function cleanHTML(data) {
     return dataObject
 }
 
-function insertOrUpdateSearch(id, content, type, html) {
+function insertOrUpdateSearch(id, content, type, html, endpoint) {
     const db = app.get('db')
 
     // check if it's new
@@ -129,7 +130,7 @@ function insertOrUpdateSearch(id, content, type, html) {
     return true
 }
 
-function insertOrUpdateAdvancedSearch(id, content, type, html, basicObject) {
+function insertOrUpdateAdvancedSearch(id, content, type, html, basicObject, endpoint) {
     const db = app.get('db')
 
     // check if it's in basic
@@ -406,19 +407,18 @@ async function updateQuickNav(endpoint) {
                     id = newhtml[i].match(/id=(.*?) /gm)[0].substring(3).trim()
                 }
 
-
                 // strip final bits of HTML
-                let section = newhtml[i].replace(/(\r\n|\n|\r)/gm, '').match(/<h.*?>(.*?)<\/h|<p.*?>(.*?)<\/p|<img.*?>/g)[0].replace(/<h.*?>|<\/h/g, '')
+                let section = newhtml[i].replace(/(\r\n|\n|\r)/gm, '').match(/<h.*?>(.*?)<\/h|<p.*?>(.*?)<\/p|<img.*?>/g)
 
                 if (newhtml[i].indexOf('<h3>') !== -1) {
-                    quickNav = quickNav + `{linkid: 'hg', body: '${section}', jump: '${id}'}, `
+                    quickNav = quickNav + `{linkid: 'hg', body: '${section[0].replace(/<h.*?>|<\/h/g, '').toUpperCase()}', jump: '${id}'}, `
                 } else if (newhtml[i].indexOf('<h1>') !== -1) {
-                    quickNav = quickNav + `{linkid: 'h', body: '${section}', jump: '${id}'}, `
+                    quickNav = quickNav + `{linkid: 'h', body: '${section[0].replace(/<h.*?>|<\/h/g, '').toUpperCase()}', jump: '${id}'}, `
                 }
             }
         }
 
-        fs.writeFile(`../chapter-${chapterName}-quicknav.txt`, quickNav, (err) => {
+        fs.writeFile(`../quicknav.txt`, quickNav, (err) => {
             if (err) console.log(err);
             console.log(`Successfully Created QuickNav for Chapter ${endpoint}.`);
         });
@@ -428,16 +428,72 @@ async function updateQuickNav(endpoint) {
 function formatNewSections() {
     let formattedArray = []
 
-    fs.readFile(`./divine.txt`, "utf-8", (err, data) => {
+    fs.readFile(`./formatter.txt`, "utf-8", (err, data) => {
 
         data.split('|').forEach(val => {
             let newId = makeid(10)
-            if (val.substring(0, 1) === 'h') {
+            if (val.substring(0, 1) === 's') {
                 formattedArray.push(`<div class='anchor'>
                         <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
                         <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
                         <h3>${val.substring(1).toUpperCase()}</h3>
-                        <h4>🜂 Advanced Rule</h4>
+                    </div>`)
+                //AND Base Drain & Base Range
+            } else if (val.substring(0, 5) === 'Drain') {
+                formattedArray.push(
+                    `<div class='paragraphShell anchor'>
+                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                        <p><strong class='orangeHeader'>${val.substring(0, 5).toUpperCase()}</strong>${val.substring(5)}</p>
+                    </div>`)
+            } else if (val.substring(0, 9) === 'Tradition') {
+                formattedArray.push(
+                    `<div class='paragraphShell anchor'>
+                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                        <p><strong class='orangeHeader'>${val.substring(0, 9).toUpperCase()}</strong>${val.substring(9)}</p>
+                    </div>`)
+            } else if (val.substring(0, 10) === 'Base Drain') {
+                formattedArray.push(
+                    `<div class='paragraphShell anchor'>
+                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                        <p><strong class='orangeHeader'>${val.substring(0, 10).toUpperCase()}</strong>${val.substring(10)}</p>
+                    </div>`)
+            } else if (val.substring(0, 10) === 'Base Range') {
+                formattedArray.push(
+                    `<div class='paragraphShell anchor'>
+                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                        <p><strong class='orangeHeader'>${val.substring(0, 10).toUpperCase()}</strong>${val.substring(10)}</p>
+                    </div>`)
+            } else if (val.substring(0, 8) === 'Interval') {
+                formattedArray.push(
+                    `<div class='paragraphShell anchor'>
+                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                        <p><strong class='orangeHeader'>${val.substring(0, 8).toUpperCase()}</strong>${val.substring(8)}</p>
+                    </div>`)
+            } else if (val.substring(0, 6) === 'Effect') {
+                formattedArray.push(
+                    `<div class='paragraphShell anchor'>
+                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                        <p><strong class='orangeHeader'>${val.substring(0, 6).toUpperCase()}</strong>${val.substring(6)}</p>
+                    </div>`)
+            } else if (val.substring(0, 5) === 'Stack') {
+                formattedArray.push(
+                    `<div class='paragraphShell marginBottom anchor'>
+                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                        <p><strong class='orangeHeader'>${val.substring(0, 5).toUpperCase()}</strong>${val.substring(5)}</p>
+                    </div>`)
+            } else if (val.substring(0, 10) === 'Components') {
+                formattedArray.push(
+                    `<div class='paragraphShell anchor'>
+                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                        <p><strong class='orangeHeader'>${val.substring(0, 10).toUpperCase()}</strong>${val.substring(10)}</p>
                     </div>`)
             } else if (val.substring(0, 1) === 'p') {
                 formattedArray.push(`<div class='paragraphShell anchor'>
@@ -451,11 +507,10 @@ function formatNewSections() {
                         <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
                         <p>${val.substring(1)}</p>
                     </div>`)
-            } else if (val.substring(0, 1) === 's') {
+            } else if (val.substring(0, 1) === 'h') {
                 formattedArray.push(`<div class="anchor">
                         <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}header" class="anchorTag"></div>
                         <h1>${val.substring(1).toUpperCase()}</h1>
-                        <h4 class="advancedHeader" id="advancedHead">🜂 Advanced Rule</h4>
                         <div class="underline"></div>
                     </div>`)
             } else if (val.substring(0, 1) === 'm') {
@@ -463,7 +518,7 @@ function formatNewSections() {
                         <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}" class="anchorTag"></div>
                         <h1>${val.substring(1).toProperCase(true)}</h1>
                     </div>`)
-            } else if (val.substring(0, 1) === 'c') {
+            } else if (val.substring(0, 1) === 'b') {
                 formattedArray.push(`<strong class='orangeHeader'>${val.substring(1).toUpperCase()}</strong>`)
             } else if (val.substring(0, 1) === 'q') {
                 pairedInfo = val.split(',')
@@ -473,7 +528,7 @@ function formatNewSections() {
                 <h3> ${pairedInfo[1]}</h3>
             </div>`)
             } else {
-                console.log('something when wrong', val)
+                console.log('something when wrong: ', val)
             }
 
         })
@@ -485,12 +540,239 @@ function formatNewSections() {
     })
 }
 
-massive(connection).then(dbI => {
-    app.set('db', dbI)
-    app.listen(4343, _ => {
-        updateSearch(1)
-        // updateQuickNav(15)
-        // formatNewSections()
-        console.log(`The night lays like a lullaby on the earth 4343`)
+function rollDice(diceString) {
+    if (typeof (diceString) === 'number') {
+        return +Math.floor(Math.random() * Math.floor(diceString)) + 1
+    } else {
+        diceExpressionArray = []
+        let expressionValue = ""
+
+        diceString.replace(/\s/g, '').split('').forEach((val, i, array) => {
+            if (val === '-' || val === '+') {
+                diceExpressionArray.push(expressionValue)
+                if (i !== array.length - 1) {
+                    diceExpressionArray.push(val)
+                }
+                expressionValue = ""
+            }
+            if (!isNaN(+val) || val === 'd' || val === "!") {
+                expressionValue = expressionValue + val;
+            }
+
+            if (i === array.length - 1 && expressionValue !== '') {
+                diceExpressionArray.push(expressionValue);
+            }
+        })
+
+        for (let index = 0; index < diceExpressionArray.length; index++) {
+            let val = diceExpressionArray[index];
+
+            if (val.includes('d')) {
+                let exploding = val.includes('!')
+
+                val = val.split('d')
+                let subtotal = 0
+                for (let i = 0; i <= val[0]; i++) {
+                    if (exploding) {
+                        val[1] = val[1].substring(0, val[1].length - 1)
+
+                        holdingTotal = rollDice(+val[1])
+                        subtotal += rollDice(+val[1])
+                    } else {
+                        subtotal += rollDice(+val[1])
+                    }
+                }
+
+                diceExpressionArray[index] = subtotal
+            }
+        }
+
+        return eval(diceExpressionArray.join(""))
+    }
+}
+
+function calculateAverageOfDice(diceString) {
+    let totalValue = 0
+    diceString
+        .replace(/!| /g, '')
+        .split('+')
+        .forEach(val => {
+            if (val.includes('d')) {
+                val = val.split('d')
+                val[0] = val[0] ? +val[0] : 1
+                console.log(val)
+                totalValue += round((val[0] + (+val[1] * val[0])) / 2)
+            } else {
+                totalValue += +val
+            }
+        })
+    return totalValue
+}
+
+function formatPHB(i, html) {
+    let chapterName = numWords(i)
+        , endHtml = '    </div><script src="js/script.js"></script></body></html>'
+        , route = `../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`;
+
+    if (i === 0) {
+        route = './UpdateSearch/htmlbase.html'
+    } else if (i === 1 || i === 5 || i === 14) {
+        route = `../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`
+    }
+
+    fs.readFile(route, "utf-8", (err, data) => {
+        if (err) { console.log(err) }
+        if (i > 0) {
+            html = html + cleanUniqueHtml(data)
+        } else {
+            html = html + data
+        }
+        if (i === 3) {
+            html = html + endHtml
+            fs.writeFile(`./bonfirePHB.html`, html, (err) => {
+                if (err) console.log(err);
+                console.log(`Successfully Compiled PHB.`);
+            });
+        } else {
+            console.log('compiling chapter ' + ++i)
+            formatPHB(i, html)
+        }
     })
+}
+
+function cleanUniqueHtml(data) {
+    let html = data.replace(/ _ngcontent-c2=""/g, '').replace(/\n|\r|\t/g, '').replace(/\s\s+/g, ' ').split(/<div class=/)
+        , cleanHtml = ''
+        , trackingList = false
+        , trackingSidebar = false
+        , trackingFirstRow = false
+        , oddRow = true
+        , sideTitle = null
+        , sideTitleRow = 0;
+
+    for (i = html.length - 1; i >= 0; i--) {
+        if (html[i].includes('chapterTitle')) {
+            cleanHtml = cleanHtml + html[i].split('</div>')[1].replace(/\<h1 class="chapterTitle">(.*?)\<\/h1>/gs, '<h5>$1</h5>').trim();
+            i = 0
+        }
+    }
+
+    for (i = 0; i <= html.length - 1; i++) {
+        if (html[i].includes('tableTitle')) {
+            trackingFirstRow = true
+            cleanHtml = cleanHtml + `<table style="width:${html[i].replace(/.*width: "(.*?)".*/g, '$1')};border-collapse: collapse;margin-bottom:10px"><tr><th colspan="PLACEHOLDER" style="column-span: all;background: #990000;text-align: left;color: whitesmoke;">` + html[i].replace(/.*<h1.*>(.*?)<\/h1>/g, '$1') + '</th></tr>'
+        } else if (html[i].includes('headerTop')) {
+            sideTitle = html[i].replace(/.*<h1 class="headerSide">(.*?)<\/h1>.*/g, '$1')
+            cleanHtml = cleanHtml + '<tr><td colspan="PLACEHOLDER" style="background: #222;color: whitesmoke;text-align: center;">' + html[i].replace(/.*<h1 class="headerTop">(.*?)<\/h1>.*/g, '$1')+ '</td></tr>'
+        } else if (html[i].includes('tableValue')) {
+            let tableRow ='<tr style="text-align: center;">'
+            ,   row = html[i].split('</p>');
+            if (trackingFirstRow && sideTitle) {
+                cleanHtml = cleanHtml + `<tr style="background: #222;color: whitesmoke;text-align: center;"><th rowspan="PLACEHOLDER">${sideTitle}</th></tr>`
+                cleanHtml = cleanHtml.replace(/colspan="PLACEHOLDER"/gs, `colspan="${row.length}"`)
+                tableRow = '<tr style="background: #5c5c5c;color: whitesmoke;text-align: center;">'
+                trackingFirstRow = false
+                oddRow = false
+            } else if (trackingFirstRow) {
+                cleanHtml = cleanHtml.replace(/colspan="PLACEHOLDER"/gs, `colspan="${row.length-1}"`)
+                tableRow = '<tr style="background: #222;color: whitesmoke;text-align: center;">'
+                trackingFirstRow = false
+                oddRow = false
+            } else {
+                if (oddRow) {
+                    tableRow ='<tr style="text-align: center;background: #ababab;">'
+                }
+                oddRow = !oddRow
+            }
+            row.forEach((val, i, array) => {
+                if (i !== array.length - 1) {
+                    sideTitleRow += sideTitleRow
+                    tableRow = tableRow + '<td>' + val.replace(/.*TableIndividual.*>(.*?)/g, '$1') + '</td>'
+                } else {
+                    tableRow = tableRow + '</tr>'
+                }
+            })
+            if (html[i].includes('</div> </div> </div> </div> </div>')) {
+                cleanHtml = cleanHtml.replace(/rowspan="PLACEHOLDER"/gs, `rowspan="${sideTitleRow}"`)
+                tableRow = tableRow + '</table>'
+            }
+            cleanHtml = cleanHtml + tableRow
+        } else if (html[i].includes('h1')) {
+            index = html[i].match(/(\<h1>).*?(\<\/h1>)/gs);
+            if (index) {
+                cleanHtml = cleanHtml + index[0];
+                if (html[i].match(/🜂 Advanced Rule/g)) {
+                    cleanHtml = cleanHtml + '<p>🜂 Advanced Rule</p>'
+                }
+            }
+        } else if (html[i].includes('h3')) {
+            cleanHtml = cleanHtml + html[i].match(/(\<h3.*>).*?(\<\/h3>)/gs)[0];
+        } else if (html[i].includes('🜂')) {
+            if (!trackingList) {
+                trackingList = true
+                cleanHtml = cleanHtml + '<ul>' + html[i].match(/(\<p>).*?(\<\/p>)/gs)[0].trim().replace(/p>/gs, 'li>');
+            } else if (trackingList && html[i + 1].includes('🜂')) {
+                cleanHtml = cleanHtml + html[i].match(/(\<p>).*?(\<\/p>)/gs)[0].trim().replace(/p>/gs, 'li>');
+            } else {
+                trackingList = false
+                cleanHtml = cleanHtml + html[i].match(/(\<p>).*?(\<\/p>)/gs)[0].trim().replace(/p>/gs, 'li>') + '</ul>';
+            }
+        } else if (html[i].includes('<p>')) {
+            if (html[i].includes('marginBottom')) {
+                cleanHtml = cleanHtml + html[i].match(/(\<p>).*?(\<\/p>)/gs)[0].replace(/<p>/gs, '<p style="margin:0px 0px 10px;">').trim();
+            } else {
+                cleanHtml = cleanHtml + html[i].match(/(\<p>).*?(\<\/p>)/gs)[0].replace(/<p>/gs, '<p style="margin:0px;">').trim();
+            }
+            if (html[i].includes('</div> </div>') && trackingSidebar) {
+                trackingSidebar = false;
+                cleanHtml = cleanHtml + '</td></tr></table>'
+            }
+        } else if (html[i].includes('chartShell')) {
+            let chart = html[i].split('<div>')
+            if (html[i + 1].includes('chartShell')) {
+                if (chart[2] && !chart[2].includes('Servant') && !chart[2].includes('Socialite')) {
+                    cleanHtml = cleanHtml + `<p style="margin:0px;"><strong>${chart[1].split('</')[0]}: ${chart[2].split('</')[0]}</strong></p>`
+                } else if (chart[2]) {
+                    cleanHtml = cleanHtml + `<p style="margin:0px;"><strong>${chart[1].split('</')[0]}<p style="margin:0px;"><strong>${chart[2].split('</')[0]}</strong></p>`
+                } else {
+                    cleanHtml = cleanHtml + `<p style="margin:0px;"><strong>${chart[1].split('</')[0]}</strong></p>`
+                }
+            } else {
+                if (chart[2]) {
+                    cleanHtml = cleanHtml + `<p style="margin:0px 0px 10px;"><strong>${chart[1].split('</')[0]}: ${chart[2].split('</')[0]}</strong></p>`
+                } else {
+                    cleanHtml = cleanHtml + `<p style="margin:0px 0px 10px;"><strong>${chart[1].split('</')[0]}</strong></p>`
+                }
+            }
+            if (html[i].includes('</div> </div> </div>') && trackingSidebar) {
+                trackingSidebar = false;
+                cleanHtml = cleanHtml + '</td></tr></table>'
+            }
+        } else if (html[i].includes('<h2')) {
+            trackingSidebar = true;
+            cleanHtml = cleanHtml + '<table style="border: 3px solid #b45f06;padding: 10px;margin:0px 0px 5px"><tr><th>'
+            cleanHtml = cleanHtml + html[i].match(/(\<h2).*?(\<\/h2>)/gs)[0].trim();
+            cleanHtml = cleanHtml + '</th></tr><tr><td>'
+        } else if (html[i].includes('sidebarShell')) {
+            trackingSidebar = true;
+            cleanHtml = cleanHtml + '<table style="border: 3px solid #b45f06;padding: 10px;margin:0px 0px 5px"><tr><th></th></tr><tr><td>'
+        } else {
+            // console.log(html[i])
+        }
+        cleanHtml = cleanHtml.replace(/<a routerLink='.*'>(.*?)<\/a>/g, '<strong>$1</strong>')
+    }
+    return cleanHtml
+}
+
+
+// massive(connection).then(dbI => {
+//     app.set('db', dbI)
+app.listen(4343, _ => {
+    // updateSearch(1)
+    // updateQuickNav(9)
+    // formatNewSections()
+    // console.log(calculateAverageOfDice("1 + 4d20!+ 3!"))
+    formatPHB(0, '')
+    console.log(`The night lays like a lullaby on the earth 4343`)
 })
+// })

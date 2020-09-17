@@ -627,7 +627,7 @@ function formatPHB(i, html) {
         } else {
             html = html + data
         }
-        if (i === 8) {
+        if (i === 10) {
             html = html + endHtml
             fs.writeFile(`./bonfirePHB.html`, html, (err) => {
                 if (err) console.log(err);
@@ -660,7 +660,7 @@ function cleanUniqueHtml(data) {
     for (i = 0; i <= html.length - 1; i++) {
         if (html[i].includes('tableTitle')) {
             trackingFirstRow = true
-            cleanHtml = cleanHtml + `<table style="width:${html[i].replace(/.*width: "(.*?)".*/g, '$1')};border-collapse: collapse;margin-bottom:10px"><tr><th colspan="PLACEHOLDER" style="column-span: all;background: #990000;text-align: left;color: whitesmoke;">` + html[i].replace(/.*<h1.*>(.*?)<\/h1>/g, '$1') + '</th></tr>'
+            cleanHtml = cleanHtml + `<table style="width:${html[i].replace(/.*width: "(.*?)".*/g, '$1')};border-collapse: collapse;margin-bottom:10px"><tr><th colspan="PLACEHOLDER" style="background: #990000;text-align: left;color: whitesmoke;">` + html[i].replace(/.*<h1.*>(.*?)<\/h1>/g, '$1') + '</th></tr>'
         } else if (html[i].includes('headerTop')) {
             sideTitle = html[i].replace(/.*<h1 class="headerSide">(.*?)<\/h1>.*/g, '$1')
             cleanHtml = cleanHtml + '<tr><td colspan="PLACEHOLDER" style="background: #222;color: whitesmoke;text-align: center;">' + html[i].replace(/.*<h1 class="headerTop">(.*?)<\/h1>.*/g, '$1') + '</td></tr>'
@@ -679,6 +679,8 @@ function cleanUniqueHtml(data) {
                     }
                 })
                 cleanHtml = cleanHtml + '</tr>'
+            } else if (html[i].includes('SkillDescriptionTitle')) {
+                cleanHtml = cleanHtml + `<table style="border-collapse: collapse;margin-bottom:10px;width:325px">`
             } else if (trackingFirstRow && sideTitle) {
                 cleanHtml = cleanHtml + `<tr style="background: #222;color: whitesmoke;text-align: center;"><th rowspan="PLACEHOLDER">${sideTitle}</th></tr>`
                 cleanHtml = cleanHtml.replace(/colspan="PLACEHOLDER"/gs, `colspan="${row.length}"`)
@@ -697,11 +699,24 @@ function cleanUniqueHtml(data) {
                 oddRow = !oddRow
             }
 
-            if (!html[i].includes('kitBottomLine')) {
+            if (html[i].includes('Athletics')||html[i].includes('Lore')||html[i].includes('Streetwise')||html[i].includes('Survival')||html[i].includes('Tactics')||html[i].includes('Trades')) {
+                row.forEach((val, i, array)=> {
+                    if (i !== array.length - 1) {
+                        sideTitleRow += sideTitleRow
+                        tableRow = tableRow + '<td style="background: #222;text-align: left;color: whitesmoke;text-align: center;">' + val.replace(/.*TableIndividual.*>(.*?)/g, '$1') + '</td>'
+                    } else {
+                        tableRow = tableRow + '</tr>'
+                    }
+                })
+            } else if (!html[i].includes('kitBottomLine')) {
                 row.forEach((val, i, array) => {
                     if (i !== array.length - 1) {
                         sideTitleRow += sideTitleRow
-                        tableRow = tableRow + '<td>' + val.replace(/.*TableIndividual.*>(.*?)/g, '$1') + '</td>'
+                        if (val.includes('Skill Name')||val.includes('Base Cost')||val.includes('Stats')) {
+                            tableRow = tableRow + '<td style="background: #990000;text-align: left;color: whitesmoke;text-align: center;">' + val.replace(/.*TableIndividual.*>(.*?)/g, '$1') + '</td>'
+                        } else {
+                            tableRow = tableRow + '<td>' + val.replace(/.*TableIndividual.*>(.*?)/g, '$1') + '</td>'
+                        }
                     } else {
                         tableRow = tableRow + '</tr>'
                     }
@@ -713,12 +728,13 @@ function cleanUniqueHtml(data) {
             if (html[i].includes('</div> </div> </div> </div> </div>')) {
                 cleanHtml = cleanHtml.replace(/rowspan="PLACEHOLDER"/gs, `rowspan="${sideTitleRow}"`)
                 tableRow = tableRow + '</table>'
+                sideTitle = null
                 if (html[i].includes('</div> </div> </div> </div> </div> </div>') && trackingSidebar) {
                     tableRow = tableRow + '</table>'
                 }
             }
             cleanHtml = cleanHtml + tableRow
-        } else if (html[i].includes('h1')) {
+        } else if (html[i].includes('h1')&&!html[i].includes('{{trait | titlecase}}')) {
             index = html[i].match(/(\<h1>).*?(\<\/h1>)/gs);
             if (index) {
                 cleanHtml = cleanHtml + index[0];
@@ -726,6 +742,9 @@ function cleanUniqueHtml(data) {
                     cleanHtml = cleanHtml + '<p>🜂 Advanced Rule</p>'
                 }
             }
+        } else if (html[i].includes('h1')&&html[i].includes('{{trait | titlecase}}')) {
+            trackingSidebar = false;
+            cleanHtml = cleanHtml + '<p>You can find it in Chapter 9 on the Bonfire SRD</p></td></tr></table>'
         } else if (html[i].includes('h3')) {
             cleanHtml = cleanHtml + html[i].match(/(\<h3.*>).*?(\<\/h3>)/gs)[0];
         } else if (html[i].includes('🜂')) {
@@ -782,7 +801,7 @@ function cleanUniqueHtml(data) {
             trackingSidebar = true;
             cleanHtml = cleanHtml + '<table style="border: 3px solid #b45f06;padding: 10px;margin:0px 0px 5px"><tr><th></th></tr><tr><td>'
         } else if (html[i].includes('img')) {
-            cleanHtml = cleanHtml + html[i].match(/<img.*>/gs)[0].replace(/\/..\/..\/../gs, '/bonfireSRD/src/as');
+            cleanHtml = cleanHtml + html[i].match(/<img(.*?)>/gs)[0].replace(/<img(.*?)>/gs, '<h1>$1</h1>');
         } else {
             // console.log(html[i])
         }

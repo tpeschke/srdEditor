@@ -627,7 +627,7 @@ function formatPHB(i, html) {
         } else {
             html = html + data
         }
-        if (i === 3) {
+        if (i === 8) {
             html = html + endHtml
             fs.writeFile(`./bonfirePHB.html`, html, (err) => {
                 if (err) console.log(err);
@@ -663,38 +663,59 @@ function cleanUniqueHtml(data) {
             cleanHtml = cleanHtml + `<table style="width:${html[i].replace(/.*width: "(.*?)".*/g, '$1')};border-collapse: collapse;margin-bottom:10px"><tr><th colspan="PLACEHOLDER" style="column-span: all;background: #990000;text-align: left;color: whitesmoke;">` + html[i].replace(/.*<h1.*>(.*?)<\/h1>/g, '$1') + '</th></tr>'
         } else if (html[i].includes('headerTop')) {
             sideTitle = html[i].replace(/.*<h1 class="headerSide">(.*?)<\/h1>.*/g, '$1')
-            cleanHtml = cleanHtml + '<tr><td colspan="PLACEHOLDER" style="background: #222;color: whitesmoke;text-align: center;">' + html[i].replace(/.*<h1 class="headerTop">(.*?)<\/h1>.*/g, '$1')+ '</td></tr>'
+            cleanHtml = cleanHtml + '<tr><td colspan="PLACEHOLDER" style="background: #222;color: whitesmoke;text-align: center;">' + html[i].replace(/.*<h1 class="headerTop">(.*?)<\/h1>.*/g, '$1') + '</td></tr>'
         } else if (html[i].includes('tableValue')) {
-            let tableRow ='<tr style="text-align: center;">'
-            ,   row = html[i].split('</p>');
-            if (trackingFirstRow && sideTitle) {
+            let tableRow = '<tr style="text-align: center;">'
+                , row = html[i].split('</p>');
+
+            if (html[i].includes('kitBottomLine')) {
+                bottomLine = html[i].match(/kitBottomItem'>(.*?)<\/p>/gs)
+                cleanHtml = cleanHtml + '<tr style="background: #222;color: whitesmoke;text-align: center;">'
+                bottomLine.forEach((val, i) => {
+                    if (i === 0) {
+                        cleanHtml = cleanHtml + '<td colspan="2">' + val.replace(/kitBottomItem'>(.*?)<\/p>/g, '$1') + '</td>'
+                    } else {
+                        cleanHtml = cleanHtml + '<td>' + val.replace(/kitBottomItem'>(.*?)<\/p>/g, '$1') + '</td>'
+                    }
+                })
+                cleanHtml = cleanHtml + '</tr>'
+            } else if (trackingFirstRow && sideTitle) {
                 cleanHtml = cleanHtml + `<tr style="background: #222;color: whitesmoke;text-align: center;"><th rowspan="PLACEHOLDER">${sideTitle}</th></tr>`
                 cleanHtml = cleanHtml.replace(/colspan="PLACEHOLDER"/gs, `colspan="${row.length}"`)
                 tableRow = '<tr style="background: #5c5c5c;color: whitesmoke;text-align: center;">'
                 trackingFirstRow = false
                 oddRow = false
             } else if (trackingFirstRow) {
-                cleanHtml = cleanHtml.replace(/colspan="PLACEHOLDER"/gs, `colspan="${row.length-1}"`)
+                cleanHtml = cleanHtml.replace(/colspan="PLACEHOLDER"/gs, `colspan="${row.length - 1}"`)
                 tableRow = '<tr style="background: #222;color: whitesmoke;text-align: center;">'
                 trackingFirstRow = false
                 oddRow = false
             } else {
                 if (oddRow) {
-                    tableRow ='<tr style="text-align: center;background: #ababab;">'
+                    tableRow = '<tr style="text-align: center;background: #ababab;">'
                 }
                 oddRow = !oddRow
             }
-            row.forEach((val, i, array) => {
-                if (i !== array.length - 1) {
-                    sideTitleRow += sideTitleRow
-                    tableRow = tableRow + '<td>' + val.replace(/.*TableIndividual.*>(.*?)/g, '$1') + '</td>'
-                } else {
-                    tableRow = tableRow + '</tr>'
-                }
-            })
+
+            if (!html[i].includes('kitBottomLine')) {
+                row.forEach((val, i, array) => {
+                    if (i !== array.length - 1) {
+                        sideTitleRow += sideTitleRow
+                        tableRow = tableRow + '<td>' + val.replace(/.*TableIndividual.*>(.*?)/g, '$1') + '</td>'
+                    } else {
+                        tableRow = tableRow + '</tr>'
+                    }
+                })
+            }
+            if (html[i].includes("Rank 1")) {
+                tableRow = '<table style="border-collapse: collapse;margin-bottom:10px">' + tableRow
+            }
             if (html[i].includes('</div> </div> </div> </div> </div>')) {
                 cleanHtml = cleanHtml.replace(/rowspan="PLACEHOLDER"/gs, `rowspan="${sideTitleRow}"`)
                 tableRow = tableRow + '</table>'
+                if (html[i].includes('</div> </div> </div> </div> </div> </div>') && trackingSidebar) {
+                    tableRow = tableRow + '</table>'
+                }
             }
             cleanHtml = cleanHtml + tableRow
         } else if (html[i].includes('h1')) {
@@ -716,12 +737,16 @@ function cleanUniqueHtml(data) {
             } else {
                 trackingList = false
                 cleanHtml = cleanHtml + html[i].match(/(\<p>).*?(\<\/p>)/gs)[0].trim().replace(/p>/gs, 'li>') + '</ul>';
+                if (html[i].includes('</div> </div> </div>') && trackingSidebar) {
+                    trackingSidebar = false;
+                    cleanHtml = cleanHtml + '</td></tr></table>'
+                }
             }
         } else if (html[i].includes('<p>')) {
             if (html[i].includes('marginBottom')) {
                 cleanHtml = cleanHtml + html[i].match(/(\<p>).*?(\<\/p>)/gs)[0].replace(/<p>/gs, '<p style="margin:0px 0px 10px;">').trim();
             } else {
-                cleanHtml = cleanHtml + html[i].match(/(\<p>).*?(\<\/p>)/gs)[0].replace(/<p>/gs, '<p style="margin:0px;">').trim();
+                cleanHtml = cleanHtml + html[i].match(/<p>.*?<\/p>/gs)[0].replace(/<p>/gs, '<p style="margin:0px;">').trim();
             }
             if (html[i].includes('</div> </div>') && trackingSidebar) {
                 trackingSidebar = false;
@@ -756,6 +781,8 @@ function cleanUniqueHtml(data) {
         } else if (html[i].includes('sidebarShell')) {
             trackingSidebar = true;
             cleanHtml = cleanHtml + '<table style="border: 3px solid #b45f06;padding: 10px;margin:0px 0px 5px"><tr><th></th></tr><tr><td>'
+        } else if (html[i].includes('img')) {
+            cleanHtml = cleanHtml + html[i].match(/<img.*>/gs)[0].replace(/\/..\/..\/../gs, '/bonfireSRD/src/as');
         } else {
             // console.log(html[i])
         }

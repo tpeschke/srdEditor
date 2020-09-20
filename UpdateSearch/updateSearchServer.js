@@ -31,50 +31,60 @@ async function updateSearch(endpoint) {
     const db = app.get('db')
         , chapterName = numWords(endpoint)
 
-    let html = { basic: '', advanced: '' }
-
-    fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
-        fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (adverr, advData) => {
-            html.basic = data
+    if (endpoint === 1 || endpoint === 5 || endpoint === 14) {
+        fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
+            if (err) console.log(err);
             let basicDataObject = cleanHTML(data, endpoint)
-            if (!advData) {
-                for (key in basicDataObject) {
-                    insertOrUpdateSearch(key, basicDataObject[key], 'basic', html, endpoint)
-                }
-            } else {
-                html.advanced = advData
-                advancedDataObject = cleanHTML(advData, endpoint)
-                for (key in advancedDataObject) {
-                    insertOrUpdateAdvancedSearch(key, advancedDataObject[key], 'advanced', html, basicDataObject, endpoint)
-                }
+            ,   promiseArray = []
+
+            for (key in basicDataObject) {
+                promiseArray.push(db.basic(key, basicDataObject[key], endpoint).then())
             }
+            
+            Promise.all(promiseArray).then(_ => {
+                console.log(`Successfully Wrote Chapter ${endpoint}.`);
+                if (endpoint !== 15) {
+                    updateSearch(endpoint + 1)
+                } else {
+                    console.log('ALL DONE')
+                }
+            })
+        })
+    } else {
+        fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
+            fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (adverr, advData) => {
+                if (err) console.log(err);
+                let advDataObject = cleanHTML(advData, endpoint)
+                ,   basicDataObject = cleanHTML(data, endpoint)
+                ,   promiseArray = []
 
-            // Promise.all(finalCompare).then(finalIdArray => {
-            //     if (endpoint === 12) {
-            //         updateGreatLibrarySpells()
-            //     } else if (endpoint === 13) {
-            //         updateGreatLibraryMiracles()
-            //     }
+                for (key in basicDataObject) {
+                    promiseArray.push(db.basic(key, basicDataObject[key], endpoint).then())
+                }
+                for (key in advDataObject) {
+                    promiseArray.push(db.advanced(key, advDataObject[key], endpoint).then())
+                }
 
-            fs.writeFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, html.basic, (err) => {
-                fs.writeFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, html.advanced, (err) => {
-                    if (err) console.log(err);
+                // Promise.all(finalCompare).then(finalIdArray => {
+                //     if (endpoint === 12) {
+                //         updateGreatLibrarySpells()
+                //     }
+
+                Promise.all(promiseArray).then(_ => {
                     console.log(`Successfully Wrote Chapter ${endpoint}.`);
                     if (endpoint !== 15) {
-                        // Something is going on with chapter 12 and 13
-                        if (endpoint === 11) { endpoint = 13 }
                         updateSearch(endpoint + 1)
                     } else {
                         console.log('ALL DONE')
                     }
-                });
-            });
+                })
+            })
         })
-    })
+    }
 }
 
 function cleanHTML(data) {
-    html = data.replace(/ _ngcontent-c2=""/g, '');
+    html = data.replace(/ _ngcontent-c2=""/g, '').replace(/\n||\t||\r/g, '');
     newhtml = html.split(/anchor"|anchor'|anchor /)
     let dataObject = {}
 
@@ -104,59 +114,6 @@ function cleanHTML(data) {
     }
 
     return dataObject
-}
-
-function insertOrUpdateSearch(id, content, type, html, endpoint) {
-    const db = app.get('db')
-
-    // check if it's new
-    if (isNaN(id.substring(0, 1)) || id === '') {
-
-        newid = makeid(10)
-        newid = endpoint + newid
-
-        db.query(`insert into srd${type} (linkid, body) values ($1, $2) returning linkid`, [newid, content]).then(res => {
-            let regexId = new RegExp(`${id}`, "g")
-            html[type] = html[type].replace(regexId, newid)
-        });
-    } else {
-        if (content === 'd') {
-            // db.query(`delete from srd${type} where linkid = $1`, [id])
-        } else {
-            // db.query(`insert into srd${type} (linkid, body) values ($1, $2) returning linkid`, [id, content]).then(_ => {
-            // db.query(`update srd${type} set body = $1 where linkid = $2`, [content, id])
-        }
-    }
-    return true
-}
-
-function insertOrUpdateAdvancedSearch(id, content, type, html, basicObject, endpoint) {
-    const db = app.get('db')
-
-    // check if it's in basic
-    if (basicObject[id]) {
-        if (content === 'd') {
-            // db.query(`delete from srdbasic where linkid = $1`, [id])
-        } else if (isNaN(id.substring(0, 1)) || id === '') {
-            newid = makeid(10)
-            newid = endpoint + newid
-
-            // db.query(`insert into srdbasic (linkid, body) values ($1, $2) returning linkid`, [newid, content]).then(res => {
-            let regexId = new RegExp(`${id}`, "g")
-            html.basic = html.basic.replace(regexId, newid)
-            html.advanced = html.advanced.replace(regexId, newid)
-            // });
-        } else {
-            let regexReadied = basicObject[id].replace(/\?/ig, "\\?").replace(/\(/ig, "\\(").replace(/\)/ig, "\\)")
-            let regexContent = new RegExp(`${regexReadied}`, "g")
-            html.basic = html.basic.replace(regexContent, content)
-            // db.query(`update srdbasic set body = $1 where linkid = $2`, [content, id])
-        }
-        // check if it's new
-    } else {
-        insertOrUpdateSearch(id, content, type, html)
-    }
-    return true
 }
 
 function updateGreatLibrarySpells() {
@@ -268,116 +225,6 @@ function insertSpellEffects(spellListObj, spellId, effectType, effectIndex, effe
             let { spellList, checkList, index, db, orderList } = spellListObj
             insertOrUpdateSpell(spellList, checkList, ++index, db, orderList)
         }
-    }
-}
-
-function updateGreatLibraryMiracles() {
-    const db = app.get('db')
-
-    fs.readFile(`../bonfireSRD/src/app/chapters/chapter-thirteen/chapter-thirteen.component.html`, "utf-8", (err, data) => {
-        if (err) { console.log(err) }
-
-        // Update Miracles
-        let miracleArray = []
-        let miracleList = data.split('base rules.</p>')[1].split('<h3>')
-
-        for (i = 1; i < miracleList.length; i++) {
-            let miracle = miracleList[i].split("strong class='orangeHeader'").map((val, index) => {
-                if (val.includes("EFFECT")) {
-                    // breaks up the effect sections
-                    val = val.split('</p>').map(innerVal => {
-                        // strip HTML, line breaks, and remove multiple spaces from those sections
-                        return innerVal.replace(/<(?:.|\n)*?>|<|>|\r\n|\n|\r/gm, '').replace(/\s\s+/g, ' ').trim().replace(/EFFECT /g, '')
-                    })
-                } else {
-                    // strip HTML, line breaks, and remove multiple spaces
-                    val = val.replace(/<(?:.|\n)*?>|<|>|\r\n|\n|\r/gm, '').replace(/\s\s+/g, ' ').trim().replace(/BASE INVOCATION DIE /g, '')
-
-                    if (index === 1) {
-                        val = val.split(' | ')
-                    }
-                }
-
-                return val
-            })
-
-            miracleArray.push(miracle)
-        }
-
-        db.query('select name, id from glmiracles').then(checkList => {
-            db.query('select * from gldomains').then(domainList => {
-                insertOrUpdateMiracle(miracleArray, checkList, 0, db, domainList)
-            })
-        })
-    })
-}
-
-function insertOrUpdateMiracle(miracleList, checkList, index, db, domainList) {
-    let miracle = miracleList[index]
-    let checkListVersion = null
-    if (miracle) {
-        checkListVersion = checkList.find(obj => obj.name === miracle[0])
-    }
-
-    if (index === miracleList.length) {
-        console.log('miracles updated')
-    } else if (checkListVersion) {
-        console.log(miracle[0])
-        db.query('update glmiracles set invocationdie = $2 where name = $1', [miracle[0], miracle[2]]).then(_ => {
-            insertMiracleDomains({ miracleList, checkList, index, db, domainList, miracle }, miracle[1], checkListVersion.id, 0)
-        })
-    } else {
-        console.log(miracle[0])
-        db.query('insert into glmiracles (name, invocationdie) values ($1, $2); select id from glmiracles where name = $1', [miracle[0], miracle[2]]).then(newMiracle => {
-            insertMiracleDomains({ miracleList, checkList, index, db, domainList, miracle }, miracle[1], newMiracle[0].id, 0)
-        })
-    }
-}
-
-function insertMiracleDomains(miraclesListObj, miraclesDomains, miraclesId, index) {
-    if (index === miraclesDomains.length) {
-        miraclesListObj.db.query('select Count(id) from glmiracleeffects where miracleid = $1', [miraclesId]).then(effectLength => {
-            insertMiracleEffects(miraclesListObj, miraclesId, 0, +effectLength[0].count)
-        })
-    } else {
-        let { db, domainList } = miraclesListObj
-        db.query('select * from glmiracledomains where miracleid = $1', [miraclesId]).then(currentDomainListFormiracles => {
-            let idArray = miraclesDomains.map(val => domainList.find(obj => obj.name === val).id)
-
-            if (!currentDomainListFormiracles.find(obj => obj.domainid === idArray[index])) {
-                db.query('insert into glmiracledomains (miracleid, domainid) values ($1, $2)', [miraclesId, idArray[index]]).then(_ => {
-                    insertMiracleDomains(miraclesListObj, miraclesDomains, miraclesId, ++index)
-                })
-            } else {
-                insertMiracleDomains(miraclesListObj, miraclesDomains, miraclesId, ++index)
-            }
-        })
-    }
-}
-
-function insertMiracleEffects(miracleListObj, miracleId, effectIndex, effectLength) {
-
-    let miracleEffect = miracleListObj.miracle[3]
-
-    if (effectLength > miracleEffect.length) {
-        miracleListObj.db.query(`delete from glmiracleeffects where miracleid = $1 and index > $2`, [miracleId, miracleEffect.length - 1]).then(_ => {
-            insertMiracleEffects(miracleListObj, miracleId, effectIndex, effectIndex)
-        })
-    } else if (effectLength <= effectIndex && effectIndex <= miracleEffect.length - 1 && miracleEffect[effectIndex] !== '') {
-        miracleListObj.db.query(`insert into glmiracleeffects (miracleid, index, effect) values ($1, $2, $3)`, [miracleId, effectIndex, miracleEffect[effectIndex]]).then(_ => {
-            insertMiracleEffects(miracleListObj, miracleId, ++effectIndex, effectLength)
-        })
-    } else if (effectIndex <= miracleEffect.length - 1 && miracleEffect[effectIndex] !== '') {
-        if (effectLength === 0) {
-            insertMiracleEffects(miracleListObj, miracleId, ++effectIndex, ++effectLength)
-        } else {
-            miracleListObj.db.query(`update glmiracleeffects set effect = $3 where miracleid = $1 and index = $2`, [miracleId, effectIndex, miracleEffect[effectIndex]]).then(_ => {
-                insertMiracleEffects(miracleListObj, miracleId, ++effectIndex, effectLength)
-            })
-        }
-    } else {
-        let { miracleList, checkList, index, db, domainList } = miracleListObj
-        insertOrUpdateMiracle(miracleList, checkList, ++index, db, domainList)
     }
 }
 
@@ -627,7 +474,7 @@ function formatPHB(i, html) {
         } else {
             html = html + data
         }
-        if (i === 10) {
+        if (i === 15) {
             html = html + endHtml
             fs.writeFile(`./bonfirePHB.html`, html, (err) => {
                 if (err) console.log(err);
@@ -699,8 +546,8 @@ function cleanUniqueHtml(data) {
                 oddRow = !oddRow
             }
 
-            if (html[i].includes('Athletics')||html[i].includes('Lore')||html[i].includes('Streetwise')||html[i].includes('Survival')||html[i].includes('Tactics')||html[i].includes('Trades')) {
-                row.forEach((val, i, array)=> {
+            if (html[i].includes('Athletics') || html[i].includes('Lore') || html[i].includes('Streetwise') || html[i].includes('Survival') || html[i].includes('Tactics') || html[i].includes('Trades')) {
+                row.forEach((val, i, array) => {
                     if (i !== array.length - 1) {
                         sideTitleRow += sideTitleRow
                         tableRow = tableRow + '<td style="background: #222;text-align: left;color: whitesmoke;text-align: center;">' + val.replace(/.*TableIndividual.*>(.*?)/g, '$1') + '</td>'
@@ -708,14 +555,18 @@ function cleanUniqueHtml(data) {
                         tableRow = tableRow + '</tr>'
                     }
                 })
+            } else if (html[i].includes('Swords') || html[i].includes('Sidearms') || html[i].includes('Axes') || html[i].includes('Trauma') || html[i].includes('Polearms') && !html[i].includes('>15</p>')) {
+                tableRow = tableRow + '<td colspan="8" style="background: rgb(100, 100, 100);text-align: left;color: whitesmoke;text-align: center;">' + html[i].replace(/.*TableIndividual.*>(.*?)<\/p>.*/g, '$1') + '</td></tr>'
+            } else if (html[i].includes('Thrown</p>') || html[i].includes('Firearms') || html[i].includes('Mechanical')) {
+                tableRow = tableRow + '<td colspan="7" style="background: rgb(100, 100, 100);text-align: left;color: whitesmoke;text-align: center;">' + html[i].replace(/.*TableIndividual.*>(.*?)<\/p>.*/g, '$1') + '</td></tr>'
             } else if (!html[i].includes('kitBottomLine')) {
                 row.forEach((val, i, array) => {
                     if (i !== array.length - 1) {
                         sideTitleRow += sideTitleRow
-                        if (val.includes('Skill Name')||val.includes('Base Cost')||val.includes('Stats')) {
+                        if (val.includes('Skill Name') || val.includes('Base Cost') || val.includes('Stats')) {
                             tableRow = tableRow + '<td style="background: #990000;text-align: left;color: whitesmoke;text-align: center;">' + val.replace(/.*TableIndividual.*>(.*?)/g, '$1') + '</td>'
                         } else {
-                            tableRow = tableRow + '<td>' + val.replace(/.*TableIndividual.*>(.*?)/g, '$1') + '</td>'
+                            tableRow = tableRow + '<td>' + val.replace(/.*TableIndividual'>(.*?)/g, '$1') + '</td>'
                         }
                     } else {
                         tableRow = tableRow + '</tr>'
@@ -734,7 +585,7 @@ function cleanUniqueHtml(data) {
                 }
             }
             cleanHtml = cleanHtml + tableRow
-        } else if (html[i].includes('h1')&&!html[i].includes('{{trait | titlecase}}')) {
+        } else if (html[i].includes('h1') && !html[i].includes('{{trait | titlecase}}')) {
             index = html[i].match(/(\<h1>).*?(\<\/h1>)/gs);
             if (index) {
                 cleanHtml = cleanHtml + index[0];
@@ -742,8 +593,9 @@ function cleanUniqueHtml(data) {
                     cleanHtml = cleanHtml + '<p>🜂 Advanced Rule</p>'
                 }
             }
-        } else if (html[i].includes('h1')&&html[i].includes('{{trait | titlecase}}')) {
+        } else if (html[i].includes('h1') && html[i].includes('{{trait | titlecase}}')) {
             trackingSidebar = false;
+            sideTitle = null
             cleanHtml = cleanHtml + '<p>You can find it in Chapter 9 on the Bonfire SRD</p></td></tr></table>'
         } else if (html[i].includes('h3')) {
             cleanHtml = cleanHtml + html[i].match(/(\<h3.*>).*?(\<\/h3>)/gs)[0];
@@ -758,6 +610,7 @@ function cleanUniqueHtml(data) {
                 cleanHtml = cleanHtml + html[i].match(/(\<p>).*?(\<\/p>)/gs)[0].trim().replace(/p>/gs, 'li>') + '</ul>';
                 if (html[i].includes('</div> </div> </div>') && trackingSidebar) {
                     trackingSidebar = false;
+                    sideTitle = null
                     cleanHtml = cleanHtml + '</td></tr></table>'
                 }
             }
@@ -769,6 +622,7 @@ function cleanUniqueHtml(data) {
             }
             if (html[i].includes('</div> </div>') && trackingSidebar) {
                 trackingSidebar = false;
+                sideTitle = null
                 cleanHtml = cleanHtml + '</td></tr></table>'
             }
         } else if (html[i].includes('chartShell')) {
@@ -790,6 +644,7 @@ function cleanUniqueHtml(data) {
             }
             if (html[i].includes('</div> </div> </div>') && trackingSidebar) {
                 trackingSidebar = false;
+                sideTitle = null
                 cleanHtml = cleanHtml + '</td></tr></table>'
             }
         } else if (html[i].includes('<h2')) {
@@ -811,14 +666,14 @@ function cleanUniqueHtml(data) {
 }
 
 
-// massive(connection).then(dbI => {
-//     app.set('db', dbI)
-app.listen(4343, _ => {
-    // updateSearch(1)
-    // updateQuickNav(9)
-    // formatNewSections()
-    // console.log(calculateAverageOfDice("1 + 4d20!+ 3!"))
-    formatPHB(0, '')
-    console.log(`The night lays like a lullaby on the earth 4343`)
+massive(connection).then(dbI => {
+    app.set('db', dbI)
+    app.listen(4343, _ => {
+        updateSearch(1)
+        // updateQuickNav(9)
+        // formatNewSections()
+        // console.log(calculateAverageOfDice("1 + 4d20!+ 3!"))
+        // formatPHB(0, '')
+        console.log(`The night lays like a lullaby on the earth 4343`)
+    })
 })
-// })

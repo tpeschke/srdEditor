@@ -1,0 +1,1 @@
+, {linkid: 'h', body: 'Stat Score Damage', jump: '15hbYNKwyrdVf'}, {linkid: 'h', body: 'Falling Damage', jump: '15hOfPmmhELBY'}, {linkid: 'h', body: 'Illumination', jump: '15hLzcrnSHGfR'}, {linkid: 'h', body: 'Sizing & Size Charts', jump: 'sizingandsizecharts'}, {linkid: 'h', body: 'Long-term Exhaustion', jump: '15hfrDRlgsYQh'}

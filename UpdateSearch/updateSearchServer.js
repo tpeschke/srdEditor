@@ -27,11 +27,27 @@ function makeid(length) {
     return result;
 }
 
+function titleCase(str) {
+    str = str.toLowerCase();
+    str = str.split(' ');
+
+    for (var i = 0; i < str.length; i++) {
+        str[i] = str[i].charAt(0).toUpperCase() + str[i].slice(1);
+    }
+
+    // Step 4. Return the output
+    return str.join(' '); // ["I'm", "A", "Little", "Tea", "Pot"].join(' ') => "I'm A Little Tea Pot"
+}
+
 async function updateSearch(endpoint) {
     const db = app.get('db')
-        , chapterName = numWords(endpoint)
+    let chapterName = numWords(endpoint)
 
-    if (endpoint === 1 || endpoint === 5 || endpoint === 14) {
+    if (endpoint >= 7) {
+        chapterName = numWords(endpoint + 1)
+    }
+
+    if (endpoint === 1 || endpoint === 5 || endpoint === 13) {
         fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
             if (err) console.log(err);
             let basicDataObject = cleanHTML(data, endpoint)
@@ -40,10 +56,10 @@ async function updateSearch(endpoint) {
             for (key in basicDataObject) {
                 promiseArray.push(db.basic(key, basicDataObject[key], endpoint).then())
             }
-            
+
             Promise.all(promiseArray).then(_ => {
                 console.log(`Successfully Wrote Chapter ${endpoint}.`);
-                if (endpoint !== 15) {
+                if (endpoint !== 14) {
                     updateSearch(endpoint + 1)
                 } else {
                     console.log('ALL DONE')
@@ -72,7 +88,7 @@ async function updateSearch(endpoint) {
 
                 Promise.all(promiseArray).then(_ => {
                     console.log(`Successfully Wrote Chapter ${endpoint}.`);
-                    if (endpoint !== 15) {
+                    if (endpoint !== 14) {
                         updateSearch(endpoint + 1)
                     } else {
                         console.log('ALL DONE')
@@ -234,8 +250,8 @@ async function updateQuickNav(endpoint) {
 
     let html = "";
 
-    fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (err, data) => {
-        // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
+    // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (err, data) => {
+        fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
         if (err) { console.log(err) }
         html = data.replace(/ _ngcontent-c2=""/g, '');
         newhtml = html.split(/anchor"|anchor'|anchor /)
@@ -257,15 +273,16 @@ async function updateQuickNav(endpoint) {
                 // strip final bits of HTML
                 let section = newhtml[i].replace(/(\r\n|\n|\r)/gm, '').match(/<h.*?>(.*?)<\/h|<p.*?>(.*?)<\/p|<img.*?>/g)
 
+                
                 if (newhtml[i].indexOf('<h3>') !== -1) {
-                    quickNav = quickNav + `{linkid: 'hg', body: '${section[0].replace(/<h.*?>|<\/h/g, '').toUpperCase()}', jump: '${id}'}, `
+                    quickNav = quickNav + `, {linkid: 'hg', body: '${section[0].replace(/<h.*?>|<\/h/g, '').toUpperCase()}', jump: '${id}'}`
                 } else if (newhtml[i].indexOf('<h1>') !== -1) {
-                    quickNav = quickNav + `{linkid: 'h', body: '${section[0].replace(/<h.*?>|<\/h/g, '').toUpperCase()}', jump: '${id}'}, `
+                    quickNav = quickNav + `, {linkid: 'h', body: '${section[0].replace(/<h.*?>|<\/h/g, '')}', jump: '${id}'}`
                 }
             }
         }
 
-        fs.writeFile(`../quicknav.txt`, quickNav, (err) => {
+        fs.writeFile(`./quicknav.txt`, quickNav, (err) => {
             if (err) console.log(err);
             console.log(`Successfully Created QuickNav for Chapter ${endpoint}.`);
         });
@@ -286,62 +303,62 @@ function formatNewSections() {
                         <h3>${val.substring(1).toUpperCase()}</h3>
                     </div>`)
                 //AND Base Drain & Base Range
-            } else if (val.substring(0, 5) === 'Drain') {
-                formattedArray.push(
-                    `<div class='paragraphShell anchor'>
-                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                        <p><strong class='orangeHeader'>${val.substring(0, 5).toUpperCase()}</strong>${val.substring(5)}</p>
-                    </div>`)
-            } else if (val.substring(0, 9) === 'Tradition') {
-                formattedArray.push(
-                    `<div class='paragraphShell anchor'>
-                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                        <p><strong class='orangeHeader'>${val.substring(0, 9).toUpperCase()}</strong>${val.substring(9)}</p>
-                    </div>`)
-            } else if (val.substring(0, 10) === 'Base Drain') {
-                formattedArray.push(
-                    `<div class='paragraphShell anchor'>
-                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                        <p><strong class='orangeHeader'>${val.substring(0, 10).toUpperCase()}</strong>${val.substring(10)}</p>
-                    </div>`)
-            } else if (val.substring(0, 10) === 'Base Range') {
-                formattedArray.push(
-                    `<div class='paragraphShell anchor'>
-                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                        <p><strong class='orangeHeader'>${val.substring(0, 10).toUpperCase()}</strong>${val.substring(10)}</p>
-                    </div>`)
-            } else if (val.substring(0, 8) === 'Interval') {
-                formattedArray.push(
-                    `<div class='paragraphShell anchor'>
-                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                        <p><strong class='orangeHeader'>${val.substring(0, 8).toUpperCase()}</strong>${val.substring(8)}</p>
-                    </div>`)
-            } else if (val.substring(0, 6) === 'Effect') {
-                formattedArray.push(
-                    `<div class='paragraphShell anchor'>
-                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                        <p><strong class='orangeHeader'>${val.substring(0, 6).toUpperCase()}</strong>${val.substring(6)}</p>
-                    </div>`)
-            } else if (val.substring(0, 5) === 'Stack') {
-                formattedArray.push(
-                    `<div class='paragraphShell marginBottom anchor'>
-                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                        <p><strong class='orangeHeader'>${val.substring(0, 5).toUpperCase()}</strong>${val.substring(5)}</p>
-                    </div>`)
-            } else if (val.substring(0, 10) === 'Components') {
-                formattedArray.push(
-                    `<div class='paragraphShell anchor'>
-                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                        <p><strong class='orangeHeader'>${val.substring(0, 10).toUpperCase()}</strong>${val.substring(10)}</p>
-                    </div>`)
+                // } else if (val.substring(0, 5) === 'Drain') {
+                //     formattedArray.push(
+                //         `<div class='paragraphShell anchor'>
+                //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                //             <p><strong class='orangeHeader'>${val.substring(0, 5).toUpperCase()}</strong>${val.substring(5)}</p>
+                //         </div>`)
+                // } else if (val.substring(0, 9) === 'Tradition') {
+                //     formattedArray.push(
+                //         `<div class='paragraphShell anchor'>
+                //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                //             <p><strong class='orangeHeader'>${val.substring(0, 9).toUpperCase()}</strong>${val.substring(9)}</p>
+                //         </div>`)
+                // } else if (val.substring(0, 10) === 'Base Drain') {
+                //     formattedArray.push(
+                //         `<div class='paragraphShell anchor'>
+                //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                //             <p><strong class='orangeHeader'>${val.substring(0, 10).toUpperCase()}</strong>${val.substring(10)}</p>
+                //         </div>`)
+                // } else if (val.substring(0, 10) === 'Base Range') {
+                //     formattedArray.push(
+                //         `<div class='paragraphShell anchor'>
+                //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                //             <p><strong class='orangeHeader'>${val.substring(0, 10).toUpperCase()}</strong>${val.substring(10)}</p>
+                //         </div>`)
+                // } else if (val.substring(0, 8) === 'Interval') {
+                //     formattedArray.push(
+                //         `<div class='paragraphShell anchor'>
+                //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                //             <p><strong class='orangeHeader'>${val.substring(0, 8).toUpperCase()}</strong>${val.substring(8)}</p>
+                //         </div>`)
+                // } else if (val.substring(0, 6) === 'Effect') {
+                //     formattedArray.push(
+                //         `<div class='paragraphShell anchor'>
+                //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                //             <p><strong class='orangeHeader'>${val.substring(0, 6).toUpperCase()}</strong>${val.substring(6)}</p>
+                //         </div>`)
+                // } else if (val.substring(0, 5) === 'Stack') {
+                //     formattedArray.push(
+                //         `<div class='paragraphShell marginBottom anchor'>
+                //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                //             <p><strong class='orangeHeader'>${val.substring(0, 5).toUpperCase()}</strong>${val.substring(5)}</p>
+                //         </div>`)
+                // } else if (val.substring(0, 10) === 'Components') {
+                //     formattedArray.push(
+                //         `<div class='paragraphShell anchor'>
+                //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                //             <p><strong class='orangeHeader'>${val.substring(0, 10).toUpperCase()}</strong>${val.substring(10)}</p>
+                //         </div>`)
             } else if (val.substring(0, 1) === 'p') {
                 formattedArray.push(`<div class='paragraphShell anchor'>
                         <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
@@ -374,12 +391,17 @@ function formatNewSections() {
                 <h3>${pairedInfo[0].substring(1)}</h3>
                 <h3> ${pairedInfo[1]}</h3>
             </div>`)
+            } else if (val.substring(0, 1) === 'y') {
+                formattedArray.push(`<div class="anchor marginBottom">
+                        <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}majorheader" class="anchorTag"></div>
+                        <h5>${val.substring(1)}</h5>
+                    </div>`)
             } else {
                 console.log('something when wrong: ', val)
             }
 
         })
-        fs.writeFile(`../formated.html`, formattedArray.join(''), (err) => {
+        fs.writeFile(`./formated.html`, formattedArray.join(''), (err) => {
             // fs.writeFile(`./chapter-${chapterName}.component.html`, html, (err) => {
             if (err) console.log(err);
             console.log(`All Done.`);
@@ -390,6 +412,8 @@ function formatNewSections() {
 function rollDice(diceString) {
     if (typeof (diceString) === 'number') {
         return +Math.floor(Math.random() * Math.floor(diceString)) + 1
+    } else if (!diceString) {
+        return 0
     } else {
         diceExpressionArray = []
         let expressionValue = ""
@@ -665,12 +689,38 @@ function cleanUniqueHtml(data) {
     return cleanHtml
 }
 
+function objectFromTable() {
+    tableString = ''
+    fs.readFile(`../bonfireSRD/src/app/chapters/chapter-eleven/chapter-eleven-advanced/chapter-eleven-advanced.component.html`, "utf-8", (adverr, advData) => {
+        // advData = advData.replace(/ _ngcontent-c2=""/g, '').replace(/\n||\t||\r/g, '');
+        advData.split('tableOverflowWindow').forEach(table => {
+            if (table.includes('Local Market') && table.includes("<h1 class='tableTitle'>")  && !table.includes("Kit")) {
+                tableString += `'${table.match(/<h1 class='tableTitle'>(.*?)<\/h1>/)[1]}': [`
+            }
+            table.split("<div class='tableValue'>").forEach((content, index) => {
+                if (index > 1) {
+                    // console.log(content.match(/<p class='equipmentvalue TableIndividual'>(.*?)<\/p>/g))
+                    if (content.match(/<p class='equipmentvalue TableIndividual'>(.*?)<\/p>/g)) {
+                        tableString += `{ name: '${content.match(/<p class='equipmentvalue TableIndividual'>(.*?)<\/p>/g)[0].match(/<p class='equipmentvalue TableIndividual'>(.*?)<\/p>/)[1]}', size: '${content.match(/<p class='equipmentvalue TableIndividual'>(.*?)<\/p>/g)[1].match(/<p class='equipmentvalue TableIndividual'>(.*?)<\/p>/)[1]}', price: ${content.match(/<p class='equipmentvalue TableIndividual'>(.*?)<\/p>/g)[2].match(/<p class='equipmentvalue TableIndividual'>(.*?)<\/p>/)[1]} },`
+                    }
+                }
+            })
+            tableString += "],"
+        })
+        fs.writeFile(`./object.js`, tableString, (err) => {
+            if (err) console.log(err);
+            console.log(`All Done.`);
+        });
+    })
+}
 
 massive(connection).then(dbI => {
     app.set('db', dbI)
     app.listen(4343, _ => {
+        // objectFromTable()
+        // console.log(rollDice("d6-8"))
         updateSearch(1)
-        // updateQuickNav(9)
+        // updateQuickNav(15)
         // formatNewSections()
         // console.log(calculateAverageOfDice("1 + 4d20!+ 3!"))
         // formatPHB(0, '')

@@ -51,14 +51,14 @@ async function updateSearch(endpoint) {
         fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
             if (err) console.log(err);
             let basicDataObject = cleanHTML(data, endpoint)
-            ,   promiseArray = []
+                , promiseArray = []
 
             for (key in basicDataObject) {
                 promiseArray.push(db.basic(key, basicDataObject[key], endpoint).then())
             }
 
             Promise.all(promiseArray).then(_ => {
-                console.log(`Successfully Wrote Chapter ${endpoint}.`);
+                console.log(`Successfully Updated Chapter ${endpoint}'s Search`);
                 if (endpoint !== 14) {
                     updateSearch(endpoint + 1)
                 } else {
@@ -71,8 +71,8 @@ async function updateSearch(endpoint) {
             fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (adverr, advData) => {
                 if (err) console.log(err);
                 let advDataObject = cleanHTML(advData, endpoint)
-                ,   basicDataObject = cleanHTML(data, endpoint)
-                ,   promiseArray = []
+                    , basicDataObject = cleanHTML(data, endpoint)
+                    , promiseArray = []
 
                 for (key in basicDataObject) {
                     promiseArray.push(db.basic(key, basicDataObject[key], endpoint).then())
@@ -87,7 +87,7 @@ async function updateSearch(endpoint) {
                 //     }
 
                 Promise.all(promiseArray).then(_ => {
-                    console.log(`Successfully Wrote Chapter ${endpoint}.`);
+                    console.log(`Successfully Updated Chapter ${endpoint}'s Search`);
                     if (endpoint !== 14) {
                         updateSearch(endpoint + 1)
                     } else {
@@ -251,7 +251,7 @@ async function updateQuickNav(endpoint) {
     let html = "";
 
     // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (err, data) => {
-        fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
+    fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
         if (err) { console.log(err) }
         html = data.replace(/ _ngcontent-c2=""/g, '');
         newhtml = html.split(/anchor"|anchor'|anchor /)
@@ -273,7 +273,7 @@ async function updateQuickNav(endpoint) {
                 // strip final bits of HTML
                 let section = newhtml[i].replace(/(\r\n|\n|\r)/gm, '').match(/<h.*?>(.*?)<\/h|<p.*?>(.*?)<\/p|<img.*?>/g)
 
-                
+
                 if (newhtml[i].indexOf('<h3>') !== -1) {
                     quickNav = quickNav + `, {linkid: 'hg', body: '${section[0].replace(/<h.*?>|<\/h/g, '').toUpperCase()}', jump: '${id}'}`
                 } else if (newhtml[i].indexOf('<h1>') !== -1) {
@@ -485,9 +485,13 @@ function formatPHB(i, html) {
         , endHtml = '    </div><script src="js/script.js"></script></body></html>'
         , route = `../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`;
 
+    if (i >= 7) {
+        chapterName = numWords(i + 1)
+    }
+
     if (i === 0) {
         route = './UpdateSearch/htmlbase.html'
-    } else if (i === 1 || i === 5 || i === 14) {
+    } else {
         route = `../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`
     }
 
@@ -498,7 +502,7 @@ function formatPHB(i, html) {
         } else {
             html = html + data
         }
-        if (i === 15) {
+        if (i === 14) {
             html = html + endHtml
             fs.writeFile(`./bonfirePHB.html`, html, (err) => {
                 if (err) console.log(err);
@@ -694,7 +698,7 @@ function objectFromTable() {
     fs.readFile(`../bonfireSRD/src/app/chapters/chapter-eleven/chapter-eleven-advanced/chapter-eleven-advanced.component.html`, "utf-8", (adverr, advData) => {
         // advData = advData.replace(/ _ngcontent-c2=""/g, '').replace(/\n||\t||\r/g, '');
         advData.split('tableOverflowWindow').forEach(table => {
-            if (table.includes('Local Market') && table.includes("<h1 class='tableTitle'>")  && !table.includes("Kit")) {
+            if (table.includes('Local Market') && table.includes("<h1 class='tableTitle'>") && !table.includes("Kit")) {
                 tableString += `'${table.match(/<h1 class='tableTitle'>(.*?)<\/h1>/)[1]}': [`
             }
             table.split("<div class='tableValue'>").forEach((content, index) => {

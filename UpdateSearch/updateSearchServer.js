@@ -6,7 +6,8 @@ const { connection } = require('./servStuff')
     , fs = require('fs')
     , numWords = require('num-words')
     , _ = require('lodash');
-const { round } = require('lodash');
+const { round } = require('lodash')
+    , { tables, multipliers } = require('./table.js');
 
 const app = new express()
 app.use(bodyParser.json())
@@ -43,6 +44,10 @@ async function updateSearch(endpoint) {
     const db = app.get('db')
     let chapterName = numWords(endpoint)
 
+    if (endpoint === 1) {
+        console.log('cleaning db')
+        await db.cleanUpDB()
+    }
     if (endpoint >= 7) {
         chapterName = numWords(endpoint + 1)
     }
@@ -118,10 +123,10 @@ function cleanHTML(data) {
             }
 
             // strip final bits of HTML
-            let section = newhtml[i].replace(/(\r\n|\n|\r)/gm, '').replace(/\s\s+/g, ' ').match(/<h.*?>(.*?)<\/h|<p.*?>(.*?)<\/p/g)
+            let section = newhtml[i].replace(/(\r\n|\n|\r)/gm, '').replace(/\s\s+/g, ' ').match(/<h.*?>(.*?)<\/h|<p.*?>(.*?)<\/p/g).replace(/class='orangeHeader'/g, 'style="color:#B45F06;"')
             // this will also catch images with ids but it will result in section being null so this is just tell it to ignore those
             if (section) {
-                section = section[0].replace(/<strong.*?>|<\/strong>|<a.*?>|<\/a>/g, '')
+                section = section[0].replace(/<strong.*?>|<\/strong>|<a.*?>|<\/a>/g, '').replace(/class='orangeHeader'/g, ' style="color:#B45F06;"')
                 section = section.split('>')[1].split('<')[0]
 
                 dataObject[id] = section
@@ -483,7 +488,7 @@ function calculateAverageOfDice(diceString) {
 function formatPHB(i, html) {
     let chapterName = numWords(i)
         , endHtml = '    </div><script src="js/script.js"></script></body></html>'
-        , route = `../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`;
+        , route = `../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`;
 
     if (i >= 7) {
         chapterName = numWords(i + 1)
@@ -532,10 +537,15 @@ function cleanUniqueHtml(data) {
         }
     }
 
+    equipment = null
     for (i = 0; i <= html.length - 1; i++) {
         if (html[i].includes('tableTitle')) {
             trackingFirstRow = true
-            cleanHtml = cleanHtml + `<table style="width:${html[i].replace(/.*width: "(.*?)".*/g, '$1')};border-collapse: collapse;margin-bottom:10px"><tr><th colspan="PLACEHOLDER" style="background: #990000;text-align: left;color: whitesmoke;">` + html[i].replace(/.*<h1.*>(.*?)<\/h1>/g, '$1') + '</th></tr>'
+            if (html[i].includes('width: ')) {
+                cleanHtml = cleanHtml + `<table style="width:${html[i].replace(/.*width: "(.*?)".*/g, '$1')};border-collapse: collapse;margin-bottom:10px"><tr><th colspan="PLACEHOLDER" style="background: #990000;text-align: left;color: whitesmoke;">` + html[i].replace(/.*<h1.*>(.*?)<\/h1>/g, '$1') + '</th></tr>'
+            } else {
+                cleanHtml = cleanHtml + `<table style="border-collapse: collapse;margin-bottom:10px"><tr><th colspan="PLACEHOLDER" style="background: #990000;text-align: left;color: whitesmoke;">` + html[i].replace(/.*<h1.*>(.*?)<\/h1>/g, '$1') + '</th></tr>'
+            }
         } else if (html[i].includes('headerTop')) {
             sideTitle = html[i].replace(/.*<h1 class="headerSide">(.*?)<\/h1>.*/g, '$1')
             cleanHtml = cleanHtml + '<tr><td colspan="PLACEHOLDER" style="background: #222;color: whitesmoke;text-align: center;">' + html[i].replace(/.*<h1 class="headerTop">(.*?)<\/h1>.*/g, '$1') + '</td></tr>'
@@ -543,9 +553,13 @@ function cleanUniqueHtml(data) {
             let tableRow = '<tr style="text-align: center;">'
                 , row = html[i].split('</p>');
 
+            if (html[i].includes('*ngFor="let content of ')) {
+                equipment = html[i].match(/tables.(.*?)">/g, '$1')[0].replace(/tables./g, "").replace(/">/g, "")
+            }
+
             if (html[i].includes('kitBottomLine')) {
                 bottomLine = html[i].match(/kitBottomItem'>(.*?)<\/p>/gs)
-                cleanHtml = cleanHtml + '<tr style="background: #222;color: whitesmoke;text-align: center;">'
+                cleanHtml = cleanHtml + '<tr style="background: #222;color: whitesmoke;text-align: center;margin:0px 0px 10px">'
                 bottomLine.forEach((val, i) => {
                     if (i === 0) {
                         cleanHtml = cleanHtml + '<td colspan="2">' + val.replace(/kitBottomItem'>(.*?)<\/p>/g, '$1') + '</td>'
@@ -612,6 +626,10 @@ function cleanUniqueHtml(data) {
                     tableRow = tableRow + '</table>'
                 }
             }
+            if (equipment) {
+                tableRow = getEquipmentRows(equipment)
+                equipment = null
+            }
             cleanHtml = cleanHtml + tableRow
         } else if (html[i].includes('h1') && !html[i].includes('{{trait | titlecase}}')) {
             index = html[i].match(/(\<h1>).*?(\<\/h1>)/gs);
@@ -644,9 +662,9 @@ function cleanUniqueHtml(data) {
             }
         } else if (html[i].includes('<p>')) {
             if (html[i].includes('marginBottom')) {
-                cleanHtml = cleanHtml + html[i].match(/(\<p>).*?(\<\/p>)/gs)[0].replace(/<p>/gs, '<p style="margin:0px 0px 10px;">').trim();
+                cleanHtml = cleanHtml + html[i].match(/(\<p>).*?(\<\/p>)/gs)[0].replace(/<p>/gs, '<p style="margin:0px 0px 10px;">').trim().replace(/class='orangeHeader'/gi, 'style="color:#B45F06;"');
             } else {
-                cleanHtml = cleanHtml + html[i].match(/<p>.*?<\/p>/gs)[0].replace(/<p>/gs, '<p style="margin:0px;">').trim();
+                cleanHtml = cleanHtml + html[i].match(/<p>.*?<\/p>/gs)[0].replace(/<p>/gs, '<p style="margin:0px;">').trim().replace(/class='orangeHeader'/gi, 'style="color:#B45F06;"');
             }
             if (html[i].includes('</div> </div>') && trackingSidebar) {
                 trackingSidebar = false;
@@ -693,6 +711,28 @@ function cleanUniqueHtml(data) {
     return cleanHtml
 }
 
+function getEquipmentRows(table) {
+    rows = ""
+    tables[table].forEach((item, i) => {
+        //<tr style="text-align: center;background: #ababab;">
+        if (i % 2 === 0) {
+            rows += '<tr style="text-align: center;">'
+        } else {
+            rows += '<tr style="text-align: center;background: #ababab;">'
+        }
+
+        rows += `<td>${item.name}</td>
+        <td>${item.size}</td>
+        <td>${item.price}</td>
+        <td>${(item.price * (item.size ? multipliers.local[item.size] : multipliers.local.M)).toFixed(1)}</td>
+        <td>${(item.price * (item.size ? multipliers.nearby[item.size] : multipliers.nearby.M)).toFixed(1)}</td>
+        <td>${(item.price * (item.size ? multipliers.distant[item.size] : multipliers.distant.M)).toFixed(1)}</td>
+        </tr>`
+    })
+
+    return rows + "</table"
+}
+
 function objectFromTable() {
     tableString = ''
     fs.readFile(`../bonfireSRD/src/app/chapters/chapter-eleven/chapter-eleven-advanced/chapter-eleven-advanced.component.html`, "utf-8", (adverr, advData) => {
@@ -723,11 +763,11 @@ massive(connection).then(dbI => {
     app.listen(4343, _ => {
         // objectFromTable()
         // console.log(rollDice("d6-8"))
-        updateSearch(1)
+        // updateSearch(1)
         // updateQuickNav(15)
         // formatNewSections()
         // console.log(calculateAverageOfDice("1 + 4d20!+ 3!"))
-        // formatPHB(0, '')
+        formatPHB(0, '')
         console.log(`The night lays like a lullaby on the earth 4343`)
     })
 })

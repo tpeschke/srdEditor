@@ -7,7 +7,8 @@ const { connection } = require('./servStuff')
     , numWords = require('num-words')
     , _ = require('lodash');
 const { round } = require('lodash')
-    , { tables, multipliers } = require('./table.js');
+    , { tables, multipliers } = require('./table.js')
+    , beastVitalityList = require('../object');
 
 const app = new express()
 app.use(bodyParser.json())
@@ -255,8 +256,8 @@ async function updateQuickNav(endpoint) {
 
     let html = "";
 
-    // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (err, data) => {
-    fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
+    fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (err, data) => {
+    // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
         if (err) { console.log(err) }
         html = data.replace(/ _ngcontent-c2=""/g, '');
         newhtml = html.split(/anchor"|anchor'|anchor /)
@@ -758,16 +759,54 @@ function objectFromTable() {
     })
 }
 
+function beastVitalityUpgradeScript() {
+    let upgradeScript = ""
+
+    beastVitalityList.forEach(beastToUpdate => {
+        let transformedVitality = transformVitality(beastToUpdate.vitality);
+        upgradeScript += `update bbindividualbeast set vitality = '${transformedVitality}' where id = ${beastToUpdate.beastId};\n`
+        fs.writeFile(`./sql.sql`, upgradeScript, (err) => {
+            if (err) console.log(err);
+            console.log(`All Done.`);
+        });
+    })
+}
+
+function transformVitality(vitality) {
+    let vitalityObject = []
+    vitality.split('+').forEach(val => {
+        val = val.trim();
+        if (val.includes('d')) {
+            let valArray = val.split('d')
+            if (valArray[0] === "") {
+                valArray[0] = '1'
+            }
+            if (valArray[0] !== '1') {
+                val = `(1d${valArray[1]} * ${valArray[0]})`
+            } else {
+                val = valArray.join('d')
+            }
+            vitalityObject.dice = val
+        } else {
+            vitalityObject.static = val
+        }
+    
+    })
+    let {dice, static} = vitalityObject
+    return `${dice} + ${static}`
+}
+
 massive(connection).then(dbI => {
     app.set('db', dbI)
     app.listen(4343, _ => {
         // objectFromTable()
         // console.log(rollDice("d6-8"))
         // updateSearch(1)
-        // updateQuickNav(15)
+        // updateQuickNav(10)
         // formatNewSections()
         // console.log(calculateAverageOfDice("1 + 4d20!+ 3!"))
-        formatPHB(0, '')
+        // formatPHB(0, '')
+        beastVitalityUpgradeScript()
         console.log(`The night lays like a lullaby on the earth 4343`)
     })
 })

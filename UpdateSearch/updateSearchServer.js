@@ -306,7 +306,7 @@ function formatNewSections() {
                 formattedArray.push(`<div class='anchor'>
                         <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
                         <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                        <h3>${val.substring(1).toUpperCase()}</h3>
+                        <h3>${val.substring(1)}</h3>
                     </div>`)
                 //AND Base Drain & Base Range
                 // } else if (val.substring(0, 5) === 'Drain') {
@@ -802,11 +802,11 @@ massive(connection).then(dbI => {
         // objectFromTable()
         // console.log(rollDice("d6-8"))
         // updateSearch(1)
-        // updateQuickNav(10)
-        // formatNewSections()
+        // updateQuickNav(11)
+        formatNewSections()
         // console.log(calculateAverageOfDice("1 + 4d20!+ 3!"))
         // formatPHB(0, '')
-        beastVitalityUpgradeScript()
+        // beastVitalityUpgradeScript()
         console.log(`The night lays like a lullaby on the earth 4343`)
     })
 })

@@ -257,7 +257,7 @@ async function updateQuickNav(endpoint) {
     let html = "";
 
     fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (err, data) => {
-    // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
+        // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
         if (err) { console.log(err) }
         html = data.replace(/ _ngcontent-c2=""/g, '');
         newhtml = html.split(/anchor"|anchor'|anchor /)
@@ -302,110 +302,146 @@ function formatNewSections() {
 
         data.split('|').forEach(val => {
             let newId = makeid(10)
-            if (val.substring(0, 1) === 's') {
-                formattedArray.push(`<div class='anchor'>
-                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                        <h3>${val.substring(1)}</h3>
-                    </div>`)
-                //AND Base Drain & Base Range
-                // } else if (val.substring(0, 5) === 'Drain') {
-                //     formattedArray.push(
-                //         `<div class='paragraphShell anchor'>
-                //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-                //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                //             <p><strong class='orangeHeader'>${val.substring(0, 5).toUpperCase()}</strong>${val.substring(5)}</p>
-                //         </div>`)
-                // } else if (val.substring(0, 9) === 'Tradition') {
-                //     formattedArray.push(
-                //         `<div class='paragraphShell anchor'>
-                //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-                //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                //             <p><strong class='orangeHeader'>${val.substring(0, 9).toUpperCase()}</strong>${val.substring(9)}</p>
-                //         </div>`)
-                // } else if (val.substring(0, 10) === 'Base Drain') {
-                //     formattedArray.push(
-                //         `<div class='paragraphShell anchor'>
-                //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-                //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                //             <p><strong class='orangeHeader'>${val.substring(0, 10).toUpperCase()}</strong>${val.substring(10)}</p>
-                //         </div>`)
-                // } else if (val.substring(0, 10) === 'Base Range') {
-                //     formattedArray.push(
-                //         `<div class='paragraphShell anchor'>
-                //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-                //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                //             <p><strong class='orangeHeader'>${val.substring(0, 10).toUpperCase()}</strong>${val.substring(10)}</p>
-                //         </div>`)
-                // } else if (val.substring(0, 8) === 'Interval') {
-                //     formattedArray.push(
-                //         `<div class='paragraphShell anchor'>
-                //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-                //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                //             <p><strong class='orangeHeader'>${val.substring(0, 8).toUpperCase()}</strong>${val.substring(8)}</p>
-                //         </div>`)
-                // } else if (val.substring(0, 6) === 'Effect') {
-                //     formattedArray.push(
-                //         `<div class='paragraphShell anchor'>
-                //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-                //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                //             <p><strong class='orangeHeader'>${val.substring(0, 6).toUpperCase()}</strong>${val.substring(6)}</p>
-                //         </div>`)
-                // } else if (val.substring(0, 5) === 'Stack') {
-                //     formattedArray.push(
-                //         `<div class='paragraphShell marginBottom anchor'>
-                //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-                //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                //             <p><strong class='orangeHeader'>${val.substring(0, 5).toUpperCase()}</strong>${val.substring(5)}</p>
-                //         </div>`)
-                // } else if (val.substring(0, 10) === 'Components') {
-                //     formattedArray.push(
-                //         `<div class='paragraphShell anchor'>
-                //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-                //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                //             <p><strong class='orangeHeader'>${val.substring(0, 10).toUpperCase()}</strong>${val.substring(10)}</p>
-                //         </div>`)
+
+            if (val.substring(0, 1) === '1') {
+                formattedArray.push(`<div class="anchor">
+                    <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}header" class="anchorTag"></div>
+                    <h1>${val.substring(1)}</h1>
+                    <div class="underline"></div>
+                </div>`)
+            } else if (val.substring(0, 1) === '2') {
+                formattedArray.push(`<div class="anchor">
+                    <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}header" class="anchorTag"></div>
+                    <h2>${val.substring(1)}</h2>
+                    <div class="underline-sub"></div>
+                </div>`)
+            } else if (val.substring(0, 1) === '3') {
+                formattedArray.push(`<div class="anchor">
+                    <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}header" class="anchorTag"></div>
+                    <h3>${val.substring(1)}</h3>
+                </div>`)
+            } else if (val.substring(0, 1) === '4') {
+                formattedArray.push(`<div class="anchor">
+                    <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}header" class="anchorTag"></div>
+                    <h4>${val.substring(1)}</h4>
+                </div>`)
+            } else if (val.substring(0, 1) === '5') {
+                formattedArray.push(`<div class="anchor">
+                    <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}header" class="anchorTag"></div>
+                    <h5>${val.substring(1)}</h5>
+                </div>`)
             } else if (val.substring(0, 1) === 'p') {
                 formattedArray.push(`<div class='paragraphShell anchor'>
-                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                        <p>${val.substring(1)}</p>
-                    </div>`)
+                            <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                            <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                            <p>${val.substring(1)}</p>
+                        </div>`)
             } else if (val.substring(0, 1) === 'l') {
                 formattedArray.push(`<div class='paragraphShell anchor marginBottom'>
-                        <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-                        <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-                        <p>${val.substring(1)}</p>
-                    </div>`)
-            } else if (val.substring(0, 1) === 'h') {
-                formattedArray.push(`<div class="anchor">
-                        <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}header" class="anchorTag"></div>
-                        <h1>${val.substring(1).toUpperCase()}</h1>
-                        <div class="underline"></div>
-                    </div>`)
-            } else if (val.substring(0, 1) === 'm') {
-                formattedArray.push(`<div class="anchor marginBottom">
-                        <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}" class="anchorTag"></div>
-                        <h1>${val.substring(1).toProperCase(true)}</h1>
-                    </div>`)
-            } else if (val.substring(0, 1) === 'b') {
-                formattedArray.push(`<strong class='orangeHeader'>${val.substring(1).toUpperCase()}</strong>`)
-            } else if (val.substring(0, 1) === 'q') {
-                pairedInfo = val.split(',')
-                formattedArray.push(`<div class="chartShell pairedShell anchor">
-                <div id="${newId}" class="anchorTag"></div>
-                <h3>${pairedInfo[0].substring(1)}</h3>
-                <h3> ${pairedInfo[1]}</h3>
-            </div>`)
-            } else if (val.substring(0, 1) === 'y') {
-                formattedArray.push(`<div class="anchor marginBottom">
-                        <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}majorheader" class="anchorTag"></div>
-                        <h5>${val.substring(1)}</h5>
-                    </div>`)
+                            <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                            <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                            <p>${val.substring(1)}</p>
+                        </div>`)
             } else {
-                console.log('something when wrong: ', val)
+                if (val !== '') {
+                    console.log('something when wrong: ', val)
+                }
             }
-
+            //AND Base Drain & Base Range
+            // } else if (val.substring(0, 5) === 'Drain') {
+            //     formattedArray.push(
+            //         `<div class='paragraphShell anchor'>
+            //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+            //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+            //             <p><strong class='orangeHeader'>${val.substring(0, 5).toUpperCase()}</strong>${val.substring(5)}</p>
+            //         </div>`)
+            // } else if (val.substring(0, 9) === 'Tradition') {
+            //     formattedArray.push(
+            //         `<div class='paragraphShell anchor'>
+            //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+            //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+            //             <p><strong class='orangeHeader'>${val.substring(0, 9).toUpperCase()}</strong>${val.substring(9)}</p>
+            //         </div>`)
+            // } else if (val.substring(0, 10) === 'Base Drain') {
+            //     formattedArray.push(
+            //         `<div class='paragraphShell anchor'>
+            //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+            //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+            //             <p><strong class='orangeHeader'>${val.substring(0, 10).toUpperCase()}</strong>${val.substring(10)}</p>
+            //         </div>`)
+            // } else if (val.substring(0, 10) === 'Base Range') {
+            //     formattedArray.push(
+            //         `<div class='paragraphShell anchor'>
+            //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+            //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+            //             <p><strong class='orangeHeader'>${val.substring(0, 10).toUpperCase()}</strong>${val.substring(10)}</p>
+            //         </div>`)
+            // } else if (val.substring(0, 8) === 'Interval') {
+            //     formattedArray.push(
+            //         `<div class='paragraphShell anchor'>
+            //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+            //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+            //             <p><strong class='orangeHeader'>${val.substring(0, 8).toUpperCase()}</strong>${val.substring(8)}</p>
+            //         </div>`)
+            // } else if (val.substring(0, 6) === 'Effect') {
+            //     formattedArray.push(
+            //         `<div class='paragraphShell anchor'>
+            //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+            //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+            //             <p><strong class='orangeHeader'>${val.substring(0, 6).toUpperCase()}</strong>${val.substring(6)}</p>
+            //         </div>`)
+            // } else if (val.substring(0, 5) === 'Stack') {
+            //     formattedArray.push(
+            //         `<div class='paragraphShell marginBottom anchor'>
+            //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+            //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+            //             <p><strong class='orangeHeader'>${val.substring(0, 5).toUpperCase()}</strong>${val.substring(5)}</p>
+            //         </div>`)
+            // } else if (val.substring(0, 10) === 'Components') {
+            //     formattedArray.push(
+            //         `<div class='paragraphShell anchor'>
+            //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+            //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+            //             <p><strong class='orangeHeader'>${val.substring(0, 10).toUpperCase()}</strong>${val.substring(10)}</p>
+            //         </div>`)
+            // } else if (val.substring(0, 1) === 'p') {
+            //     formattedArray.push(`<div class='paragraphShell anchor'>
+            //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+            //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+            //             <p>${val.substring(1)}</p>
+            //         </div>`)
+            // } else if (val.substring(0, 1) === 'l') {
+            //     formattedArray.push(`<div class='paragraphShell anchor marginBottom'>
+            //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+            //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+            //             <p>${val.substring(1)}</p>
+            //         </div>`)
+            // } else if (val.substring(0, 1) === 'h') {
+            //     formattedArray.push(`<div class="anchor">
+            //             <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}header" class="anchorTag"></div>
+            //             <h1>${val.substring(1).toUpperCase()}</h1>
+            //             <div class="underline"></div>
+            //         </div>`)
+            // } else if (val.substring(0, 1) === 'm') {
+            //     formattedArray.push(`<div class="anchor marginBottom">
+            //             <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}" class="anchorTag"></div>
+            //             <h1>${val.substring(1).toProperCase(true)}</h1>
+            //         </div>`)
+            // } else if (val.substring(0, 1) === 'b') {
+            //     formattedArray.push(`<strong class='orangeHeader'>${val.substring(1).toUpperCase()}</strong>`)
+            // } else if (val.substring(0, 1) === 'q') {
+            //     pairedInfo = val.split(',')
+            //     formattedArray.push(`<div class="chartShell pairedShell anchor">
+            //     <div id="${newId}" class="anchorTag"></div>
+            //     <h3>${pairedInfo[0].substring(1)}</h3>
+            //     <h3> ${pairedInfo[1]}</h3>
+            // </div>`)
+            // } else if (val.substring(0, 1) === 'y') {
+            //     formattedArray.push(`<div class="anchor marginBottom">
+            //             <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}majorheader" class="anchorTag"></div>
+            //             <h5>${val.substring(1)}</h5>
+            //         </div>`)
+            // } 
         })
         fs.writeFile(`./formated.html`, formattedArray.join(''), (err) => {
             // fs.writeFile(`./chapter-${chapterName}.component.html`, html, (err) => {
@@ -497,9 +533,13 @@ function formatPHB(i, html) {
 
     if (i === 0) {
         route = './UpdateSearch/htmlbase.html'
-    } else {
+    } else if (i === 1 || i === 5 || i === 13) {
         route = `../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`
+    } else {
+        route = `../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`
     }
+
+
 
     fs.readFile(route, "utf-8", (err, data) => {
         if (err) { console.log(err) }
@@ -510,6 +550,10 @@ function formatPHB(i, html) {
         }
         if (i === 14) {
             html = html + endHtml
+            html = html.replace(/h3/gs, 'h4')
+                .replace(/h2/gs, 'h3')
+                .replace(/h1/gs, 'h2')
+                .replace(/h5/gs, 'h1')
             fs.writeFile(`./bonfirePHB.html`, html, (err) => {
                 if (err) console.log(err);
                 console.log(`Successfully Compiled PHB.`);
@@ -707,6 +751,7 @@ function cleanUniqueHtml(data) {
         } else {
             // console.log(html[i])
         }
+
         cleanHtml = cleanHtml.replace(/<a routerLink='.*'>(.*?)<\/a>/g, '<strong>$1</strong>')
     }
     return cleanHtml
@@ -790,9 +835,9 @@ function transformVitality(vitality) {
         } else {
             vitalityObject.static = val
         }
-    
+
     })
-    let {dice, static} = vitalityObject
+    let { dice, static } = vitalityObject
     return `${dice} + ${static}`
 }
 

@@ -8,7 +8,8 @@ const { connection } = require('./servStuff')
     , _ = require('lodash');
 const { round } = require('lodash')
     , { tables, multipliers } = require('./table.js')
-    , beastVitalityList = require('../object');
+    , beastVitalityList = require('../object')
+    , string = require('../string.js')
 
 const app = new express()
 app.use(bodyParser.json())
@@ -18,6 +19,20 @@ String.prototype.toProperCase = function (opt_lowerCaseTheRest) {
     return (opt_lowerCaseTheRest ? this.toLowerCase() : this)
         .replace(/(^|[\s\xA0])[^\s\xA0]/g, function (s) { return s.toUpperCase(); });
 };
+
+String.prototype.toFirstCased = function () {
+    const words = this.toLowerCase().split(" ");
+    for (let i = 0; i < words.length; i++) {
+        if (words[i]) {
+            if (words[i][0] === '(') {
+                words[i] = words[i][0] + words[i][1].toUpperCase() + words[i].substr(2);
+            } else {
+                words[i] = words[i][0].toUpperCase() + words[i].substr(1);
+            }
+        }
+    }
+    return words.join(' ')
+}
 
 function makeid(length) {
     var result = '';
@@ -256,8 +271,8 @@ async function updateQuickNav(endpoint) {
 
     let html = "";
 
-    fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (err, data) => {
-        // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
+    // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (err, data) => {
+    fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
         if (err) { console.log(err) }
         html = data.replace(/ _ngcontent-c2=""/g, '');
         newhtml = html.split(/anchor"|anchor'|anchor /)
@@ -297,6 +312,9 @@ async function updateQuickNav(endpoint) {
 
 function formatNewSections() {
     let formattedArray = []
+        , sidebar = false
+        , numberedList = false
+        , disclist = false
 
     fs.readFile(`./formatter.txt`, "utf-8", (err, data) => {
 
@@ -342,106 +360,111 @@ function formatNewSections() {
                             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
                             <p>${val.substring(1)}</p>
                         </div>`)
+            } else if (val.substring(0, 1) === 'x') {
+                if (sidebar) {
+                    formattedArray.push(`</div>`)
+                    sidebar = false;
+                } else {
+                    formattedArray.push(`<div class='sidebarShell marginBottom'>`)
+                    sidebar = true;
+                }
+            } else if (val.substring(0, 1) === 'n') {
+                if (numberedList) {
+                    formattedArray.push(`</ol>`)
+                    numberedList = false;
+                } else {
+                    formattedArray.push(`<ol class='marginBottom'>`)
+                    numberedList = true;
+                }
+            } else if (val.substring(0, 1) === 'u') {
+                if (disclist) {
+                    formattedArray.push(`</ul>`)
+                    disclist = false;
+                } else {
+                    formattedArray.push(`<ul class='marginBottom'>`)
+                    disclist = true;
+                }
+            } else if (val.substring(0, 1) === 'o') {
+                formattedArray.push(`<li>${val.substring(1)}</li>`)
             } else {
                 if (val !== '') {
                     console.log('something when wrong: ', val)
                 }
             }
             //AND Base Drain & Base Range
-            // } else if (val.substring(0, 5) === 'Drain') {
+            // if (val.substring(0, 5).toLowerCase() === 'drain') {
             //     formattedArray.push(
             //         `<div class='paragraphShell anchor'>
             //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
             //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-            //             <p><strong class='orangeHeader'>${val.substring(0, 5).toUpperCase()}</strong>${val.substring(5)}</p>
+            //             <p><strong class='orangeHeader'>${titleCase(val.substring(0, 5))}</strong>${val.substring(5)}</p>
             //         </div>`)
-            // } else if (val.substring(0, 9) === 'Tradition') {
+            // } else if (val.substring(0, 9).toLowerCase() === 'tradition') {
             //     formattedArray.push(
             //         `<div class='paragraphShell anchor'>
             //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
             //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-            //             <p><strong class='orangeHeader'>${val.substring(0, 9).toUpperCase()}</strong>${val.substring(9)}</p>
+            //             <p><strong class='orangeHeader'>${titleCase(val.substring(0, 9))}</strong>${val.substring(9)}</p>
             //         </div>`)
-            // } else if (val.substring(0, 10) === 'Base Drain') {
+            // } else if (val.substring(0, 10).toLowerCase() === 'base drain') {
             //     formattedArray.push(
             //         `<div class='paragraphShell anchor'>
             //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
             //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-            //             <p><strong class='orangeHeader'>${val.substring(0, 10).toUpperCase()}</strong>${val.substring(10)}</p>
+            //             <p><strong class='orangeHeader'>${titleCase(val.substring(0, 10))}</strong>${val.substring(10)}</p>
             //         </div>`)
-            // } else if (val.substring(0, 10) === 'Base Range') {
+            // } else if (val.substring(0, 10).toLowerCase() === 'base range') {
             //     formattedArray.push(
             //         `<div class='paragraphShell anchor'>
             //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
             //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-            //             <p><strong class='orangeHeader'>${val.substring(0, 10).toUpperCase()}</strong>${val.substring(10)}</p>
+            //             <p><strong class='orangeHeader'>${titleCase(val.substring(0, 10))}</strong>${val.substring(10)}</p>
             //         </div>`)
-            // } else if (val.substring(0, 8) === 'Interval') {
+            // } else if (val.substring(0, 8).toLowerCase() === 'interval') {
             //     formattedArray.push(
             //         `<div class='paragraphShell anchor'>
             //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
             //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-            //             <p><strong class='orangeHeader'>${val.substring(0, 8).toUpperCase()}</strong>${val.substring(8)}</p>
+            //             <p><strong class='orangeHeader'>${titleCase(val.substring(0, 8))}</strong>${val.substring(8)}</p>
             //         </div>`)
-            // } else if (val.substring(0, 6) === 'Effect') {
+            // } else if (val.substring(0, 6).toLowerCase() === 'effect') {
             //     formattedArray.push(
             //         `<div class='paragraphShell anchor'>
             //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
             //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-            //             <p><strong class='orangeHeader'>${val.substring(0, 6).toUpperCase()}</strong>${val.substring(6)}</p>
+            //             <p><strong class='orangeHeader'>${titleCase(val.substring(0, 6))}</strong>${val.substring(6)}</p>
             //         </div>`)
-            // } else if (val.substring(0, 5) === 'Stack') {
+            // } else if (val.substring(0, 5).toLowerCase() === 'stack') {
             //     formattedArray.push(
             //         `<div class='paragraphShell marginBottom anchor'>
             //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
             //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-            //             <p><strong class='orangeHeader'>${val.substring(0, 5).toUpperCase()}</strong>${val.substring(5)}</p>
+            //             <p><strong class='orangeHeader'>${titleCase(val.substring(0, 5))}</strong>${val.substring(5)}</p>
             //         </div>`)
-            // } else if (val.substring(0, 10) === 'Components') {
+            // } else if (val.substring(0, 10).toLowerCase() === 'components') {
             //     formattedArray.push(
             //         `<div class='paragraphShell anchor'>
             //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
             //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-            //             <p><strong class='orangeHeader'>${val.substring(0, 10).toUpperCase()}</strong>${val.substring(10)}</p>
+            //             <p><strong class='orangeHeader'>${titleCase(val.substring(0, 10))}</strong>${val.substring(10)}</p>
             //         </div>`)
             // } else if (val.substring(0, 1) === 'p') {
             //     formattedArray.push(`<div class='paragraphShell anchor'>
-            //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-            //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-            //             <p>${val.substring(1)}</p>
-            //         </div>`)
+            //                     <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+            //                     <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+            //                     <p>${val.substring(1)}</p>
+            //                 </div>`)
             // } else if (val.substring(0, 1) === 'l') {
             //     formattedArray.push(`<div class='paragraphShell anchor marginBottom'>
-            //             <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
-            //             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
-            //             <p>${val.substring(1)}</p>
-            //         </div>`)
-            // } else if (val.substring(0, 1) === 'h') {
-            //     formattedArray.push(`<div class="anchor">
-            //             <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}header" class="anchorTag"></div>
-            //             <h1>${val.substring(1).toUpperCase()}</h1>
-            //             <div class="underline"></div>
-            //         </div>`)
-            // } else if (val.substring(0, 1) === 'm') {
-            //     formattedArray.push(`<div class="anchor marginBottom">
-            //             <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}" class="anchorTag"></div>
-            //             <h1>${val.substring(1).toProperCase(true)}</h1>
-            //         </div>`)
-            // } else if (val.substring(0, 1) === 'b') {
-            //     formattedArray.push(`<strong class='orangeHeader'>${val.substring(1).toUpperCase()}</strong>`)
-            // } else if (val.substring(0, 1) === 'q') {
-            //     pairedInfo = val.split(',')
-            //     formattedArray.push(`<div class="chartShell pairedShell anchor">
-            //     <div id="${newId}" class="anchorTag"></div>
-            //     <h3>${pairedInfo[0].substring(1)}</h3>
-            //     <h3> ${pairedInfo[1]}</h3>
-            // </div>`)
-            // } else if (val.substring(0, 1) === 'y') {
-            //     formattedArray.push(`<div class="anchor marginBottom">
-            //             <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}majorheader" class="anchorTag"></div>
-            //             <h5>${val.substring(1)}</h5>
-            //         </div>`)
-            // } 
+            //                     <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+            //                     <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+            //                     <p>${val.substring(1)}</p>
+            //                 </div>`)
+            // } else {
+            //     if (val !== '') {
+            //         console.log('something when wrong: ', val)
+            //     }
+            // }
         })
         fs.writeFile(`./formated.html`, formattedArray.join(''), (err) => {
             // fs.writeFile(`./chapter-${chapterName}.component.html`, html, (err) => {
@@ -538,8 +561,6 @@ function formatPHB(i, html) {
     } else {
         route = `../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`
     }
-
-
 
     fs.readFile(route, "utf-8", (err, data) => {
         if (err) { console.log(err) }
@@ -817,41 +838,40 @@ function beastVitalityUpgradeScript() {
     })
 }
 
-function transformVitality(vitality) {
-    let vitalityObject = []
-    vitality.split('+').forEach(val => {
-        val = val.trim();
-        if (val.includes('d')) {
-            let valArray = val.split('d')
-            if (valArray[0] === "") {
-                valArray[0] = '1'
-            }
-            if (valArray[0] !== '1') {
-                val = `(1d${valArray[1]} * ${valArray[0]})`
-            } else {
-                val = valArray.join('d')
-            }
-            vitalityObject.dice = val
-        } else {
-            vitalityObject.static = val
-        }
+function tagsToUppercase(tags, string) {
+    for(tag in tags) {
+      let regex = new RegExp("(<" + tags[tag] + ">)([^<]+)(<\/" + tags[tag] + ">)", "g");
+      string = string.replace(regex, function(match, g1, g2, g3) {
+        return g1 + g2.toFirstCased() + g3;
+      });
+    }
+    return string
+  }
+  
+  // uppercase all <div>, <p>, <span> for example
+//   tagsToUppercase(["div", "p", "span"]);
 
-    })
-    let { dice, static } = vitalityObject
-    return `${dice} + ${static}`
+
+function correctString() {
+    let correctedHTML = tagsToUppercase(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong'], string)
+    fs.writeFile(`./string.html`, correctedHTML, (err) => {
+        if (err) console.log(err);
+        console.log(`Done`);
+    });
 }
 
-massive(connection).then(dbI => {
-    app.set('db', dbI)
-    app.listen(4343, _ => {
-        // objectFromTable()
-        // console.log(rollDice("d6-8"))
-        // updateSearch(1)
-        // updateQuickNav(11)
-        formatNewSections()
-        // console.log(calculateAverageOfDice("1 + 4d20!+ 3!"))
-        // formatPHB(0, '')
-        // beastVitalityUpgradeScript()
-        console.log(`The night lays like a lullaby on the earth 4343`)
-    })
+// massive(connection).then(dbI => {
+//     app.set('db', dbI)
+app.listen(4343, _ => {
+    // objectFromTable()
+    // console.log(rollDice("d6-8"))
+    // updateSearch(1)
+    // updateQuickNav(1)
+    formatNewSections()
+    // console.log(calculateAverageOfDice("1 + 4d20!+ 3!"))
+    // formatPHB(0, '')
+    // beastVitalityUpgradeScript()
+    // correctString()
+    console.log(`The night lays like a lullaby on the earth 4343`)
 })
+// })

@@ -265,14 +265,23 @@ function insertSpellEffects(spellListObj, spellId, effectType, effectIndex, effe
     }
 }
 
-async function updateQuickNav(endpoint) {
+function updateQuickNav(endpoint) {
+    let sectionAndChapter = endpoint.split('.')
+    if (+sectionAndChapter[0] === 1) {
+        updateQuickNavForRulesReference(+sectionAndChapter[1])
+    } else {
+        updateQuickNavForCharacterCreation(+sectionAndChapter[1])
+    }
+}
+
+async function updateQuickNavForRulesReference(endpoint) {
     const db = app.get('db')
         , chapterName = numWords(endpoint)
 
     let html = "";
 
-    // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (err, data) => {
-    fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
+    fs.readFile(`../bonfireSRD/src/app/rules-reference/chapter-${chapterName}/rr-${chapterName}/rr-${chapterName}.component.html`, "utf-8", (err, data) => {
+    // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
         if (err) { console.log(err) }
         html = data.replace(/ _ngcontent-c2=""/g, '');
         newhtml = html.split(/anchor"|anchor'|anchor /)
@@ -295,15 +304,60 @@ async function updateQuickNav(endpoint) {
                 let section = newhtml[i].replace(/(\r\n|\n|\r)/gm, '').match(/<h.*?>(.*?)<\/h|<p.*?>(.*?)<\/p|<img.*?>/g)
 
 
-                if (newhtml[i].indexOf('<h3>') !== -1) {
-                    quickNav = quickNav + `, {linkid: 'hg', body: '${section[0].replace(/<h.*?>|<\/h/g, '').toUpperCase()}', jump: '${id}'}`
+                if (newhtml[i].indexOf('<h2>') !== -1) {
+                    quickNav = quickNav + `, {linkid: 'hg', body: '${section[0].replace(/<h.*?>|<\/h/g, '')}', jump: '${id}'}`
                 } else if (newhtml[i].indexOf('<h1>') !== -1) {
                     quickNav = quickNav + `, {linkid: 'h', body: '${section[0].replace(/<h.*?>|<\/h/g, '')}', jump: '${id}'}`
                 }
             }
         }
 
-        fs.writeFile(`./quicknav.txt`, quickNav, (err) => {
+        fs.writeFile(`./quicknav-${chapterName}.txt`, quickNav, (err) => {
+            if (err) console.log(err);
+            console.log(`Successfully Created QuickNav for Chapter ${endpoint}.`);
+        });
+    });
+}
+
+async function updateQuickNavForCharacterCreation(endpoint) {
+    const db = app.get('db')
+        , chapterName = numWords(endpoint)
+
+    let html = "";
+
+    fs.readFile(`../bonfireSRD/src/app/character-creation/chapter-${chapterName}/cc-${chapterName}/cc-${chapterName}.component.html`, "utf-8", (err, data) => {
+    // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
+        if (err) { console.log(err) }
+        html = data.replace(/ _ngcontent-c2=""/g, '');
+        newhtml = html.split(/anchor"|anchor'|anchor /)
+        let quickNav = ''
+
+        for (i = 0; i <= newhtml.length - 1; i++) {
+            //find the id
+            if (newhtml[i].includes('id=')) {
+                let id = newhtml[i].match(/id='(.*?)'|id="(.*?)"/gm)
+
+                // sometimes the id doesn't have quotation marks so this is checking
+                if (id && id[0]) {
+                    id = id[0].substring(4)
+                    id = id.substring(0, id.length - 1)
+                } else {
+                    id = newhtml[i].match(/id=(.*?) /gm)[0].substring(3).trim()
+                }
+
+                // strip final bits of HTML
+                let section = newhtml[i].replace(/(\r\n|\n|\r)/gm, '').match(/<h.*?>(.*?)<\/h|<p.*?>(.*?)<\/p|<img.*?>/g)
+
+
+                if (newhtml[i].indexOf('<h2>') !== -1) {
+                    quickNav = quickNav + `${quickNav === "" ? "" : ', '}{linkid: 'hg', body: '${section[0].replace(/<h.*?>|<\/h/g, '')}', jump: '${id}'}`
+                } else if (newhtml[i].indexOf('<h1>') !== -1) {
+                    quickNav = quickNav + `${quickNav === "" ? "" : ', '}{linkid: 'h', body: '${section[0].replace(/<h.*?>|<\/h/g, '')}', jump: '${id}'}`
+                }
+            }
+        }
+
+        fs.writeFile(`./quicknav-${chapterName}.txt`, quickNav, (err) => {
             if (err) console.log(err);
             console.log(`Successfully Created QuickNav for Chapter ${endpoint}.`);
         });
@@ -866,8 +920,10 @@ app.listen(4343, _ => {
     // objectFromTable()
     // console.log(rollDice("d6-8"))
     // updateSearch(1)
-    // updateQuickNav(1)
-    formatNewSections()
+    for (i = 1; i < 8; i++) {
+        updateQuickNav('2.' + i)
+    }
+    // formatNewSections()
     // console.log(calculateAverageOfDice("1 + 4d20!+ 3!"))
     // formatPHB(0, '')
     // beastVitalityUpgradeScript()

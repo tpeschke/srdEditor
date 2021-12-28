@@ -15,8 +15,8 @@ const app = new express()
 app.use(bodyParser.json())
 app.use(cors())
 
-String.prototype.toProperCase = function (opt_lowerCaseTheRest) {
-    return (opt_lowerCaseTheRest ? this.toLowerCase() : this)
+String.prototype.toProperCase = function () {
+    return this.toLowerCase()
         .replace(/(^|[\s\xA0])[^\s\xA0]/g, function (s) { return s.toUpperCase(); });
 };
 
@@ -324,29 +324,29 @@ function formatNewSections() {
             if (val.substring(0, 1) === '1') {
                 formattedArray.push(`<div class="anchor">
                     <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}header" class="anchorTag"></div>
-                    <h1>${val.substring(1)}</h1>
+                    <h1>${val.substring(1).toProperCase()}</h1>
                     <div class="underline"></div>
                 </div>`)
             } else if (val.substring(0, 1) === '2') {
                 formattedArray.push(`<div class="anchor">
                     <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}header" class="anchorTag"></div>
-                    <h2>${val.substring(1)}</h2>
+                    <h2>${val.substring(1).toProperCase()}</h2>
                     <div class="underline-sub"></div>
                 </div>`)
             } else if (val.substring(0, 1) === '3') {
                 formattedArray.push(`<div class="anchor">
                     <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}header" class="anchorTag"></div>
-                    <h3>${val.substring(1)}</h3>
+                    <h3>${val.substring(1).toProperCase()}</h3>
                 </div>`)
             } else if (val.substring(0, 1) === '4') {
                 formattedArray.push(`<div class="anchor">
                     <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}header" class="anchorTag"></div>
-                    <h4>${val.substring(1)}</h4>
+                    <h4>${val.substring(1).toProperCase()}</h4>
                 </div>`)
             } else if (val.substring(0, 1) === '5') {
                 formattedArray.push(`<div class="anchor">
                     <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}header" class="anchorTag"></div>
-                    <h5>${val.substring(1)}</h5>
+                    <h5>${val.substring(1).toProperCase()}</h5>
                 </div>`)
             } else if (val.substring(0, 1) === 'p') {
                 formattedArray.push(`<div class='paragraphShell anchor'>

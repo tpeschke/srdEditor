@@ -76,82 +76,106 @@ function updateRulesReferenceSearch(endpoint) {
     const db = app.get('db')
     let chapterName = numWords(endpoint)
 
-    // if (endpoint === 1 || endpoint === 5 || endpoint === 13) {
-    fs.readFile(`../bonfireSRD/src/app/rules-reference/chapter-${chapterName}/rr-${chapterName}/rr-${chapterName}.component.html`, "utf-8", (err, data) => {
-        if (err) console.log(err);
-        let basicDataObject = cleanHTML(data, endpoint)
-            , promiseArray = []
+    if (endpoint === 3 || endpoint === 5 || endpoint === 6 || endpoint === 7) {
+        fs.readFile(`../bonfireSRD/src/app/rules-reference/chapter-${chapterName}/rr-${chapterName}-deluxe/rr-${chapterName}-deluxe.component.html`, "utf-8", (adverr, advData) => {
+            fs.readFile(`../bonfireSRD/src/app/rules-reference/chapter-${chapterName}/rr-${chapterName}/rr-${chapterName}.component.html`, "utf-8", (err, data) => {
+                if (err) console.log(err);
+                let advDataObject = cleanHTML(advData, endpoint)
+                    , basicDataObject = cleanHTML(data, endpoint)
+                    , promiseArray = []
 
-        for (key in basicDataObject) {
-            promiseArray.push(db.basic(key, basicDataObject[key], endpoint, 1).then())
-        }
 
-        Promise.all(promiseArray).then(_ => {
-            console.log(`Successfully Updated Rules-Reference Chapter ${endpoint}'s Search`);
-            if (endpoint !== 7) {
-                updateSearch('1.' + (endpoint + 1))
-            } else {
-                console.log('Rules Reference All Done')
-                updateSearch('2.1')
-            }
+                for (key in basicDataObject) {
+                    promiseArray.push(db.basic(key, basicDataObject[key], endpoint, 1).then())
+                }
+                for (key in advDataObject) {
+                    promiseArray.push(db.advanced(key, advDataObject[key], endpoint, 1).then())
+                }
+
+                Promise.all(promiseArray).then(_ => {
+                    console.log(`Successfully Updated Rules-Reference Chapter ${endpoint}'s Search`);
+                    if (endpoint !== 7) {
+                        updateSearch('1.' + (endpoint + 1))
+                    } else {
+                        console.log('Rules Reference All Done')
+                        updateSearch('2.1')
+                    }
+                })
+            })
         })
-    })
-    // } 
-    // else {
-    //     fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
-    //         fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (adverr, advData) => {
-    //             if (err) console.log(err);
-    //             let advDataObject = cleanHTML(advData, endpoint)
-    //                 , basicDataObject = cleanHTML(data, endpoint)
-    //                 , promiseArray = []
+    } else {
+        fs.readFile(`../bonfireSRD/src/app/rules-reference/chapter-${chapterName}/rr-${chapterName}/rr-${chapterName}.component.html`, "utf-8", (err, data) => {
+            if (err) console.log(err);
+            let basicDataObject = cleanHTML(data, endpoint)
+                , promiseArray = []
 
-    //             for (key in basicDataObject) {
-    //                 promiseArray.push(db.basic(key, basicDataObject[key], endpoint).then())
-    //             }
-    //             for (key in advDataObject) {
-    //                 promiseArray.push(db.advanced(key, advDataObject[key], endpoint).then())
-    //             }
+            for (key in basicDataObject) {
+                promiseArray.push(db.basic(key, basicDataObject[key], endpoint, 1).then())
+            }
 
-    //             // Promise.all(finalCompare).then(finalIdArray => {
-    //             //     if (endpoint === 12) {
-    //             //         updateGreatLibrarySpells()
-    //             //     }
+            Promise.all(promiseArray).then(_ => {
+                console.log(`Successfully Updated Rules-Reference Chapter ${endpoint}'s Search`);
+                if (endpoint !== 7) {
+                    updateSearch('1.' + (endpoint + 1))
+                } else {
+                    console.log('Rules Reference All Done')
+                    updateSearch('2.1')
+                }
+            })
+        })
 
-    //             Promise.all(promiseArray).then(_ => {
-    //                 console.log(`Successfully Updated Chapter ${endpoint}'s Search`);
-    //                 if (endpoint !== 14) {
-    //                     updateSearch(endpoint + 1)
-    //                 } else {
-    //                     console.log('ALL DONE')
-    //                 }
-    //             })
-    //         })
-    //     })
-    // }
+    }
 }
 
 function updateCharacterCreationSearch(endpoint) {
     const db = app.get('db')
     let chapterName = numWords(endpoint)
 
-    fs.readFile(`../bonfireSRD/src/app/character-creation/chapter-${chapterName}/cc-${chapterName}/cc-${chapterName}.component.html`, "utf-8", (err, data) => {
-        if (err) console.log(err);
-        let basicDataObject = cleanHTML(data, endpoint)
-            , promiseArray = []
+    if (endpoint === 2 || endpoint === 3) {
+        fs.readFile(`../bonfireSRD/src/app/character-creation/chapter-${chapterName}/cc-${chapterName}-deluxe/cc-${chapterName}-deluxe.component.html`, "utf-8", (err, advData) => {
+            fs.readFile(`../bonfireSRD/src/app/character-creation/chapter-${chapterName}/cc-${chapterName}/cc-${chapterName}.component.html`, "utf-8", (err, data) => {
+                if (err) console.log(err);
+                let advDataObject = cleanHTML(advData, endpoint)
+                    , basicDataObject = cleanHTML(data, endpoint)
+                    , promiseArray = []
 
-        for (key in basicDataObject) {
-            promiseArray.push(db.basic(key, basicDataObject[key], endpoint, 2).then())
-        }
+                for (key in basicDataObject) {
+                    promiseArray.push(db.basic(key, basicDataObject[key], endpoint, 2).then())
+                }
+                for (key in advDataObject) {
+                    promiseArray.push(db.advanced(key, advDataObject[key], endpoint, 2).then())
+                }
 
-        Promise.all(promiseArray).then(_ => {
-            console.log(`Successfully Updated Character Creation Chapter ${endpoint}'s Search`);
-            if (endpoint !== 7) {
-                updateSearch('2.' + (endpoint + 1))
-            } else {
-                console.log('Character Creation All Done')
-            }
+                Promise.all(promiseArray).then(_ => {
+                    console.log(`Successfully Updated Character Creation Chapter ${endpoint}'s Search`);
+                    if (endpoint !== 7) {
+                        updateSearch('2.' + (endpoint + 1))
+                    } else {
+                        console.log('Character Creation All Done')
+                    }
+                })
+            })
         })
-    })
+    } else {
+        fs.readFile(`../bonfireSRD/src/app/character-creation/chapter-${chapterName}/cc-${chapterName}/cc-${chapterName}.component.html`, "utf-8", (err, data) => {
+            if (err) console.log(err);
+            let basicDataObject = cleanHTML(data, endpoint)
+                , promiseArray = []
+
+            for (key in basicDataObject) {
+                promiseArray.push(db.basic(key, basicDataObject[key], endpoint, 2).then())
+            }
+
+            Promise.all(promiseArray).then(_ => {
+                console.log(`Successfully Updated Character Creation Chapter ${endpoint}'s Search`);
+                if (endpoint !== 7) {
+                    updateSearch('2.' + (endpoint + 1))
+                } else {
+                    console.log('Character Creation All Done')
+                }
+            })
+        })
+    }
 }
 
 function cleanHTML(data) {

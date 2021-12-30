@@ -57,67 +57,101 @@ function titleCase(str) {
 }
 
 async function updateSearch(endpoint) {
+    let sectionAndChapter = endpoint.split('.')
+
+    if (+sectionAndChapter[1] === 1 && +sectionAndChapter[0] === 1) {
+        console.log('cleaning db')
+        const db = app.get('db')
+        await db.cleanUpDB()
+    }
+
+    if (+sectionAndChapter[0] === 1) {
+        updateRulesReferenceSearch(+sectionAndChapter[1])
+    } else {
+        updateCharacterCreationSearch(+sectionAndChapter[1])
+    }
+}
+
+function updateRulesReferenceSearch(endpoint) {
     const db = app.get('db')
     let chapterName = numWords(endpoint)
 
-    if (endpoint === 1) {
-        console.log('cleaning db')
-        await db.cleanUpDB()
-    }
-    if (endpoint >= 7) {
-        chapterName = numWords(endpoint + 1)
-    }
+    // if (endpoint === 1 || endpoint === 5 || endpoint === 13) {
+    fs.readFile(`../bonfireSRD/src/app/rules-reference/chapter-${chapterName}/rr-${chapterName}/rr-${chapterName}.component.html`, "utf-8", (err, data) => {
+        if (err) console.log(err);
+        let basicDataObject = cleanHTML(data, endpoint)
+            , promiseArray = []
 
-    if (endpoint === 1 || endpoint === 5 || endpoint === 13) {
-        fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
-            if (err) console.log(err);
-            let basicDataObject = cleanHTML(data, endpoint)
-                , promiseArray = []
+        for (key in basicDataObject) {
+            promiseArray.push(db.basic(key, basicDataObject[key], endpoint, 1).then())
+        }
 
-            for (key in basicDataObject) {
-                promiseArray.push(db.basic(key, basicDataObject[key], endpoint).then())
+        Promise.all(promiseArray).then(_ => {
+            console.log(`Successfully Updated Rules-Reference Chapter ${endpoint}'s Search`);
+            if (endpoint !== 7) {
+                updateSearch('1.' + (endpoint + 1))
+            } else {
+                console.log('Rules Reference All Done')
+                updateSearch('2.1')
             }
-
-            Promise.all(promiseArray).then(_ => {
-                console.log(`Successfully Updated Chapter ${endpoint}'s Search`);
-                if (endpoint !== 14) {
-                    updateSearch(endpoint + 1)
-                } else {
-                    console.log('ALL DONE')
-                }
-            })
         })
-    } else {
-        fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
-            fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (adverr, advData) => {
-                if (err) console.log(err);
-                let advDataObject = cleanHTML(advData, endpoint)
-                    , basicDataObject = cleanHTML(data, endpoint)
-                    , promiseArray = []
+    })
+    // } 
+    // else {
+    //     fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
+    //         fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`, "utf-8", (adverr, advData) => {
+    //             if (err) console.log(err);
+    //             let advDataObject = cleanHTML(advData, endpoint)
+    //                 , basicDataObject = cleanHTML(data, endpoint)
+    //                 , promiseArray = []
 
-                for (key in basicDataObject) {
-                    promiseArray.push(db.basic(key, basicDataObject[key], endpoint).then())
-                }
-                for (key in advDataObject) {
-                    promiseArray.push(db.advanced(key, advDataObject[key], endpoint).then())
-                }
+    //             for (key in basicDataObject) {
+    //                 promiseArray.push(db.basic(key, basicDataObject[key], endpoint).then())
+    //             }
+    //             for (key in advDataObject) {
+    //                 promiseArray.push(db.advanced(key, advDataObject[key], endpoint).then())
+    //             }
 
-                // Promise.all(finalCompare).then(finalIdArray => {
-                //     if (endpoint === 12) {
-                //         updateGreatLibrarySpells()
-                //     }
+    //             // Promise.all(finalCompare).then(finalIdArray => {
+    //             //     if (endpoint === 12) {
+    //             //         updateGreatLibrarySpells()
+    //             //     }
 
-                Promise.all(promiseArray).then(_ => {
-                    console.log(`Successfully Updated Chapter ${endpoint}'s Search`);
-                    if (endpoint !== 14) {
-                        updateSearch(endpoint + 1)
-                    } else {
-                        console.log('ALL DONE')
-                    }
-                })
-            })
+    //             Promise.all(promiseArray).then(_ => {
+    //                 console.log(`Successfully Updated Chapter ${endpoint}'s Search`);
+    //                 if (endpoint !== 14) {
+    //                     updateSearch(endpoint + 1)
+    //                 } else {
+    //                     console.log('ALL DONE')
+    //                 }
+    //             })
+    //         })
+    //     })
+    // }
+}
+
+function updateCharacterCreationSearch(endpoint) {
+    const db = app.get('db')
+    let chapterName = numWords(endpoint)
+
+    fs.readFile(`../bonfireSRD/src/app/character-creation/chapter-${chapterName}/cc-${chapterName}/cc-${chapterName}.component.html`, "utf-8", (err, data) => {
+        if (err) console.log(err);
+        let basicDataObject = cleanHTML(data, endpoint)
+            , promiseArray = []
+
+        for (key in basicDataObject) {
+            promiseArray.push(db.basic(key, basicDataObject[key], endpoint, 2).then())
+        }
+
+        Promise.all(promiseArray).then(_ => {
+            console.log(`Successfully Updated Character Creation Chapter ${endpoint}'s Search`);
+            if (endpoint !== 7) {
+                updateSearch('2.' + (endpoint + 1))
+            } else {
+                console.log('Character Creation All Done')
+            }
         })
-    }
+    })
 }
 
 function cleanHTML(data) {
@@ -139,7 +173,7 @@ function cleanHTML(data) {
             }
 
             // strip final bits of HTML
-            let section = newhtml[i].replace(/(\r\n|\n|\r)/gm, '').replace(/\s\s+/g, ' ').match(/<h.*?>(.*?)<\/h|<p.*?>(.*?)<\/p/g).replace(/class='orangeHeader'/g, 'style="color:#B45F06;"')
+            let section = newhtml[i].replace(/(\r\n|\n|\r)/gm, '').replace(/\s\s+/g, ' ').match(/<h.*?>(.*?)<\/h|<p.*?>(.*?)<\/p/g)
             // this will also catch images with ids but it will result in section being null so this is just tell it to ignore those
             if (section) {
                 section = section[0].replace(/<strong.*?>|<\/strong>|<a.*?>|<\/a>/g, '').replace(/class='orangeHeader'/g, ' style="color:#B45F06;"')
@@ -281,7 +315,7 @@ async function updateQuickNavForRulesReference(endpoint) {
     let html = "";
 
     fs.readFile(`../bonfireSRD/src/app/rules-reference/chapter-${chapterName}/rr-${chapterName}/rr-${chapterName}.component.html`, "utf-8", (err, data) => {
-    // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
+        // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
         if (err) { console.log(err) }
         html = data.replace(/ _ngcontent-c2=""/g, '');
         newhtml = html.split(/anchor"|anchor'|anchor /)
@@ -326,7 +360,7 @@ async function updateQuickNavForCharacterCreation(endpoint) {
     let html = "";
 
     fs.readFile(`../bonfireSRD/src/app/character-creation/chapter-${chapterName}/cc-${chapterName}/cc-${chapterName}.component.html`, "utf-8", (err, data) => {
-    // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
+        // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
         if (err) { console.log(err) }
         html = data.replace(/ _ngcontent-c2=""/g, '');
         newhtml = html.split(/anchor"|anchor'|anchor /)
@@ -893,16 +927,16 @@ function beastVitalityUpgradeScript() {
 }
 
 function tagsToUppercase(tags, string) {
-    for(tag in tags) {
-      let regex = new RegExp("(<" + tags[tag] + ">)([^<]+)(<\/" + tags[tag] + ">)", "g");
-      string = string.replace(regex, function(match, g1, g2, g3) {
-        return g1 + g2.toFirstCased() + g3;
-      });
+    for (tag in tags) {
+        let regex = new RegExp("(<" + tags[tag] + ">)([^<]+)(<\/" + tags[tag] + ">)", "g");
+        string = string.replace(regex, function (match, g1, g2, g3) {
+            return g1 + g2.toFirstCased() + g3;
+        });
     }
     return string
-  }
-  
-  // uppercase all <div>, <p>, <span> for example
+}
+
+// uppercase all <div>, <p>, <span> for example
 //   tagsToUppercase(["div", "p", "span"]);
 
 
@@ -914,20 +948,20 @@ function correctString() {
     });
 }
 
-// massive(connection).then(dbI => {
-//     app.set('db', dbI)
-app.listen(4343, _ => {
-    // objectFromTable()
-    // console.log(rollDice("d6-8"))
-    // updateSearch(1)
-    for (i = 1; i < 8; i++) {
-        updateQuickNav('2.' + i)
-    }
-    // formatNewSections()
-    // console.log(calculateAverageOfDice("1 + 4d20!+ 3!"))
-    // formatPHB(0, '')
-    // beastVitalityUpgradeScript()
-    // correctString()
-    console.log(`The night lays like a lullaby on the earth 4343`)
+massive(connection).then(dbI => {
+    app.set('db', dbI)
+    app.listen(4343, _ => {
+        // objectFromTable()
+        // console.log(rollDice("d6-8"))
+        updateSearch('1.1')
+        for (i = 1; i < 8; i++) {
+            //     updateQuickNav('2.' + i)
+        }
+        // formatNewSections()
+        // console.log(calculateAverageOfDice("1 + 4d20!+ 3!"))
+        // formatPHB(0, '')
+        // beastVitalityUpgradeScript()
+        // correctString()
+        console.log(`The night lays like a lullaby on the earth 4343`)
+    })
 })
-// })

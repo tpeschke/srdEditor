@@ -6,7 +6,7 @@ const { connection } = require('./servStuff')
     , fs = require('fs')
     , numWords = require('num-words')
     , _ = require('lodash');
-const { round } = require('lodash')
+const { round, add } = require('lodash')
     , { tables, multipliers } = require('./table.js')
     , beastVitalityList = require('../object')
     , string = require('../string.js')
@@ -661,13 +661,16 @@ function formatPHB(i, html) {
     let endHtml = '    </div><script src="js/script.js"></script></body></html>'
         , route = getRoute(i);
 
-    fs.readFile(route, "utf-8", (err, data) => {
+    fs.readFile(route, "utf-8", async (err, data) => {
         if (err) { console.log(err) }
         // if (i > 0) {
         //     html = html + cleanUniqueHtml(data)
         // } else {
-            html = html + data
+        html = html + data
         // }
+
+        if (i === 0) { html = html + await addScriptsAndBody() }
+        console.log('after scripts are added')
         if (i === 1) {
             html = html + endHtml
             html = html.replace(/h3/gs, 'h4')
@@ -686,18 +689,33 @@ function formatPHB(i, html) {
     })
 }
 
-function getRoute (i) {
+function getRoute(i) {
     let chapterName = numWords(i)
     let route = `../bonfireSRD/src/app/character-creation/chapter-${chapterName}/cc-${chapterName}/cc-${chapterName}.component.html`
 
     if (i === 0) {
         route = './UpdateSearch/processbase.html'
-    } 
+    }
     // else {
     //     route = `../bonfireSRD/src/app/character-creation/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`
     // }
 
     return route
+}
+
+function addScriptsAndBody() {
+    return new Promise(resolve => {
+        let body = `<script src="processHtml.js"></script></head><body><button style="position: sticky;top: 0;width: 100%;height: 50px;background: green;color: white;"onclick="exportToObject('chapterShell');">Process HTML</button><div id="exportContent"></div><div id="oldContent">`
+        let scripts = ''
+        let kitRoute = '../bonfireSRD/src/app/character-creation/chapter-one/cc-one/kit.js'
+
+        fs.readFile(kitRoute, "utf-8", (err, data) => {
+            if (err) { console.log(err) }
+            scripts = scripts + `<script>kits=${data.split('export default ')[1]}</script>`
+
+            resolve(scripts + body)
+        })
+    })
 }
 
 function cleanUniqueHtml(data) {
@@ -981,7 +999,7 @@ massive(connection).then(dbI => {
         // console.log(rollDice("d6-8"))
         // updateSearch('1.1')
         // for (i = 1; i < 8; i++) {
-                // updateQuickNav('1.6')
+        // updateQuickNav('1.6')
         // }
         // formatNewSections()
         // console.log(calculateAverageOfDice("1 + 4d20!+ 3!"))

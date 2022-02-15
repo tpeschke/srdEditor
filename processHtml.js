@@ -24,12 +24,14 @@ function cleanTheElement(element) {
         , tag = element.tagName
         , innards = element.innerText
         , hasItalics = false
+        , isBold = false
 
     if (tag === 'DIV') {
         for (child of element.children) {
             if ((child.tagName === 'H1' || child.tagName === 'H2' || child.tagName === 'H3' || child.tagName === 'H4' || child.tagName === 'H5' || child.tagName === 'P') && !element.className.includes('sidebarShell')) {
                 tag = child.tagName
                 hasItalics = child.className.includes("italic")
+                isBold = child.innerHTML.includes('strong')
             }
         }
     }
@@ -38,6 +40,17 @@ function cleanTheElement(element) {
         let margin = hasBottomMargin ? 'margin:0px 0px 10px;' : 'margin:0px;';
         if (hasItalics) {
             document.getElementById('exportContent').insertAdjacentHTML('beforeend', `<p style='${margin}'><i>${innards}</i></p>`)
+        } else if (isBold) {
+            for (child of element.children) {
+                if (child.tagName === 'P' && child.innerHTML.includes('strong')) {
+                    if (hasBottomMargin) {
+                        child.style.margin = '0px 0px 10px'
+                    } else {
+                        child.style.margin = '0px'
+                    }
+                    document.getElementById('exportContent').append(child)
+                }
+            }
         } else {
             document.getElementById('exportContent').insertAdjacentHTML('beforeend', `<p style='${margin}'>${innards}</p>`)
         }

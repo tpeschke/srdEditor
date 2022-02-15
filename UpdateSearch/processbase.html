@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Export to Doc</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        function exportToObject(element) {
+            var html = document.getElementsByClassName(element);
+
+            document.getElementById('exportContent').insertAdjacentHTML('beforeend', `<h1>${document.querySelector('.chapterTitle').innerText}</h1>`)
+
+            html[0].childNodes.forEach(element => {
+                if (element.tagName) {
+                    cleanTheElement(element)
+                }
+            })
+
+            document.getElementById('oldContent').innerHTML = ''
+        }
+
+        function cleanTheElement(element) {
+            let hasBottomMargin = element.className.includes('marginBottom')
+                , tag = element.tagName
+                , innards = element.innerText
+
+            if (tag === 'DIV') {
+                for (child of element.children) {
+                    if (child.tagName === 'H1' || child.tagName === 'H2' || child.tagName === 'H3' || child.tagName === 'H4' || child.tagName === 'H5' || child.tagName === 'P') {
+                        tag = child.tagName
+                    }
+                }
+            }
+
+            if (tag === 'P') {
+                let margin = hasBottomMargin ? 'margin:0px 0px 10px;' : 'margin:0px;';
+                document.getElementById('exportContent').insertAdjacentHTML('beforeend', `<p style='${margin}'>${innards}</p>`)
+            } else if (tag === 'H1' || tag === 'H2' || tag === 'H3' || tag === 'H4' || tag === 'H5') {
+                document.getElementById('exportContent').insertAdjacentHTML('beforeend', `<${tag}>${innards}</${tag}>`)
+            } else if (tag === 'TABLE' || tag === 'UL') {
+                document.getElementById('exportContent').append(element)
+            } else {
+                console.log(tag, innards)
+            }
+        }
+    </script>
+    <style>
+        p {text-indent:40px;}
+      </style>
+</head>
+
+<body>
+    <button style="position: sticky;top: 0;width: 100%;height: 50px;background: green;color: white;"
+        onclick="exportToObject('chapterShell');">Process HTML</button>
+    <div id="exportContent">
+    </div>
+    <div id="oldContent">

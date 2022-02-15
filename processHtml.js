@@ -64,7 +64,7 @@ function cleanTheElement(element) {
                             hasBottomMarginChild = grandchild.className.includes('marginBottom')
 
                             if (tagChild === 'H1') {
-                                sidebarTable = sidebarTable + `<h1>${innardsChild}</h1>`
+                                sidebarTable = sidebarTable + `<h5>${innardsChild}</h5>`
                             } else if (tagChild === 'H2' || tagChild === 'H3' || tagChild === 'H4' || tagChild === 'H5') {
                                 if (tagChild === 'H3' && innardsChild.includes('{{trait | titlecase}}')) {
                                     tagChild = 'P'
@@ -98,7 +98,7 @@ function cleanTheElement(element) {
                   </tr>`
                 })
 
-                kitTables = kitTables + `<table style='margin:0px 0px 10px;>
+                kitTables = kitTables + `<table style='margin:0px 0px 10px;'>
                 <thead>
                   <tr>
                     <th colspan="3">${kit.name}</th>

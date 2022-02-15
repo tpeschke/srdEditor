@@ -5,96 +5,7 @@
     <meta charset="utf-8">
     <title>Export to Doc</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script>
-        function exportToObject(element) {
-            var html = document.getElementsByClassName(element);
-
-            document.getElementById('exportContent').insertAdjacentHTML('beforeend', `<h2>${document.querySelector('.chapterTitle').innerText}</h2>`)
-
-            html[0].childNodes.forEach(element => {
-                if (element.tagName) {
-                    cleanTheElement(element)
-                }
-            })
-
-            document.getElementById('oldContent').innerHTML = ''
-        }
-
-        function cleanTheElement(element) {
-            let hasBottomMargin = element.className.includes('marginBottom')
-                , tag = element.tagName
-                , innards = element.innerText
-
-            if (tag === 'DIV') {
-                for (child of element.children) {
-                    if (child.tagName === 'H1' || child.tagName === 'H2' || child.tagName === 'H3' || child.tagName === 'H4' || child.tagName === 'H5' || child.tagName === 'P') {
-                        tag = child.tagName
-                    }
-                }
-            }
-
-            if (tag === 'P') {
-                let margin = hasBottomMargin ? 'margin:0px 0px 10px;' : 'margin:0px;';
-                document.getElementById('exportContent').insertAdjacentHTML('beforeend', `<p style='${margin}'>${innards}</p>`)
-            } else if (tag === 'H1' || tag === 'H2' || tag === 'H3' || tag === 'H4' || tag === 'H5') {
-                document.getElementById('exportContent').insertAdjacentHTML('beforeend', `<${tag}>${innards}</${tag}>`)
-            } else if (tag === 'TABLE' || tag === 'UL') {
-                document.getElementById('exportContent').append(element)
-            } else if (tag === 'DIV') {
-                if (element.className.includes('pair')) {
-                    for (child of element.children) {
-                        if (child.className.includes('pair')) {
-                            let first = ''
-                                , second = ''
-                            for (grandchild of child.children) {
-                                if (grandchild.tagName && first === '') {
-                                    first = grandchild.innerText
-                                } else if (grandchild.tagName && first !== '' && second === '') {
-                                    second = grandchild.innerText
-                                }
-                            }
-                            document.getElementById('exportContent').insertAdjacentHTML('beforeend', `<p style='margin:0px;'><strong>${first}</strong> ${second}</p>`)
-                        }
-                    }
-                } else if (element.className.includes('sidebarShell')) {
-                    let sidebarTable = '<div style="border: 3px solid #b45f06;padding: 10px;margin:0px 0px 5px">'
-
-                    for (child of element.children) {
-                        let hasBottomMarginChild = child.className.includes('marginBottom')
-                            , tagChild = child.tagName
-                            , innardsChild = child.innerText
-
-                        if (tag === 'DIV') {
-                            for (grandchild of child.children) {
-                                if (grandchild.tagName === 'H1' || grandchild.tagName === 'H2' || grandchild.tagName === 'H3' || grandchild.tagName === 'H4' || grandchild.tagName === 'H5' || grandchild.tagName === 'P') {
-                                    tagChild = grandchild.tagName
-                                    innardsChild = grandchild.innerText
-                                    hasBottomMarginChild = grandchild.className.includes('marginBottom')
-
-                                    if (tagChild === 'H1') {
-                                        sidebarTable = sidebarTable + `<h1>${innardsChild}</h1>`
-                                    } else if (tagChild === 'H2' || tagChild === 'H3' || tagChild === 'H4' || tagChild === 'H5') {
-                                        sidebarTable = sidebarTable + `<${tagChild}>${innardsChild}</${tagChild}>`
-                                    } else if (tagChild === 'P') {
-                                        let margin = hasBottomMarginChild ? 'margin:0px 0px 10px;' : 'margin:0px;';
-                                        sidebarTable = sidebarTable + `<p style='${margin}'>${innardsChild}</p>`;
-                                    }
-
-                                }
-
-                            }
-                        }
-                    }
-                    sidebarTable = sidebarTable + '</div>'
-                    document.getElementById('exportContent').insertAdjacentHTML('beforeend', sidebarTable)
-                } else {
-                    console.log(element.className, tag, innards)
-                }
-            } else {
-                console.log(element.className, tag, innards)
-            }
-        }
-    </script><script>kits=[
+    <script>kits=[
     {
         name: "Adventurer's Kit",
         weight: "1L 2M",
@@ -948,7 +859,7 @@
       <div class='paragraphShell anchor marginBottom'>
         <div id='DetailsarefokzldscfeGS' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'DetailsarefokzldscfeGS'"></app-bm-chapter-icon>
-        <p>Details are found in <a [routerLink]='["/character-creation/2"]'>Chapter 2: Races</a> so go there and pick
+        <p>Details are found in <a [routerLink]='["/character-creation/2"]'>Chapter 2:: Races</a> so go there and pick
           one and come back here when you’re done.</p>
       </div>
       <div class="anchor">
@@ -967,7 +878,7 @@
         <p>You choose a Primary and a Secondary Archetype and pay the price in CrP for both based on your race’s
           Archetype
           Cost section. Descriptions of the different Archetypes are found in <a
-            [routerLink]='["/character-creation/3"]'>Chapter 3: Archetypes</a> along with more
+            [routerLink]='["/character-creation/3"]'>Chapter 3:: Archetypes</a> along with more
           details on how to combine them.</p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
@@ -997,7 +908,7 @@
       <div class='paragraphShell anchor marginBottom'>
         <div id='ForalistofqEgFbNLyxV' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'ForalistofqEgFbNLyxV'"></app-bm-chapter-icon>
-        <p>For a list of Flaws flip to <a [routerLink]='["/character-creation/4"]'>Chapter 4: Flaws</a>.</p>
+        <p>For a list of Flaws flip to <a [routerLink]='["/character-creation/4"]'>Chapter 4:: Flaws</a>.</p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
         <div id='IfyouvegonefzpxPPLpsX' class='anchorTag'></div>
@@ -1120,7 +1031,7 @@
         <div id='YourTraumaThetcQCbzbRu' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'YourTraumaThetcQCbzbRu'"></app-bm-chapter-icon>
         <p>Your Trauma Threshold is twice that (rounded up). Trauma is talked about more in <a
-            [routerLink]='["/rules-reference/3"]'>Chapter 3: Combat</a>.</p>
+            [routerLink]='["/rules-reference/3"]'>Chapter 3:: Combat</a>.</p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
         <div id='ForfractionsswHxTRLILu' class='anchorTag'></div>
@@ -1408,7 +1319,7 @@
       <div class='paragraphShell anchor marginBottom'>
         <div id='BothcostCrPjWGgwCArme' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'BothcostCrPjWGgwCArme'"></app-bm-chapter-icon>
-        <p>Both cost CrP and are found in <a [routerLink]='["/character-creation/5"]'>Chapter 5: Skills &
+        <p>Both cost CrP and are found in <a [routerLink]='["/character-creation/5"]'>Chapter 5:: Skills &
             Trainings</a> but, before you rush over there, you need to determine the starting Ranks for your Skill Suites.</p>
       </div>
       <div class="anchor">
@@ -1776,7 +1687,7 @@
         <app-bm-chapter-icon [id]="'2YYitVHfBUF'"></app-bm-chapter-icon>
         <p> This is the number of unredeemed contacts a character starts with, reflecting previous relationships he's created before 
           he became an adventurer. More on
-          Contacts and how to redeem them is found in <a [routerLink]='["/rules-reference/4"]'>Chapter 4: Challenges</a>.</p>
+          Contacts and how to redeem them is found in <a [routerLink]='["/rules-reference/4"]'>Chapter 4:: Challenges</a>.</p>
       </div>
       <table class="marginBottom all-centered first-left table-center">
         <thead>
@@ -1981,7 +1892,7 @@
         <div id='ThisismorefOEhzHBzTUL' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'ThisismorefOEhzHBzTUL'"></app-bm-chapter-icon>
         <p>This is more for Weird-Adept Archetypes, as they’ll head over to <a
-            [routerLink]='["/rules-reference/6"]'>Chapter 6: The Weird</a> to roll their starting
+            [routerLink]='["/rules-reference/6"]'>Chapter 6:: The Weird</a> to roll their starting
           spells but now is the time to record any free Skills, or Trainings you obtained free from your Archetype
           choice,
           as well as Archetype Abilities.</p>
@@ -2001,6 +1912,485 @@
     <div class="sideShell">
       <app-quick-nav [side]='side'></app-quick-nav>
     </div>
-    <h2 class="chapterTitle">Chapter 1 Step-by-Step Overview</h2>
+    <h2 class="chapterTitle">Chapter 1: Step-by-Step Overview</h2>
+  </div>
+</div><div class="outerShell">
+  <div class="innerShell">
+    <div class="backTexture"></div>
+    <div class="backColor"></div>
+    <div class="chapterShell">
+      <div class='anchor'>
+        <div id='3ibTsjRfDjl' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3ibTsjRfDjl'"></app-bm-chapter-icon>
+        <h2>Which Race Should I Choose?</h2>
+        <div class="underline"></div>
+      </div>
+      <div class='marginBottom paragraphShell anchor'>
+        <div id='3xvmHgvOCJI' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3xvmHgvOCJI'"></app-bm-chapter-icon>
+        <p> Your race effects character creation in 3 ways: Stat Score Modifiers, Gameplay Rewards, and
+          Archetype Costs. If you're new to RPGs in generally, go for a race that interests you based on the
+          flavor.</p>
+      </div>
+      <div class='anchor'>
+        <div id='3kOpuEvckQq' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3kOpuEvckQq'"></app-bm-chapter-icon>
+        <h3>Stat Score Modifiers</h3>
+        <div class="underline-sub"></div>
+      </div>
+      <div class='marginBottom paragraphShell anchor'>
+        <div id='3NRWeiscuJi' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3NRWeiscuJi'"></app-bm-chapter-icon>
+        <p> These modify the base stats that you roll. You can use it to balance out your character's weak spots
+          or you can use it to maximize what your character is already good it. We recommend the latter as
+          Bonfire is a game built around teamwork: you'll have friends who will be good at things your
+          character isn't.</p>
+      </div>
+      <div class='paragraphShell anchor marginBottom'>
+        <div id='notethatnonti' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'notethatnonti'"></app-bm-chapter-icon>
+        <p> Note that these adjustments can't bring score above 20 or below 1.</p>
+      </div>
+      <div class='anchor'>
+        <div id='3FtaYQizyom' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3FtaYQizyom'"></app-bm-chapter-icon>
+        <h3>Gameplay Rewards</h3>
+        <div class="underline-sub"></div>
+      </div>
+      <div class='marginBottom paragraphShell anchor'>
+        <div id='3zrqShuDWpY' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3zrqShuDWpY'"></app-bm-chapter-icon>
+        <p> Each race is meant to encourage a certain type of play. For instance, orcs gain bonuses for starting
+          things, like combats or Confrontations, so they reward players who are aggressive, while elves get
+          rewarded for being careful with how they engage with others. These are noted under the Racial
+          Temperament section in their summary. </p>
+      </div>
+      <div class='anchor'>
+        <div id='3NLyIsVRDgl' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3NLyIsVRDgl'"></app-bm-chapter-icon>
+        <h3>Archetype Costs</h3>
+        <div class="underline-sub"></div>
+      </div>
+      <div class=' paragraphShell anchor marginBottom'>
+        <div id='3zHPAsQZMCS' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3zHPAsQZMCS'"></app-bm-chapter-icon>
+        <p> Some races can spend less time mastering things than others, freeing up time (CrP) to focus on other
+          pursuits or becoming true masters of their vocation. This is reflected in the Archetype Costs.</p>
+      </div>
+
+      <div class="anchor">
+        <div id="3h2" class="anchorTag"></div>
+        <h2>Elves</h2>
+        <div class="underline"></div>
+      </div>
+
+      <div class='sidebarShell marginBottom float sidebar-width'>
+        <h1 class='sidebarTitle'>Elf Summary</h1>
+        <div class='anchor'>
+          <div id='3hg2' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'3hg2'"></app-bm-chapter-icon>
+          <h3>Modifiers</h3>
+        </div>
+        <div class='paragraphShell anchor'>
+          <div id='3p1' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'3p1'"></app-bm-chapter-icon>
+          <p> -2 Str</p>
+        </div>
+        <div class='paragraphShell anchor'>
+          <div id='3p2' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'3p2'"></app-bm-chapter-icon>
+          <p> -4 Con</p>
+        </div>
+        <div class='paragraphShell anchor'>
+          <div id='3p3' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'3p3'"></app-bm-chapter-icon>
+          <p> +4 Int</p>
+        </div>
+        <div class='marginBottom paragraphShell anchor'>
+          <div id='3p4' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'3p4'"></app-bm-chapter-icon>
+          <p> +2 Pre</p>
+        </div>
+
+        <div class='paragraphShell anchor'>
+          <div id='elvemediusizzed' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'elvemediusizzed'"></app-bm-chapter-icon>
+          <p>Medium Sized</p>
+        </div>
+        <div class='marginBottom paragraphShell anchor'>
+          <div id='elvfvistlaity' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'elvfvistlaity'"></app-bm-chapter-icon>
+          <p>Vitality Size Modifier is 10</p>
+        </div>
+        <div class='anchor'>
+          <div id='3MmaZUBRPGW' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'3MmaZUBRPGW'"></app-bm-chapter-icon>
+          <h3>Racial Temperament</h3>
+        </div>
+        <div class='marginBottom paragraphShell anchor'>
+          <div id='elvfitemprate' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'elvfitemprate'"></app-bm-chapter-icon>
+          <p>Patient</p>
+        </div>
+        <div class='anchor'>
+          <div id='3hg5' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'3hg5'"></app-bm-chapter-icon>
+          <h3>Archetype Costs</h3>
+        </div>
+        <div class="chartShell">
+          <div>Expert: 5</div>
+          <div>Fighter: 10</div>
+        </div>
+        <div class="chartShell">
+          <div>Servant: 5</div>
+          <div>Socialite: 0</div>
+        </div>
+        <div class="chartShell">
+          <div>Weird-Adept: 0</div>
+        </div>
+      </div>
+
+      <div class='marginBottom paragraphShell anchor'>
+        <div id='wewhoweretarpacie' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'wewhoweretarpacie'"></app-bm-chapter-icon>
+        <p class="italic">We who were trapped in prisons of flesh look to our forebears. For as the Alwealda
+          ascended to return to the Divines, we, their children, will also ascend when we too have perfected
+          ourselves in their sight.</p>
+      </div>
+
+      <div class='marginBottom paragraphShell anchor'>
+        <div id='3p20' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3p20'"></app-bm-chapter-icon>
+        <p> The Elves are the first born of the Divines. Originally, the inhabitants of the Painted World,
+          the source of all
+          magic, they now inhabit the Middle Realm as mentally ethereal beings.</p>
+      </div>
+      <div class='anchor'>
+        <div id='3hg16' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3hg16'"></app-bm-chapter-icon>
+        <h3>Appearance</h3>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='3p26' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3p26'"></app-bm-chapter-icon>
+        <div class="underline-sub"></div>
+        <p> Elves are slender beings that are widely considered classically beautiful, though many find
+          their features alien
+          and off putting. They uniformly have long ears that taper to a point at the end.</p>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='3p27' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3p27'"></app-bm-chapter-icon>
+        <p> Their eyes are pure white, with no iris or pupil visible, this matched with their sharp teeth,
+          can give them a
+          feline turn to their face.</p>
+      </div>
+      <div class='marginBottom paragraphShell anchor'>
+        <div id='3p28' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3p28'"></app-bm-chapter-icon>
+        <p> Elves naturally survive off the ebb and flow of magic that drifts through the air of the Painted
+          World. While
+          still present in the Middle Realm, these winds are a sliver of their natural magnitude and so
+          Elves need to find
+          other sources; the main one being through the magic inherent in all living creatures. While
+          vegetables do have
+          magic in them, an Elf would have to consume 100s of pounds of lettuce each day to not die of
+          starvation. The
+          only realistic way of getting enough magic to survive is through the consumption of raw meat.
+        </p>
+      </div>
+      <div class='anchor'>
+        <div id='3hg17' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3hg17'"></app-bm-chapter-icon>
+        <h3>Personality</h3>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='3p29' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3p29'"></app-bm-chapter-icon>
+        <div class="underline-sub"></div>
+        <p> To describe an Elf as “careful” would be a huge understatement. They tend to live longer than other
+          races,
+          not because some supernaturally long lifespan, but because they're always careful about their
+          actions. They see
+          other races as brash and impetuous while they're in turn seen as slow and cowardly.
+        </p>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='3p30' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3p30'"></app-bm-chapter-icon>
+        <p> It's not they're incapable of great emotion or quick action but elves seem to understand that with
+          every action
+          comes a consequence, whether that action was well meaning or not, and that this karmic force is more
+          powerful than
+          any other law or power.
+        </p>
+      </div>
+      <div class='marginBottom paragraphShell anchor'>
+        <div id='3p31' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3p31'"></app-bm-chapter-icon>
+        <p> However, once set on a course, it is hard to dissuade an elf, for they do nothing lightly.</p>
+      </div>
+      <div class="anchor">
+        <div id="3h3" class="anchorTag"></div>
+        <h2>Humans</h2>
+        <div class="underline"></div>
+      </div>
+      <div class='sidebarShell marginBottom float sidebar-width'>
+        <h1 class='sidebarTitle'>Human Summary</h1>
+        <div class='anchor'>
+          <div id='3hg6' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'3hg6'"></app-bm-chapter-icon>
+          <h3>Modifiers</h3>
+        </div>
+        <div class='paragraphShell anchor'>
+          <div id='3p5' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'3p5'"></app-bm-chapter-icon>
+          <p>Medium Sized</p>
+        </div>
+        <div class='paragraphShell anchor'>
+          <div id='humanvialitiy' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'humanvialitiy'"></app-bm-chapter-icon>
+          <p>Vitality Size Modifier is 15</p>
+        </div>
+        <div class='paragraphShell anchor'>
+          <div id='honordiceincrease' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'honordiceincrease'"></app-bm-chapter-icon>
+          <p>Increase your Honor Dice by 1 size</p>
+        </div>
+        <div class='marginBottom paragraphShell anchor'>
+          <div id='yourstrongmeidumeiot' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'yourstrongmeidumeiot'"></app-bm-chapter-icon>
+          <p>All your starting Traits start at Rank 2</p>
+        </div>
+        <div class='anchor'>
+          <div id='3yeKAKxlQaZ' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'3yeKAKxlQaZ'"></app-bm-chapter-icon>
+          <h3>Racial Temperament</h3>
+        </div>
+        <div class='marginBottom paragraphShell anchor'>
+          <div id='humanreacialtempiar' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'humanreacialtempiar'"></app-bm-chapter-icon>
+          <p>We all have our theories on what Personality traits are shared by the human race,
+            and I'm not interested in wading in on that debate so instead of having a Racial Temperament,
+            they get special Modifiers.
+          </p>
+        </div>
+        <div class='anchor'>
+          <div id='3hg9' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'3hg9'"></app-bm-chapter-icon>
+          <h3>Archetype Costs</h3>
+        </div>
+        <div class="chartShell">
+          <div>Expert: 0</div>
+          <div>Fighter: 0</div>
+        </div>
+        <div class="chartShell">
+          <div>Servant: 0</div>
+          <div>Socialite: 0</div>
+        </div>
+        <div class="chartShell">
+          <div>Weird-Adept: 0</div>
+        </div>
+      </div>
+
+      <div class='marginBottom paragraphShell anchor'>
+        <div id='inthefdaysofoyour' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'inthefdaysofoyour'"></app-bm-chapter-icon>
+        <p class="italic">In the days of yore, the Divines and the Giants fought in a war unending. And from
+          their struggles fell their blood and sweat to the earth. From that mixture arose the first man and
+          women, born of blood, sweat, and earth; the prices we must pay for all things.</p>
+      </div>
+      <div class='marginBottom paragraphShell anchor'>
+        <div id='3p32' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3p32'"></app-bm-chapter-icon>
+        <p> Humans are the first natives of the Middle Realm. They are creatures born from strife, who’ve
+          carved for
+          themselves a place in the world through fire, steel, and grit.</p>
+      </div>
+      <div class='anchor'>
+        <div id='3hg19' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3hg19'"></app-bm-chapter-icon>
+        <h3>Appearance</h3>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='3p38' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3p38'"></app-bm-chapter-icon>
+        <div class="underline-sub"></div>
+        <p> The Humans of the Middle Realm look like you and me. Their skin, eye, and hair color range
+          widely, adapted to
+          the region of that Human’s origin, with darker skins more common towards the equator.</p>
+      </div>
+      <div class='marginBottom paragraphShell anchor'>
+        <div id='3p39' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3p39'"></app-bm-chapter-icon>
+        <p> If you don’t know what a Human looks like, I don’t know what to tell you.</p>
+      </div>
+      <div class='anchor'>
+        <div id='3hg20' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3hg20'"></app-bm-chapter-icon>
+        <h3>Personality</h3>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='3p40' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3p40'"></app-bm-chapter-icon>
+        <div class="underline-sub"></div>
+        <p> The truth is Humans are odd and quirky individuals that seem to have the defining trait of their
+          curiosity and
+          ambition.</p>
+      </div>
+      <div class='marginBottom paragraphShell anchor'>
+        <div id='3p41' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3p41'"></app-bm-chapter-icon>
+        <p> Truthfully, you probably have your own opinion about how humans behave and why they behave the
+          way they do and
+          nothing I write in this little blurb is going to convince you otherwise.</p>
+      </div>
+
+      <div class="anchor">
+        <div id="orcheadertag" class="anchorTag"></div>
+        <h2>Orcs</h2>
+        <div class="underline"></div>
+      </div>
+
+      <div class='sidebarShell marginBottom float sidebar-width'>
+        <h1 class='sidebarTitle'>Orc Summary</h1>
+        <div class='anchor'>
+          <div id='3hg10' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'3hg10'"></app-bm-chapter-icon>
+          <h3>Modifiers</h3>
+        </div>
+        <div class='paragraphShell anchor'>
+          <div id='3p6' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'3p6'"></app-bm-chapter-icon>
+          <p> +4 Str</p>
+        </div>
+        <div class='paragraphShell anchor'>
+          <div id='3p7' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'3p7'"></app-bm-chapter-icon>
+          <p> +3 Con</p>
+        </div>
+        <div class='paragraphShell anchor'>
+          <div id='3p8' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'3p8'"></app-bm-chapter-icon>
+          <p> -4 Int</p>
+        </div>
+        <div class='marginBottom paragraphShell anchor'>
+          <div id='3p9' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'3p9'"></app-bm-chapter-icon>
+          <p> -4 Pre</p>
+        </div>
+
+        <div class='paragraphShell anchor'>
+          <div id='orcmediusdif' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'orcmediusdif'"></app-bm-chapter-icon>
+          <p>Medium Sized</p>
+        </div>
+        <div class='marginBottom paragraphShell anchor'>
+          <div id='orcviality' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'orcviality'"></app-bm-chapter-icon>
+          <p>Vitality Size Modifier is 15</p>
+        </div>
+        <div class='anchor'>
+          <div id='3lCygNUAsrN' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'3lCygNUAsrN'"></app-bm-chapter-icon>
+          <h3>Racial Temperament</h3>
+        </div>
+        <div class='marginBottom paragraphShell anchor'>
+          <div id='orcviality' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'orcviality'"></app-bm-chapter-icon>
+          <p>Aggressive</p>
+        </div>
+        <div class='anchor'>
+          <div id='3hg13' class='anchorTag'></div>
+          <app-bm-chapter-icon [id]="'3hg13'"></app-bm-chapter-icon>
+          <h3>Archetype Costs</h3>
+        </div>
+        <div class="chartShell">
+          <div>Expert: 10</div>
+          <div>Fighter: 0</div>
+        </div>
+        <div class="chartShell">
+          <div>Servant: 15</div>
+          <div>Socialite: 20</div>
+        </div>
+        <div class="chartShell">
+          <div>Weird-Adept: 10</div>
+        </div>
+      </div>
+
+      <div class='marginBottom paragraphShell anchor'>
+        <div id='daysofhashenightioefe' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'daysofhashenightioefe'"></app-bm-chapter-icon>
+        <p class="italic">Days of ashes and nights of fire; we were great warriors then. But our swords and
+          shields were stolen from us and now we, the nomads, search for things that no hand can hold. Where
+          must we go? We who search the wasteland for our better selves?</p>
+      </div>
+      <div class='marginBottom paragraphShell anchor'>
+        <div id='3p42' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3p42'"></app-bm-chapter-icon>
+        <p> Heirs to a great empire long since lost to the ages, the orcs cling to tradition in the wake of
+          uncertain and dark times. Some say that they value only strength but to truly known an orc is to
+          know the soul of honor.</p>
+      </div>
+      <div class='anchor'>
+        <div id='3hg22' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3hg22'"></app-bm-chapter-icon>
+        <h3>Appearance</h3>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='3p49' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3p49'"></app-bm-chapter-icon>
+        <div class="underline-sub"></div>
+        <p> Orcs have dark green or grey skin with porcine nose and tusks that jut up from their lower jaw.
+          They tend to be
+          stocky, with thick muscles and hunched shoulders.</p>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='3p50' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3p50'"></app-bm-chapter-icon>
+        <p> Their hair is wiry, closer to steel wool than anything else and their eyes are completely
+          black, with no
+          pupils or irises, giving them an indescribable inhumanness to it.</p>
+      </div>
+      <div class='marginBottom paragraphShell anchor'>
+        <div id='3p51' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3p51'"></app-bm-chapter-icon>
+        <p> Naturally, orcs are scavengers, able to survive on practically anything, no matter how rotten or
+          foul.</p>
+      </div>
+      <div class='anchor'>
+        <div id='3hg23' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3hg23'"></app-bm-chapter-icon>
+        <h3>Personality</h3>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='3p52' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3p52'"></app-bm-chapter-icon>
+        <div class="underline-sub"></div>
+        <p> An orc’s life is defined by struggle: from birth to death, they conceptualize the universe as having
+          a vendetta against them. This can often give them a martyr complex and make them morose traveling
+          companions at times because they feel the weight of the world.
+        </p>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='3p53' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3p53'"></app-bm-chapter-icon>
+        <p> They can also come across as aggressive, which some have pointed out is a defense mechanism, but
+          orcs would simply scoff at that.</p>
+      </div>
+      <div class='paragraphShell marginBottom anchor'>
+        <div id='3p54' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'3p54'"></app-bm-chapter-icon>
+        <p> There’s nothing an orc values more than their honor and the chance to prove themselves against a
+          worthy foe. This is often seen in their deities across orcish cultures, which are almost exclusively
+          pantheons of their greatest foes. It is taken for granted that you are only as good as your enemies.
+        </p>
+      </div>
+
+    </div>
+    <div class="sideShell">
+      <app-quick-nav [side]='side'></app-quick-nav>
+    </div>
+    <h2 class="chapterTitle">Chapter 2: Races</h2>
   </div>
 </div>    </div><script src="js/script.js"></script></body></html>

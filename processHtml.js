@@ -1,13 +1,20 @@
 function exportToObject(element) {
     var html = document.getElementsByClassName(element);
 
-    document.getElementById('exportContent').insertAdjacentHTML('beforeend', `<h2>${document.querySelector('.chapterTitle').innerText}</h2>`)
+    let chapterTitleArray = document.getElementsByClassName('chapterTitle');
+    let chapterIndex = 0;
 
-    html[0].childNodes.forEach(element => {
-        if (element.tagName) {
-            cleanTheElement(element)
-        }
-    })
+    document.getElementsByClassName('sidebarShell')
+
+    for (chapter of html) {
+        document.getElementById('exportContent').insertAdjacentHTML('beforeend', `<h1>${chapterTitleArray.item(chapterIndex).innerText}</h1>`)
+        ++chapterIndex
+        chapter.childNodes.forEach(element => {
+            if (element.tagName) {
+                cleanTheElement(element)
+            }
+        })
+    }
 
     document.getElementById('oldContent').innerHTML = ''
 }
@@ -16,18 +23,24 @@ function cleanTheElement(element) {
     let hasBottomMargin = element.className.includes('marginBottom')
         , tag = element.tagName
         , innards = element.innerText
+        , hasItalics = false
 
     if (tag === 'DIV') {
         for (child of element.children) {
-            if (child.tagName === 'H1' || child.tagName === 'H2' || child.tagName === 'H3' || child.tagName === 'H4' || child.tagName === 'H5' || child.tagName === 'P') {
+            if ((child.tagName === 'H1' || child.tagName === 'H2' || child.tagName === 'H3' || child.tagName === 'H4' || child.tagName === 'H5' || child.tagName === 'P') && !element.className.includes('sidebarShell')) {
                 tag = child.tagName
+                hasItalics = child.className.includes("italic")
             }
         }
     }
 
     if (tag === 'P') {
         let margin = hasBottomMargin ? 'margin:0px 0px 10px;' : 'margin:0px;';
-        document.getElementById('exportContent').insertAdjacentHTML('beforeend', `<p style='${margin}'>${innards}</p>`)
+        if (hasItalics) {
+            document.getElementById('exportContent').insertAdjacentHTML('beforeend', `<p style='${margin}'><i>${innards}</i></p>`)
+        } else {
+            document.getElementById('exportContent').insertAdjacentHTML('beforeend', `<p style='${margin}'>${innards}</p>`)
+        }
     } else if (tag === 'H1' || tag === 'H2' || tag === 'H3' || tag === 'H4' || tag === 'H5') {
         document.getElementById('exportContent').insertAdjacentHTML('beforeend', `<${tag}>${innards}</${tag}>`)
     } else if (tag === 'TABLE' || tag === 'UL') {
@@ -56,7 +69,7 @@ function cleanTheElement(element) {
                     , tagChild = child.tagName
                     , innardsChild = child.innerText
 
-                if (tag === 'DIV') {
+                if (tagChild === 'DIV' && !child.className.includes('chart')) {
                     for (grandchild of child.children) {
                         if (grandchild.tagName === 'H1' || grandchild.tagName === 'H2' || grandchild.tagName === 'H3' || grandchild.tagName === 'H4' || grandchild.tagName === 'H5' || grandchild.tagName === 'P') {
                             tagChild = grandchild.tagName
@@ -74,13 +87,15 @@ function cleanTheElement(element) {
                             } else if (tagChild === 'P') {
                                 let margin = hasBottomMarginChild ? 'margin:0px 0px 10px;' : 'margin:0px;';
                                 sidebarTable = sidebarTable + `<p style='${margin}'>${innardsChild}</p>`;
-                            } else {
-                                console.log('SIDEBAR EXCEPTION: ', tagChild, innardsChild)
                             }
-
                         }
-
                     }
+                } else if (tagChild === 'DIV' && child.className.includes('chart')) {
+                    for (grandchild of child.children) {
+                        sidebarTable = sidebarTable + `<p style='margin:0px;'>${grandchild.innerText}</p>`
+                    }
+                } else if (tagChild === 'H1') {
+                    sidebarTable = sidebarTable + `<h5>${innardsChild}</h5>`
                 }
             }
             sidebarTable = sidebarTable + '</div>'
@@ -98,7 +113,7 @@ function cleanTheElement(element) {
                   </tr>`
                 })
 
-                kitTables = kitTables + `<table style='margin:0px 0px 10px;'>
+                kitTables = kitTables + `<table style='margin:0px 0px 10px;>
                 <thead>
                   <tr>
                     <th colspan="3">${kit.name}</th>

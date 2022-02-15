@@ -9,7 +9,8 @@ const { connection } = require('./servStuff')
 const { round, add } = require('lodash')
     , { tables, multipliers } = require('./table.js')
     , beastVitalityList = require('../object')
-    , string = require('../string.js')
+    , string = require('../string.js');
+const { Switch } = require('react-router-dom');
 
 const app = new express()
 app.use(bodyParser.json())
@@ -663,21 +664,19 @@ function formatPHB(i, html) {
 
     fs.readFile(route, "utf-8", async (err, data) => {
         if (err) { console.log(err) }
-        // if (i > 0) {
-        //     html = html + cleanUniqueHtml(data)
-        // } else {
+        
         html = html + data
-        // }
-
-        if (i === 0) { html = html + await addScriptsAndBody() }
-        console.log('after scripts are added')
-        if (i === 1) {
+        
+        if (i === 0) {
+            html = html + await addScriptsAndBody()
+        }
+        if (i === 2) {
             html = html + endHtml
             html = html.replace(/h3/gs, 'h4')
                 .replace(/h2/gs, 'h3')
                 .replace(/h1/gs, 'h2')
                 .replace(/h5/gs, 'h1')
-                .replace(/Chapter \d+.(.*?)/gs, 'Chapter $1')
+                .replace(/Chapter \d+.(.*?) /gs, 'Chapter $1: ')
             fs.writeFile(`./bonfirePHB.html`, html, (err) => {
                 if (err) console.log(err);
                 console.log(`Successfully Compiled PHB.`);
@@ -716,6 +715,17 @@ function addScriptsAndBody() {
             resolve(scripts + body)
         })
     })
+}
+
+function getChapterTitle(i) {
+    switch (i) {
+        case 1:
+            return 'Step-by-Step Overview'
+        case 2:
+            return 'Races'
+        default:
+            return 'NOT SET UP YET'
+    }
 }
 
 function cleanUniqueHtml(data) {

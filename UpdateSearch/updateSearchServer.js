@@ -670,7 +670,7 @@ function formatPHB(i, html) {
         if (i === 0) {
             html = html + await addScriptsAndBody()
         }
-        if (i === 3) {
+        if (i === 5) {
             html = html + endHtml
             html = html.replace(/h3/gs, 'h4')
                 .replace(/h2/gs, 'h3')

@@ -4,11 +4,10 @@ function exportToObject(element) {
     let chapterTitleArray = document.getElementsByClassName('chapterTitle');
     let chapterIndex = 0;
 
-    document.getElementsByClassName('sidebarShell')
-
     for (chapter of html) {
         document.getElementById('exportContent').insertAdjacentHTML('beforeend', `<h1>${chapterTitleArray.item(chapterIndex).innerText}</h1>`)
         ++chapterIndex
+
         chapter.childNodes.forEach(element => {
             if (element.tagName) {
                 cleanTheElement(element)
@@ -59,7 +58,12 @@ function cleanTheElement(element) {
     } else if (tag === 'TABLE' || tag === 'UL') {
         document.getElementById('exportContent').append(element)
     } else if (tag === 'DIV') {
-        if (element.className.includes('pair')) {
+        if (element.className.includes('multiple-tables-shell')) {
+            document.getElementById('exportContent').append(document.getElementById('backgroundTable'))
+            document.getElementById('exportContent').append(document.getElementById('behaviorTable'))
+            document.getElementById('exportContent').append(document.getElementById('mentalTable'))
+            document.getElementById('exportContent').append(document.getElementById('physicalTable'))
+        } else if (element.className.includes('pair')) {
             for (child of element.children) {
                 if (child.className.includes('pair')) {
                     let first = ''

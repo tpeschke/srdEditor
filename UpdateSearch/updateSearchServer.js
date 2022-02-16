@@ -664,13 +664,13 @@ function formatPHB(i, html) {
 
     fs.readFile(route, "utf-8", async (err, data) => {
         if (err) { console.log(err) }
-        
+
         html = html + data
-        
+
         if (i === 0) {
             html = html + await addScriptsAndBody()
         }
-        if (i === 5) {
+        if (i === 7) {
             html = html + endHtml
             html = html.replace(/h3/gs, 'h4')
                 .replace(/h2/gs, 'h3')
@@ -707,12 +707,18 @@ function addScriptsAndBody() {
         let body = `<script src="processHtml.js"></script></head><body><button style="position: sticky;top: 0;width: 100%;height: 50px;background: green;color: white;"onclick="exportToObject('chapterShell');">Process HTML</button><div id="exportContent"></div><div id="oldContent">`
         let scripts = ''
         let kitRoute = '../bonfireSRD/src/app/character-creation/chapter-one/cc-one/kit.js'
+        let equipmentRoute = '../bonfireSRD/src/app/character-creation/chapter-six/tables.js'
 
-        fs.readFile(kitRoute, "utf-8", (err, data) => {
+        fs.readFile(kitRoute, "utf-8", (err, kits) => {
             if (err) { console.log(err) }
-            scripts = scripts + `<script>kits=${data.split('export default ')[1]}</script>`
+            scripts = scripts + `<script>kits=${kits.split('export default ')[1]}</script>`
 
-            resolve(scripts + body)
+            fs.readFile(equipmentRoute, "utf-8", (err, equipment) => {
+                if (err) { console.log(err) }
+                scripts = scripts + `<script>equipmentTables=${equipment.split('export default ')[1]}</script>`
+
+                resolve(scripts + body)
+            })
         })
     })
 }

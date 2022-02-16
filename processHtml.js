@@ -16,6 +16,25 @@ function exportToObject(element) {
     }
 
     document.getElementById('oldContent').innerHTML = ''
+
+    var preHtml = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export HTML To Doc</title></head><body>";
+    var postHtml = "</body></html>";
+    var html = preHtml + document.getElementById('exportContent').innerHTML + postHtml;
+    var blob = new Blob(['\ufeff', html], {
+        type: 'application/msword'
+    });
+    var url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(html);
+    filename = `${fileName}.doc`;
+    var downloadLink = document.createElement("a");
+    document.body.appendChild(downloadLink);
+    if (navigator.msSaveOrOpenBlob) {
+        navigator.msSaveOrOpenBlob(blob, filename);
+    } else {
+        downloadLink.href = url;
+        downloadLink.download = filename;
+        downloadLink.click();
+    }
+    document.body.removeChild(downloadLink);
 }
 
 function cleanTheElement(element) {
@@ -58,7 +77,7 @@ function cleanTheElement(element) {
     } else if (tag === 'TABLE' || tag === 'UL' || tag === 'OL') {
         document.getElementById('exportContent').append(element)
     } else if (tag === 'DIV') {
-        if (element.className.includes('table-overflow') || element.className.includes('descriptionShell') || element.className.includes('multiple-tables-shell')) {
+        if (element.className.includes('table-overflow') || element.className.includes('descriptionShell') || element.className.includes('multiple-tables-shell') || element.className.includes('rudiment-shell') || element.className.includes('falling-damage-shell')) {
             // EQUIPMENT TABLES
             let tables = equipmentTables.tables
             if (element.innerText.includes('Animals, Livestock & Pets')) {
@@ -199,9 +218,9 @@ function cleanTheElement(element) {
                                                     <th>Sell Back</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>` 
-                                            + body + 
-                                                `<tr>
+                                            <tbody>`
+                    + body +
+                    `<tr>
                                                     <th>Weight: ${kit.weight}</th>
                                                     <th colspan="2">Extra Cash: ${kit.cash}</th>
                                                  </tr>
@@ -211,6 +230,8 @@ function cleanTheElement(element) {
 
             document.getElementById('exportContent').insertAdjacentHTML('beforeend', kitTables)
 
+        } else if (element.className.includes('miscImage')) {
+            document.getElementById('exportContent').insertAdjacentHTML('beforeend', '<h1>IMAGE HERE</h1>')
         } else {
             console.log('DIV EXCEPTION: ', element.className, tag, innards)
         }
@@ -221,7 +242,7 @@ function cleanTheElement(element) {
 
 function assembleEquipmentTable(table, title) {
     let multi = equipmentTables.multipliers
-    , isThereSize = !!table[0].size
+        , isThereSize = !!table[0].size
 
 
     assembledTable = `<table>

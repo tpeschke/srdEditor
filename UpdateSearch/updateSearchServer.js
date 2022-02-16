@@ -658,9 +658,9 @@ function calculateAverageOfDice(diceString) {
     return totalValue
 }
 
-function formatPHB(i, html) {
+function formatPHB(i, html, type) {
     let endHtml = '    </div><script src="js/script.js"></script></body></html>'
-        , route = getRoute(i);
+        , route = getRoute(i, type);
 
     fs.readFile(route, "utf-8", async (err, data) => {
         if (err) { console.log(err) }
@@ -668,7 +668,7 @@ function formatPHB(i, html) {
         html = html + data
 
         if (i === 0) {
-            html = html + await addScriptsAndBody()
+            html = html + await addScriptsAndBody(type === 'cc' ? 'CharacterCreationHandbook' : 'RulesReference')
         }
         if (i === 7) {
             html = html + endHtml
@@ -676,21 +676,26 @@ function formatPHB(i, html) {
                 .replace(/h2/gs, 'h3')
                 .replace(/h1/gs, 'h2')
                 .replace(/h5/gs, 'h1')
-                .replace(/Chapter \d+.(.*?) /gs, 'Chapter $1: ')
-            fs.writeFile(`./bonfirePHB.html`, html, (err) => {
+                .replace(/Chapter \d+.(.*?) /gs, 'Chapter $1')
+            fs.writeFile(`./${type === 'cc' ? 'CharacterCreationHandbook' : 'RulesReference'}.html`, html, (err) => {
                 if (err) console.log(err);
-                console.log(`Successfully Compiled PHB.`);
+                console.log(`Successfully Compiled ${type === 'cc' ? 'CharacterCreationHandbook' : 'RulesReference'}.`);
+
+                if (type === 'rr') {
+                    formatPHB(0, '', 'cc')
+                }
             });
         } else {
             console.log('compiling chapter ' + ++i)
-            formatPHB(i, html)
+            formatPHB(i, html, type)
         }
     })
 }
 
-function getRoute(i) {
+function getRoute(i, type) {
     let chapterName = numWords(i)
-    let route = `../bonfireSRD/src/app/character-creation/chapter-${chapterName}/cc-${chapterName}/cc-${chapterName}.component.html`
+    let typeFull = type === 'cc' ? 'character-creation' : 'rules-reference'
+    let route = `../bonfireSRD/src/app/${typeFull}/chapter-${chapterName}/${type}-${chapterName}/${type}-${chapterName}.component.html`
 
     if (i === 0) {
         route = './UpdateSearch/processbase.html'
@@ -702,36 +707,29 @@ function getRoute(i) {
     return route
 }
 
-function addScriptsAndBody() {
+function addScriptsAndBody(fileName) {
     return new Promise(resolve => {
-        let body = `<script src="processHtml.js"></script></head><body><button style="position: sticky;top: 0;width: 100%;height: 50px;background: green;color: white;"onclick="exportToObject('chapterShell');">Process HTML</button><div id="exportContent"></div><div id="oldContent">`
+        let body = `<script>fileName='${fileName}'</script><script src="processHtml.js"></script></head><body><button style="position: sticky;top: 0;width: 100%;height: 50px;background: green;color: white;"onclick="exportToObject('chapterShell');">Process HTML</button><div id="exportContent"></div><div id="oldContent">`
         let scripts = ''
         let kitRoute = '../bonfireSRD/src/app/character-creation/chapter-one/cc-one/kit.js'
         let equipmentRoute = '../bonfireSRD/src/app/character-creation/chapter-six/tables.js'
 
-        fs.readFile(kitRoute, "utf-8", (err, kits) => {
-            if (err) { console.log(err) }
-            scripts = scripts + `<script>kits=${kits.split('export default ')[1]}</script>`
-
-            fs.readFile(equipmentRoute, "utf-8", (err, equipment) => {
+        if (fileName === 'CharacterCreationHandbook') {
+            fs.readFile(kitRoute, "utf-8", (err, kits) => {
                 if (err) { console.log(err) }
-                scripts = scripts + `<script>equipmentTables=${equipment.split('export default ')[1]}</script>`
-
-                resolve(scripts + body)
+                scripts = scripts + `<script>kits=${kits.split('export default ')[1]}</script>`
+    
+                fs.readFile(equipmentRoute, "utf-8", (err, equipment) => {
+                    if (err) { console.log(err) }
+                    scripts = scripts + `<script>equipmentTables=${equipment.split('export default ')[1]}</script>`
+    
+                    resolve(scripts + body)
+                })
             })
-        })
+        } else {
+            resolve(body)
+        }
     })
-}
-
-function getChapterTitle(i) {
-    switch (i) {
-        case 1:
-            return 'Step-by-Step Overview'
-        case 2:
-            return 'Races'
-        default:
-            return 'NOT SET UP YET'
-    }
 }
 
 function cleanUniqueHtml(data) {
@@ -1019,7 +1017,7 @@ massive(connection).then(dbI => {
         // }
         // formatNewSections()
         // console.log(calculateAverageOfDice("1 + 4d20!+ 3!"))
-        formatPHB(0, '')
+        formatPHB(0, '', 'rr')
         // beastVitalityUpgradeScript()
         // correctString()
         console.log(`The night lays like a lullaby on the earth 4343`)

@@ -5,7 +5,672 @@
     <meta charset="utf-8">
     <title>Export to Doc</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script>fileName='RulesReference'</script><script src="processHtml.js"></script></head><body><button style="position: sticky;top: 0;width: 100%;height: 50px;background: green;color: white;"onclick="exportToObject('chapterShell');">Process HTML</button><div id="exportContent"></div><div id="oldContent"><div class="outerShell">
+    <script>kits=[
+    {
+        name: "Adventurer's Kit",
+        weight: "1L 2M",
+        cash: "4d20! sc",
+        items: [
+            {
+                name: 'Sheathe, Small, Leather x3*',
+                size: 'n/a',
+                sellback: '7.5 sc'
+            },
+            {
+                name: '2 S Weapons*',
+                size: 'n/a',
+                sellback: '30 sc'
+            },
+            {
+                name: '3 Thrown Ranged Weapons*',
+                size: 'n/a',
+                sellback: '15 sc per'
+            },
+            {
+                name: 'Belt, Leather*',
+                size: 'n/a',
+                sellback: '1 sc'
+            },
+            {
+                name: 'Breeches, Linen*',
+                size: 'n/a',
+                sellback: '12 sc'
+            },
+            {
+                name: 'Shirt, Wool*',
+                size: 'n/a',
+                sellback: '13 sc'
+            },
+            {
+                name: 'Boots, Leather*',
+                size: 'n/a',
+                sellback: '10 sc'
+            },
+            {
+                name: 'Backpack, Large*',
+                size: '+1L',
+                sellback: '15 sc'
+            },
+            {
+                name: 'Rations, Person, Day x7',
+                size: '7S',
+                sellback: '17.5 sc'
+            },
+            {
+                name: 'Beeswax',
+                size: 'S',
+                sellback: '0.3 sc'
+            },
+            {
+                name: 'Fabric, Canvas, Soft (Sq. Yard)',
+                size: 'S',
+                sellback: '2.6 sc'
+            },
+            {
+                name: 'Rope, Hemp, 1/2" (250#), 100 ft',
+                size: 'M',
+                sellback: '26 sc'
+            },
+            {
+                name: 'Auger, Wood Handle, Steel Head',
+                size: 'M',
+                sellback: '15 sc'
+            },
+            {
+                name: 'Chalk, 4", Box of 20',
+                size: 'S',
+                sellback: '.05 sc'
+            },
+            {
+                name: 'Grapnel Hook',
+                size: 'S',
+                sellback: '16 sc'
+            },
+            {
+                name: 'Mallet, Wood',
+                size: 'S',
+                sellback: '1 sc'
+            },
+            {
+                name: 'Spike, Iron, 12"',
+                size: 'S',
+                sellback: '1.25 sc'
+            },
+            {
+                name: 'Torch, Tallow x5',
+                size: '5S',
+                sellback: '1 sc'
+            }
+        ]
+    },
+    {
+        name: "Merchant's Kit",
+        weight: "n/a (1L 1S on mule)",
+        cash: "5d20! sc",
+        items: [
+            {
+                name: 'Sheathe, Small, Leather*',
+                size: 'n/a',
+                sellback: '2.5 sc'
+            },
+            {
+                name: '1 S Weapon*',
+                size: 'n/a',
+                sellback: '15 sc'
+            },
+            {
+                name: 'Belt, Leather*',
+                size: 'n/a',
+                sellback: '1 sc'
+            },
+            {
+                name: 'Breeches, Linen*',
+                size: 'n/a',
+                sellback: '12 sc'
+            },
+            {
+                name: 'Shirt, Wool*',
+                size: 'n/a',
+                sellback: '13 sc'
+            },
+            {
+                name: 'Boots, Leather*',
+                size: 'n/a',
+                sellback: '10 sc'
+            },
+            {
+                name: 'Mule',
+                size: 'n/a',
+                sellback: '90 sc'
+            },
+            {
+                name: 'Rations, Person, Day x7',
+                size: '7S',
+                sellback: '17.5 sc'
+            },
+            {
+                name: 'Canteen (Quart)',
+                size: 'S',
+                sellback: '12 sc'
+            },
+            {
+                name: 'Bag, Small',
+                size: 'S',
+                sellback: '0.24 sc'
+            },
+            {
+                name: 'Rations, Dairy Cow, Hay, Daily x7',
+                size: '7M',
+                sellback: '1.61 sc'
+            }
+        ]
+    },
+    {
+        name: "Traveler's Kit",
+        weight: "1M 2S",
+        cash: "2d10! sc",
+        items: [
+            {
+                name: 'Coat of Plates*',
+                size: 'S',
+                sellback: '190 sc'
+            },
+            {
+                name: 'Sheathe, Small, Leather*',
+                size: 'n/a',
+                sellback: '2.5 sc'
+            },
+            {
+                name: '1 S Weapons*',
+                size: 'n/a',
+                sellback: '15 sc'
+            },
+            {
+                name: 'Belt, Leather*',
+                size: 'n/a',
+                sellback: '1 sc'
+            },
+            {
+                name: 'Breeches, Linen*',
+                size: 'n/a',
+                sellback: '12 sc'
+            },
+            {
+                name: 'Shirt, Wool*',
+                size: 'n/a',
+                sellback: '13 sc'
+            },
+            {
+                name: 'Boots, Leather*',
+                size: 'n/a',
+                sellback: '10 sc'
+            },
+            {
+                name: 'Coat, Buckskin*',
+                size: 'S',
+                sellback: '50 sc'
+            },
+            {
+                name: 'Hat, Very Large, Rabbit Fur*',
+                size: 'n/a',
+                sellback: '.15 sc'
+            },
+            {
+                name: 'Rations, Person, Day x3',
+                size: '3S',
+                sellback: '7.5 sc'
+            },
+        ]
+    },
+    {
+        name: "Thief's Kit",
+        weight: "1M",
+        cash: "5d20! sc",
+        items: [
+            {
+                name: 'Sheathe, Small, Leather x2*',
+                size: 'n/a',
+                sellback: '5 sc'
+            },
+            {
+                name: '2 S Weapons*',
+                size: 'n/a',
+                sellback: '30 sc'
+            },
+            {
+                name: 'Belt, Leather*',
+                size: 'n/a',
+                sellback: '1 sc'
+            },
+            {
+                name: 'Breeches, Linen*',
+                size: 'n/a',
+                sellback: '12 sc'
+            },
+            {
+                name: 'Shirt, Wool*',
+                size: 'n/a',
+                sellback: '13 sc'
+            },
+            {
+                name: 'Boots, Leather*',
+                size: 'n/a',
+                sellback: '10 sc'
+            },
+            {
+                name: 'Backpack, Large*',
+                size: '+1L',
+                sellback: '15 sc'
+            },
+            {
+                name: 'Rations, Person, Day x1',
+                size: 'S',
+                sellback: '2.5 sc'
+            },
+            {
+                name: 'Beeswax',
+                size: 'S',
+                sellback: '0.3 sc'
+            },
+            {
+                name: 'Rope, Hemp, 1/2" (250#), 100 ft',
+                size: 'M',
+                sellback: '26 sc'
+            },
+            {
+                name: 'Chalk, 4", Box of 20',
+                size: 'S',
+                sellback: '.05 sc'
+            },
+            {
+                name: 'Grapnel Hook',
+                size: 'S',
+                sellback: '16 sc'
+            },
+            {
+                name: 'Spike, Iron, 12"',
+                size: 'S',
+                sellback: '1.25 sc'
+            },
+            {
+                name: 'Bag, Medium x3',
+                size: '3S',
+                sellback: '19.6 sc'
+            },
+            {
+                name: 'Lock Picks',
+                size: 'S',
+                sellback: '12 sc'
+            }
+        ]
+    },
+    {
+        name: "Basic Fighters's Kit",
+        weight: "1M or 2M",
+        cash: "2d20! sc",
+        items: [
+            {
+                name: 'Buff Coat*',
+                size: 'n/a',
+                sellback: '100 sc'
+            },
+            {
+                name: 'Scabbard*',
+                size: 'n/a',
+                sellback: '5 sc'
+            },
+            {
+                name: '1 L Weapon or 1 M Weapon & 3 Thrown Ranged Weapons*',
+                size: 'M or n/a',
+                sellback: '100 sc'
+            },
+            {
+                name: 'Sheathe, Small*',
+                size: 'n/a',
+                sellback: '2.5 sc'
+            },
+            {
+                name: '1 S Weapon*',
+                size: 'n/a',
+                sellback: '15 sc'
+            },
+            {
+                name: 'Belt, Leather*',
+                size: 'n/a',
+                sellback: '1 sc'
+            },
+            {
+                name: 'Breeches, Linen*',
+                size: 'n/a',
+                sellback: '12 sc'
+            },
+            {
+                name: 'Shirt, Wool*',
+                size: 'n/a',
+                sellback: '13 sc'
+            },
+            {
+                name: 'Boots, Leather*',
+                size: 'n/a',
+                sellback: '10 sc'
+            },
+            {
+                name: 'Rations, Person, Day x3',
+                size: '3S',
+                sellback: '7.5 sc'
+            },
+        ]
+    },
+    {
+        name: "Armor Fighter's Kit",
+        weight: "1M 3S",
+        cash: "2d10! sc",
+        items: [
+            {
+                name: 'Coat of Plates*',
+                size: 'S',
+                sellback: '190 sc'
+            },
+            {
+                name: 'Scabbard*',
+                size: 'n/a',
+                sellback: '5 sc'
+            },
+            {
+                name: '1 M Weapon*',
+                size: 'S',
+                sellback: '50 sc'
+            },
+            {
+                name: 'Sheathe, Small*',
+                size: 'n/a',
+                sellback: '2.5 sc'
+            },
+            {
+                name: '1 S Weapon*',
+                size: 'n/a',
+                sellback: '15 sc'
+            },
+            {
+                name: 'Belt, Leather*',
+                size: 'n/a',
+                sellback: '1 sc'
+            },
+            {
+                name: 'Breeches, Linen*',
+                size: 'n/a',
+                sellback: '12 sc'
+            },
+            {
+                name: 'Shirt, Wool*',
+                size: 'n/a',
+                sellback: '13 sc'
+            },
+            {
+                name: 'Boots, Leather*',
+                size: 'n/a',
+                sellback: '10 sc'
+            },
+            {
+                name: 'Rations, Person, Day x3',
+                size: '3S',
+                sellback: '7.5 sc'
+            },
+        ]
+    },
+    {
+        name: "Shield Fighter's Kit",
+        weight: "1L 1M 1S",
+        cash: "4d20! sc",
+        items: [
+            {
+                name: 'Heater Shield',
+                size: 'L',
+                sellback: '60 sc'
+            },
+            {
+                name: 'Buff Coat*',
+                size: 'n/a',
+                sellback: '100 sc'
+            },
+            {
+                name: 'Scabbard*',
+                size: 'n/a',
+                sellback: '5 sc'
+            },
+            {
+                name: '1 M Weapon*',
+                size: 'S',
+                sellback: '50 sc'
+            },
+            {
+                name: 'Sheathe, Small*',
+                size: 'n/a',
+                sellback: '2.5 sc'
+            },
+            {
+                name: '1 S Weapon*',
+                size: 'n/a',
+                sellback: '15 sc'
+            },
+            {
+                name: 'Belt, Leather*',
+                size: 'n/a',
+                sellback: '1 sc'
+            },
+            {
+                name: 'Breeches, Linen*',
+                size: 'n/a',
+                sellback: '12 sc'
+            },
+            {
+                name: 'Shirt, Wool*',
+                size: 'n/a',
+                sellback: '13 sc'
+            },
+            {
+                name: 'Boots, Leather*',
+                size: 'n/a',
+                sellback: '10 sc'
+            },
+            {
+                name: 'Rations, Person, Day x3',
+                size: '3S',
+                sellback: '7.5 sc'
+            },
+        ]
+    },
+    {
+        name: "Long Range Fighter's Kit",
+        weight: "1M 1S or 1M",
+        cash: "4d10! sc",
+        items: [
+            {
+                name: 'Buff Coat*',
+                size: 'n/a',
+                sellback: '100 sc'
+            },
+            {
+                name: 'Scabbard*',
+                size: 'n/a',
+                sellback: '5 sc'
+            },
+            {
+                name: '1 M or S Ranged Weapon*',
+                size: 'S',
+                sellback: '50 sc'
+            },
+            {
+                name: 'Sheathe, Small*',
+                size: 'n/a',
+                sellback: '2.5 sc'
+            },
+            {
+                name: '1 S Weapon*',
+                size: 'n/a',
+                sellback: '15 sc'
+            },
+            {
+                name: 'Quiver, 12 Cap**',
+                size: 'n/a',
+                sellback: '1 sc'
+            },
+            {
+                name: 'Ranged Ammunition x12*',
+                size: 'n/a',
+                sellback: '10 sc'
+            },
+            {
+                name: 'Belt, Leather*',
+                size: 'n/a',
+                sellback: '1 sc'
+            },
+            {
+                name: 'Breeches, Linen*',
+                size: 'n/a',
+                sellback: '12 sc'
+            },
+            {
+                name: 'Shirt, Wool*',
+                size: 'n/a',
+                sellback: '13 sc'
+            },
+            {
+                name: 'Boots, Leather*',
+                size: 'n/a',
+                sellback: '10 sc'
+            },
+            {
+                name: 'Rations, Person, Day x3',
+                size: '3S',
+                sellback: '7.5 sc'
+            },
+        ]
+    },
+    {
+        name: "Blank Slate Kit",
+        weight: "n/a",
+        cash: "5d20! + 275 sc",
+        items: [
+            {
+                name: 'None',
+                size: 'n/a',
+                sellback: 'n/a'
+            },
+        ]
+    },
+]</script><script>equipmentTables={
+    tables: {
+        livestock: [{ name: 'Chicken', size: null, price: .55 },
+        { name: 'Dog, Attack/War, Trained', size: null, price: 65 },
+        { name: 'Dog, Hunting, Trained', size: null, price: 35 },
+        { name: 'Donkey', size: null, price: 70 },
+        { name: 'Goat', size: null, price: 5 },
+        { name: 'Lamb', size: null, price: 7 },
+        { name: 'Lobster, Live', size: null, price: .1 },
+        { name: 'Ox', size: null, price: 120 },
+        { name: 'Rabbit', size: null, price: 1 },
+        { name: 'Steer', size: null, price: 60 },
+        ],
+        mounts: [{ name: 'Camel, Bachrian', size: null, price: 180 },
+        { name: 'Camel, Dromedary', size: null, price: 180 },
+        { name: 'Horse, Courser', size: null, price: 250 },
+        { name: 'Horse, Destrier', size: null, price: 350 },
+        { name: 'Horse, Palfrey', size: null, price: 175 },
+        { name: 'Horse, Rounsey', size: null, price: 100 },
+        { name: 'Horse, Sumpter', size: null, price: 75 },
+        { name: 'Lizard, Pack', size: null, price: 150 },
+        { name: 'Lizard, Riding', size: null, price: 250 },
+        { name: 'Mule', size: null, price: 90 },
+        ],
+        barding: [{ name: 'Brigandine', size: null, price: 560 },
+        { name: 'Padded', size: null, price: 200 },
+        { name: 'Leathered Plates', size: null, price: 380 },
+        { name: 'Interlocking Maile', size: null, price: 700 },
+        { name: 'Lamellar', size: null, price: 510 },
+        { name: 'Leather', size: null, price: 360 },
+        { name: 'Maile', size: null, price: 550 },
+        { name: 'Full Plate', size: null, price: 800 },
+        { name: 'Plated Maile', size: null, price: 1000 },
+        { name: 'Scale', size: null, price: 420 },
+        ],
+        clothing: [{ name: 'Belt, Leather', size: 'S', price: 1 },
+        { name: 'Boots, Leather', size: 'S', price: 12 },
+        { name: 'Breeches', size: 'S', price: 12 },
+        { name: 'Coat, Long', size: 'M', price: 30 },
+        { name: 'Coat, Fur', size: 'M', price: 90 },
+        { name: 'Coat, Leather', size: 'M', price: 45 },
+        { name: 'Dress', size: 'S', price: 18 },
+        { name: 'Gloves, Wool, Knit', size: 'S', price: 5 },
+        { name: 'Hat, Fur', size: 'S', price: 6 },
+        { name: 'Hat, Wool', size: 'S', price: 4 },
+        { name: 'Jacket, Fur', size: 'S', price: 38 },
+        { name: 'Jacket, Leather', size: 'S', price: 33 },
+        { name: 'Kilt, Wool', size: 'S', price: 18 },
+        { name: 'Mittens, Wool', size: 'S', price: 2 },
+        { name: 'Sandals', size: 'S', price: 4 },
+        { name: 'Shirt', size: 'S', price: 12.5 },
+        { name: 'Shoes, Leather', size: 'S', price: 7 },
+        { name: 'Socks', size: 'S', price: 1.2 },
+        { name: 'Sweater', size: 'S', price: 12 },
+        { name: 'Vest', size: 'S', price: 9 },
+        ],
+        accessories: [{ name: 'Button, Ivory', size: 'T', price: 6 },
+        { name: 'Button, Wood', size: 'T', price: 0.35 }, { name: 'Collar, Dog, With Iron Buckle', size: 'S', price: 0.8 }, { name: 'Handkerchief, Good Linen, 1 Ft Sq.', size: 'S', price: 0.7 }, { name: 'Handkerchief, Soft Light Canvas, 1 Ft Sq.', size: 'S', price: 0.5 }, { name: 'Horse Shoe, Lesser Steel', size: 'M', price: 3 }, { name: 'Horse Shoe, Steel', size: 'M', price: 5 }, { name: 'Napkin, Good Linen, 1 Ft Sq.', size: 'S', price: 0.7 }, { name: 'Saddle', size: 'L', price: 75 }, { name: 'Saddle, Fancy', size: 'L', price: 150 }, { name: 'Scarf, Gauze Silk, 4 Ft', size: 'S', price: 13.5 }, { name: 'Scarf, Silk, 4 Ft', size: 'S', price: 17.5 }, { name: 'Scarf, Wool, Knit', size: 'S', price: 5.5 }, { name: 'Staff, Walking, Plain', size: 'M', price: 2 },],
+        heavy: [{ name: 'Barrel, 15 Gallon, Cedar, Water Tight', size: 'L', price: 10 }, { name: 'Barrel, 15 Gallon, Oak, Water Tight', size: 'L', price: 10 }, { name: 'Barrel, 15 Gallon, Pine, Water Tight', size: 'L', price: 9 }, { name: 'Barrel, 20 Gallon, Oak, Water Tight', size: 'L', price: 11 }, { name: 'Barrel, 32 Gallon, Oak, Water Tight', size: 'H', price: 14 }, { name: 'Basket, Ash, Wicker, 9"dx10"h', size: 'M', price: 4 }, { name: 'Basket, Ash, Wicker, Water Tight Gum, 9"dx10"h', size: 'M', price: 7 }, { name: 'Basket, Bamboo, Plaited, 12"dx15"h', size: 'M', price: 10 }, { name: 'Basket, Oak, Plaited, 2 Handles, 15"dx12"h (bushel)', size: 'M', price: 7 }, { name: 'Basket, Straw, Plaited, 6"dx6"h', size: 'M', price: 2 }, { name: 'Basket, Willow, Wicker, 24"x15"x2"h', size: 'M', price: 6 }, { name: 'Basket, Willow, Wicker, Handle, 15"x8"x6"h', size: 'M', price: 5 }, { name: 'Basket, Wool, Coiled, 10"dx18"h W/ Lid', size: 'M', price: 30 }, { name: 'Basket, Wool, Coiled, 6"dx6"h', size: 'M', price: 10 }, { name: 'Bottle, Clear Glass, Quart', size: 'S', price: 0.8 }, { name: 'Bottle, Green Glass, Quart', size: 'S', price: 0.4 }, { name: 'Bucket, 2 Gallon, Pine, Hemp Handle', size: 'M', price: 3 }, { name: 'Cart, Donkey/pony, Wooden', size: 'H', price: 40 }, { name: 'Cart, Push, Wooden, One-axle, Small', size: 'H', price: 25 }, { name: 'Cask, 2 Gallon, Oak, Water Tight', size: 'L', price: 6 }, { name: 'Flask, Green Glass, Pint', size: 'S', price: 0.7 }, { name: 'Jug, Stoneware, 1 Gal.', size: 'M', price: 4 }, { name: 'Keg, 15 Gallon, Pine (not Water Tight)', size: 'H', price: 4 }, { name: 'Pot, Earthenware, 1gal.', size: 'S', price: 1.25 }, { name: 'Pot, Porcelain, 1gal.', size: 'S', price: 3 }, { name: 'Pot, Stoneware, 1gal.', size: 'S', price: 2.5 }, { name: 'Saddlebags, Leather', size: 'M', price: 10 }, { name: 'Ship, Merchant, Ocean Going', size: 'G', price: 75000 }, { name: 'Wagon, Cargo', size: 'H', price: 1200 },],
+        'beverages': [{ name: 'Ale (gallon)', size: 'M', price: 0.8 }, { name: 'Applejack (pint)', size: 'S', price: 2 }, { name: 'Beer (gallon)', size: 'M', price: 0.8 }, { name: 'Beer, Seasonal (gallon)', size: 'M', price: 1.4 }, { name: 'Cider, Hard (gallon)', size: 'M', price: 3.2 }, { name: 'Cider, Sweet (gallon)', size: 'M', price: 2 }, { name: 'Lemon Juice (gallon)', size: 'M', price: 4 }, { name: 'Milk (gallon, in-Season)', size: 'M', price: 0.1 }, { name: 'Milk (gallon, Out-of-Season)', size: 'M', price: 0.3 }, { name: 'Rum, Fine (gallon)', size: 'M', price: 24 }, { name: 'Rum, Poor (gal)', size: 'M', price: 15 }, { name: 'Wine (gallon)', size: 'M', price: 5.4 },],
+        'adventuring': [{ name: "Alm Script, /Favor", size: 'S', price: 24 }, { name: 'Blanket, Travel, Cotton', size: 'S', price: 4.5 }, { name: 'Chalk, 4, Box of 20"', size: 'S', price: 0.05 }, { name: 'Fire Starter (flint Rock and Steel Rod)', size: 'S', price: 0.6 }, { name: 'Grapnel Hook, Steel, Four Hooks', size: 'S', price: 16 }, { name: 'Rations, Person, Day', size: 'S', price: 2.5 }, { name: 'Lantern, Tin, Yellow Glass, Pt. Tank', size: 'S', price: 7 }, { name: 'Lock, Standard Metal, with key', size: 'S', price: 100 }, { name: 'Lock Picks, Steel, Set of Six', size: 'S', price: 12 }, { name: 'Pry Bar, Steel, 15", Pry Head and Claw Head', size: 'M', price: 12 }, { name: 'Sharpening Stone, 3"', size: 'S', price: 0.8 }, { name: 'Spike, Iron, 12"', size: 'S', price: 1.25 }, { name: 'Spyglass, With Wooden Tubes', size: 'S', price: 20 }, { name: 'Stake, Anti-Vampire, Wooden, 8"', size: 'S', price: 0.2 }, { name: 'Tent, 1 Person', size: 'M', price: 5 }, { name: 'Tent, 2 Person', size: 'L', price: 12 }, { name: 'Tent, 4 Person', size: 'L', price: 25 }, { name: 'Torch, Wood, Tallow-Soaked Rag', size: 'S', price: 0.2 }, { name: 'Torch, Wood, Wax-Soaked Rag', size: 'S', price: 0.4 },],
+        'general': [{ name: 'Astrolabe, Bronze', size: 'M', price: 60 }, { name: 'Book, Parchment W/ Leather Cover, 24 Pages', size: 'S', price: 30 }, { name: 'Cage, Steel Wire, Rabbit Trap', size: 'M', price: 16 }, { name: 'Fishing Pole, Cane With Line and Hook', size: 'S', price: 1.2 }, { name: 'Leash, Leather, 12 Ft, No Metal', size: 'S', price: 1 }, { name: 'Magnifying Glass, With Copper Handle (3"d)', size: 'S', price: 12 }, { name: 'Needle, Porcupine Quill', size: 'S', price: 0.05 }, { name: 'Pen, Goose Quill', size: 'S', price: 0.33 }, { name: 'Scale, Balance, Bronze, 3" Disks', size: 'M', price: 30 }, { name: 'Tack, Steel, ¾"', size: 'S', price: 0.05 },],
+        'trades': [{ name: 'Auger, Wood Handle, Steel Head', size: 'M', price: 15 }, { name: 'Axe, Wood Handle, Steel Head', size: 'M', price: 12 }, { name: 'Bear Trap, Steel, Sharp Jaws', size: 'L', price: 40 }, { name: 'Chisel, Wood Handle, Steel Head', size: 'S', price: 3 }, { name: 'Cleaver', size: 'S', price: 5 }, { name: 'Hammer, Wood Handle, Steel Head', size: 'S', price: 5 }, { name: 'Hatchet, Wood Handle, Steel Head', size: 'M', price: 4 }, { name: 'Hoe, Wood Handle, Steel Head', size: 'M', price: 6 }, { name: 'Mallet, Wood', size: 'S', price: 2.5 }, { name: 'Nail, Steel, 3"', size: 'S', price: 1 }, { name: 'Nail, Steel, Horseshoe (28)', size: 'S', price: 2.2 }, { name: 'Pick, Mining', size: 'M', price: 20 }, { name: 'Pitch Fork, Iron Fork, Wood Shaft', size: 'M', price: 7 }, { name: 'Pitch Fork, Steel Fork, Wood Shaft', size: 'M', price: 9 }, { name: 'Scissors, Wood Handles, Steel Blades', size: 'S', price: 8 }, { name: 'Shears, Wood Handle, Steel Blades And Spring', size: 'M', price: 9 }, { name: 'Shovel, Wood Handle, Steel Head', size: 'M', price: 10 }, { name: 'Sickle, Wood Handle, Steel Head', size: 'M', price: 9 }, { name: 'Tongs, Steel With Wood Grips', size: 'S', price: 5 }, { name: 'Trowel, Wood Handle, Steel Head', size: 'S', price: 4.5 }],
+        'feed': [{ name: 'Hay', size: 'H', price: 25 }, { name: 'Ration, Dairy Cow, Hay, Daily', size: 'L', price: 0.23 }, { name: 'Ration, Horse, Oats/hay, Daily', size: 'L', price: 2 }, { name: 'Ration, Ox, Hay, Daily', size: 'L', price: 0.45 }, { name: 'Ration, Sow, Corn, Daily', size: 'M', price: 0.45 }, { name: 'Ration, Warhorse, Oats/hay, Daily', size: 'L', price: 3 },],
+        'alchemical': [{ name: 'Amethyst, Cut (carat)', size: 'T', price: 25 }, { name: 'Brick (9"x4½"x3")', size: 'M', price: 0.06 }, { name: 'Coal, Home Heating', size: 'H', price: 15 }, { name: 'Coal, Smith Quality', size: 'H', price: 7 }, { name: 'Diamond, Cut (2 Carat)', size: 'T', price: 3500 }, { name: 'Diamond, Cut (carat)', size: 'T', price: 1000 }, { name: 'Diamond, Industrial (carat)', size: 'T', price: 500 }, { name: 'Diamond, Rough (carat)', size: 'T', price: 600 }, { name: 'Emerald, Cut (carat)', size: 'T', price: 500 }, { name: 'Firewood (cord)', size: 'H', price: 10 }, { name: 'Firewood (per Day)', size: 'M', price: 0.2 }, { name: 'Lumber (200 Board Feet)', size: 'H', price: 15 }, { name: 'Oil, Hemp Seed (gallon)', size: 'M', price: 30 }, { name: 'Oil, Linseed (gallon)', size: 'M', price: 24 }, { name: 'Oil, Whale (gallon)', size: 'M', price: 1 }, { name: 'Oil, Whale, Superior (gallon)', size: 'M', price: 2 }, { name: 'Papyrus, 11"x11"', size: 'T', price: 0.5 }, { name: 'Pearl, Baroque', size: 'T', price: 22 }, { name: 'Pearl, Button (6mm)', size: 'T', price: 250 }, { name: 'Pearl, Round (6mm)', size: 'T', price: 500 }, { name: 'Pearlash', size: 'S', price: 4 }, { name: 'Potash', size: 'S', price: 1 }, { name: 'Ruby, Cut (carat)', size: 'T', price: 500 }, { name: 'Saffron', size: 'S', price: 160 }, { name: 'Sapphire, Cut (carat)', size: 'T', price: 500 }, { name: 'Seed, Tobacco (oz/4 Acres)', size: 'T', price: 70 }, { name: 'Shell, Pearly (1"d)', size: 'T', price: 0.03 }, { name: 'Shell, Pearly (2"d)', size: 'T', price: 0.1 }, { name: 'Shell, Pearly (3"d)', size: 'T', price: 0.3 }, { name: 'Shell, Pearly (4"d)', size: 'T', price: 0.7 }, { name: 'Soap, Hard/cake', size: 'S', price: 0.8 }, { name: 'Tobacco, Chewing', size: 'S', price: 1 }, { name: 'Tobacco, Smoking', size: 'S', price: 1.2 }, { name: 'Wax, Head, Whale (gallon)', size: 'M', price: 4 }, { name: 'Wax. Bayberry', size: 'S', price: 0.25 },],
+        'poisons': [{ name: 'Blacknessel', size: 'T', price: 110 }, { name: 'Blue Glory', size: 'T', price: 70 }, { name: 'Bondweed', size: 'T', price: 55 }, { name: 'Griffin Hair', size: 'T', price: 40 }, { name: 'Lylullin', size: 'T', price: 105 }, { name: 'Maidenscap', size: 'T', price: 135 }, { name: 'Palm of St Germain', size: 'T', price: 60 }, { name: 'Tears of Sicyon', size: 'T', price: 115 },],
+        'ropes': [{ name: 'Cord, Hemp, 1/2" (60#), 50 Ft, Wt.', size: 'S', price: 8 }, { name: 'Fabric, Canvas, Soft (sq.yard)', size: 'S', price: 2.6 }, { name: 'Fabric, Canvas, Strong (sq.yard)', size: 'S', price: 3.2 }, { name: 'Fabric, Canvas-light, Soft (sq.yard)', size: 'S', price: 2.1 }, { name: 'Fabric, Canvas-light, Strong (sq.yard)', size: 'S', price: 2.5 }, { name: 'Fabric, Cotton, Thick (sq.yard)', size: 'S', price: 5 }, { name: 'Fabric, Cotton, Thin (sq.yard)', size: 'S', price: 4 }, { name: 'Fabric, Linen, Farm (sq.yard)', size: 'S', price: 3.3 }, { name: 'Fabric, Linen, Good (sq.yard)', size: 'S', price: 4 }, { name: 'Fabric, Linen-light, Farm (sq.yard)', size: 'S', price: 2.5 }, { name: 'Fabric, Linen-light, Good (sq.yard)', size: 'S', price: 3 }, { name: 'Fabric, Silk (sq.yard)', size: 'S', price: 33 }, { name: 'Fabric, Silk, Gauze (sq.yard)', size: 'S', price: 24 }, { name: 'Fabric, Velvet, Silk (sq. Yard)', size: 'S', price: 100 }, { name: 'Fabric, Wool (sq.yard)', size: 'S', price: 3.15 }, { name: 'Fabric, Wool, Heavy (sq.yard)', size: 'S', price: 4.35 }, { name: 'Rope, Cotton, 1/2" (150#), 50 Ft', size: 'M', price: 24 }, { name: 'Rope, Hemp, 1/2" (250#), 50 Ft', size: 'M', price: 13 }, { name: 'Rope, Hemp, 1" (1200#), 50 Ft', size: 'M', price: 90 }, { name: 'Rope, Hemp, 1" (1200#), 100 Ft', size: 'L', price: 225 }, { name: 'Rope, Silk, 1/4" (225#), 50 Ft', size: 'S', price: 30 }, { name: 'Rope, Silk, 1/2 " (500#), 50 Ft', size: 'S', price: 52 }, { name: 'Thread, Canvas, Soft', size: 'S', price: 1.4 }, { name: 'Thread, Canvas, Strong', size: 'S', price: 2.5 }, { name: 'Thread, Linen, Farm ', size: 'S', price: 2.5 }, { name: 'Thread, Linen, Good', size: 'S', price: 3.5 }, { name: 'Yarn, Cotton', size: 'S', price: 8 }, { name: 'Yarn, Wool', size: 'S', price: 4 },],
+        'munitions': [{ name: 'Arrow, Composite Bow (doz)', size: 'S', price: 12 }, { name: 'Arrow, Longbow (doz)', size: 'S', price: 14.4 }, { name: 'Arrow, Warbow (doz)', size: 'S', price: 16.8 }, { name: 'Blackpowder', size: 'S', price: 3 }, { name: 'Bolt, Bellybow (doz)', size: 'S', price: 15 }, { name: 'Bolt, Crossbow (doz)', size: 'S', price: 12 }, { name: 'Bowstring, Linen Or Hemp', size: 'S', price: 0.5 }, { name: 'Lead Bullets (doz)', size: 'S', price: 8.4 },],
+        'munitionsBasic': [{ name: 'Arrow, Composite Bow (doz)', size: 'S', price: 12 }, { name: 'Arrow, Longbow (doz)', size: 'S', price: 14.4 }, { name: 'Arrow, Warbow (doz)', size: 'S', price: 16.8 }, { name: 'Bolt, Bellybow (doz)', size: 'S', price: 15 }, { name: 'Bolt, Crossbow (doz)', size: 'S', price: 12 }, { name: 'Bowstring, Linen Or Hemp', size: 'S', price: 0.5 }],
+        'armor': [{ name: 'Bone', size: 'S', price: 90 }, { name: 'Brigandine', size: 'M', price: 280 }, { name: 'Buff Coat', size: 'S', price: 100 }, { name: 'Coat of Plates', size: 'M', price: 190 }, { name: 'Gambeson', size: 'S', price: 150 }, { name: 'Interlocking Maile', size: 'L', price: 350 }, { name: 'Lamellar', size: 'M', price: 255 }, { name: 'Leather', size: 'S', price: 180 }, { name: 'Maile', size: 'L', price: 275 }, { name: 'Pelt', size: 'S', price: 50 }, { name: 'Full Plate', size: 'L', price: 400 }, { name: 'Plated Maile', size: 'L', price: 500 }, { name: 'Scale', size: 'M', price: 210 },],
+        'shields': [{ name: 'Buckler', size: 'S', price: 30 }, { name: 'Clothe', size: 'S', price: 0 }, { name: 'Figure Eight', size: 'M', price: 50 }, { name: 'Heater', size: 'L', price: 60 }, { name: 'Kite', size: 'M', price: 80 }, { name: 'Light', size: 'S', price: 25 }, { name: 'Pavise', size: 'L', price: 125 }, { name: 'Round', size: 'M', price: 105 }, { name: 'Tower', size: 'L', price: 70 },],
+        'shieldsBasic': [{ name: 'Buckler', size: 'S', price: 30 }, { name: 'Clothe', size: 'S', price: 0 }, { name: 'Heater', size: 'L', price: 60 }, { name: 'Kite', size: 'M', price: 80 }, { name: 'Light', size: 'S', price: 25 }, { name: 'Round', size: 'M', price: 105 }, { name: 'Tower', size: 'L', price: 70 },],
+        'swords': [{ name: 'Arming Sword', size: 'M', price: 70 }, { name: 'Court Sword', size: 'S', price: 63 }, { name: 'Estoc', size: 'M', price: 78 }, { name: 'Falchion', size: 'M', price: 80 }, { name: 'Koncerz', size: 'M', price: 83 }, { name: 'Longsword', size: 'M', price: 75 }, { name: 'Messer', size: 'M', price: 68 }, { name: 'Pishaq', size: 'M', price: 20 }, { name: 'Rapier', size: 'M', price: 80 }, { name: 'Sabre', size: 'M', price: 78 }, { name: 'Schaivona', size: 'S', price: 60 }, { name: 'Zweihander', size: 'L', price: 130 },],
+        'swordsBasic': [{ name: 'Koncerz', size: 'M', price: 83 }, { name: 'Messer', size: 'M', price: 68 }, { name: 'Rapier', size: 'M', price: 80 }, { name: 'Zweihander', size: 'L', price: 130 },],
+        'sidearms': [{ name: 'Cinquedea', size: 'S', price: 15 }, { name: 'Dagger', size: 'S', price: 12 }, { name: 'Knife', size: 'S', price: 10 }, { name: 'Stiletto', size: 'S', price: 17 }, { name: 'Dusack', size: 'S', price: 49 }, { name: 'Katzbalger', size: 'S', price: 55 }, { name: 'Scourge', size: 'M', price: 10 },],
+        'sidearmsBasic': [{ name: 'Dagger', size: 'S', price: 12 }, { name: 'Katzbalger', size: 'S', price: 55 }, { name: 'Knife', size: 'S', price: 10 }, { name: 'Stiletto', size: 'S', price: 17 }],
+        'axesBasic': [{ name: 'Battle Axe', size: 'M', price: 90 }, { name: 'Handaxe', size: 'S', price: 12 }],
+        'axes': [{ name: 'Bardiche', size: 'L', price: 120 }, { name: 'Battle Axe', size: 'M', price: 90 }, { name: 'Handaxe', size: 'S', price: 12 }, { name: 'Horsemans Pick', size: 'M', price: 105 }, { name: 'Lochaber Axe', size: 'L', price: 117 },],
+        'trauma': [{ name: 'Bec De Corbin', size: 'L', price: 75 }, { name: 'Bludgeon', size: 'S', price: 8 }, { name: 'Club', size: 'M', price: 5 }, { name: 'Mace', size: 'M', price: 48 }, { name: 'Maul', size: 'L', price: 35 }, { name: 'Goedendag', size: 'L', price: 24 }, { name: 'Peasant\'s Flail', size: 'L', price: 20 }, { name: 'Pernach', size: 'M', price: 58 }, { name: 'Quarterstaff', size: 'L', price: 8 }, { name: 'War Flail', size: 'M', price: 50 }, { name: 'War Hammer', size: 'M', price: 83 },],
+        'traumaBasic': [{ name: 'Bec De Corbin', size: 'L', price: 75 }, { name: 'Club', size: 'M', price: 5 }, { name: 'Mace', size: 'M', price: 48 }, { name: 'Quarterstaff', size: 'L', price: 8 },],
+        'polearms': [{ name: 'Ahlspiess', size: 'L', price: 17 }, { name: 'Bill', size: 'L', price: 17 }, { name: 'Glaive', size: 'L', price: 35 }, { name: 'Guisarme', size: 'L', price: 22 }, { name: 'Halberd', size: 'L', price: 42 }, { name: 'Lance', size: 'L', price: 45 }, { name: 'Lucerne', size: 'L', price: 37 }, { name: 'Military Fork', size: 'L', price: 19 }, { name: 'Pike', size: 'L', price: 20 }, { name: 'Ranseur', size: 'L', price: 33 }, { name: 'Short Spear', size: 'M', price: 16 }, { name: 'Sovnya', size: 'L', price: 32 }, { name: 'Voulge', size: 'L', price: 27 }, { name: 'War-scythe', size: 'L', price: 16 },],
+        'polearmsBasic': [{ name: 'Ahlspiess', size: 'L', price: 17 }, { name: 'Glaive', size: 'L', price: 35 }, { name: 'Military Fork', size: 'L', price: 19 }, { name: 'Ranseur', size: 'L', price: 33 }, { name: 'Short Spear', size: 'M', price: 16 },],
+        'ranged': [{ name: 'Bellybow', size: 'L', price: 175 }, { name: 'Composite Bow', size: 'M', price: 45 }, { name: 'Crossbow', size: 'L', price: 75 }, { name: 'Fire Lance', size: 'L', price: 105 }, { name: 'Hakenbuchse', size: 'L', price: 235 }, { name: 'Handgonne', size: 'M', price: 110 }, { name: 'Javelin', size: 'M', price: 8 }, { name: 'Latchet Crossbow', size: 'L', price: 50 }, { name: 'Longbow', size: 'L', price: 60 }, { name: 'Sling', size: 'S', price: 5 }, { name: 'Throwing Axe', size: 'S', price: 12 }, { name: 'Throwing Knife', size: 'S', price: 10 }, { name: 'Warbow', size: 'L', price: 255 },],
+        'rangedBasic': [{ name: 'Composite Bow', size: 'M', price: 45 }, { name: 'Crossbow', size: 'L', price: 75 }, { name: 'Javelin', size: 'M', price: 8 }, { name: 'Latchet Crossbow', size: 'L', price: 50 }, { name: 'Longbow', size: 'L', price: 60 }, { name: 'Sling', size: 'S', price: 5 }, { name: 'Throwing Axe', size: 'S', price: 12 }, { name: 'Throwing Knife', size: 'S', price: 10 }]
+    },
+    multipliers: {
+        local: {
+            T: 1.10,
+            S: 1.5,
+            M: 2,
+            L: 2.5,
+            H: 3,
+            G: 3.5
+        },
+        nearby: {
+            T: 1.20,
+            S: 3,
+            M: 4,
+            L: 5,
+            H: 6,
+            G: 7
+        },
+        distant: {
+            T: 2.4,
+            S: 4.5,
+            M: 6,
+            L: 6.5,
+            H: 9,
+            G: 10.5
+        }
+    }
+}</script><script>fileName='RulesReference'</script><script src="processHtml.js"></script></head><body><button style="position: sticky;top: 0;width: 100%;height: 50px;background: green;color: white;"onclick="exportToObject('chapterShell');">Process HTML</button><div id="exportContent"></div><div id="oldContent"><div class="outerShell">
   <div class="innerShell">
     <div class="backTexture"></div>
     <div class="backColor"></div>
@@ -351,7 +1016,7 @@
         <div id='SogoingoutgNiXbmNCUZ' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'SogoingoutgNiXbmNCUZ'"></app-bm-chapter-icon>
         <p>So, going out to dinner for 2 hours would normally give you 2 Relaxation, but going to a fancy dinner and
-          spending 50 Credits on it, gives you 7 instead.</p>
+          spending 50 sc on it, gives you 7 instead.</p>
       </div>
       <div class="anchor">
         <div id="Flawsheader" class="anchorTag"></div>
@@ -498,12 +1163,12 @@
         <app-bm-chapter-icon [id]="'SinceFatigueZlDoeJAcMV'"></app-bm-chapter-icon>
         <p>Since Fatigue Threshold is partly determined by the shield you're using, a quick way to up your Fatigue Threshold is to simply
           drop
-          you shield.</p>
+          your shield.</p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
         <div id='NowtheflipZSClGKYedg' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'NowtheflipZSClGKYedg'"></app-bm-chapter-icon>
-        <p>Now, the flip side of this is that if you become MORE encumbered while wounded, you could get</p>
+        <p>Now, the flip side of this is that if you become MORE encumbered while wounded, you could get Fatigued earlier.</p>
       </div>
       <div class="anchor">
         <div id="BeyondCriticaheader" class="anchorTag"></div>
@@ -639,7 +1304,7 @@
       <div class='paragraphShell anchor'>
         <div id='PausingandreIYNfHcSeNT' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'PausingandreIYNfHcSeNT'"></app-bm-chapter-icon>
-        <p>Pausing and resting for 1 heals you half the damage and Stress (rounded down) that you've take since the last
+        <p>Pausing and resting for 30 minutes heals you half the damage and Stress (rounded down) that you've take since the last
           time you've Taken a Breather.</p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
@@ -876,7 +1541,7 @@
       <div class='paragraphShell anchor marginBottom'>
         <div id='TherearealoRPXyIVRebA' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'TherearealoRPXyIVRebA'"></app-bm-chapter-icon>
-        <p>There are a lot of reasons why a Confrontation will take place, some better than others.</p>
+        <p>There are a lot of reasons why a Confrontation will take place, some better than others. Remember: When in doubt, the controling player or GM has the final say.</p>
       </div>
       <div class="anchor">
         <div id="CanCantDoheader" class="anchorTag"></div>
@@ -1307,11 +1972,11 @@
       <div class="pairs marginBottom">
         <div class="pair">
           <p>Preferred</p>
-          <p>-3 points when trying to resist</p>
+          <p>+3 points to convince</p>
         </div>
         <div class="pair">
           <p>Like</p>
-          <p>-1 point when trying to resist</p>
+          <p>+1 point to convince</p>
         </div>
         <div class="pair">
           <p>Tolerate</p>
@@ -1351,8 +2016,8 @@
         <app-bm-chapter-icon [id]="'DevotionsarenUGxZlxHGH'"></app-bm-chapter-icon>
         <p>Devotions are a more powerful driving force than other Characteristics, meaning that, if a Devotion applies,
           you
-          automatically subtract 1 point for every point you have in it. So, if you approach a blood enemy, trying to
-          convince him to help you, even if you’re being entirely reasonable, it’ll be much harder to do so.</p>
+          automatically subtract or add 1 point for every point you have in it, depending on the circumstances. So, if you approach a blood enemy, trying to
+          convince him to help you, even if you’re being entirely reasonable, it’ll be much harder to do so. On the flip side, convincing a good friend will be much easier.</p>
       </div>
       <div class="anchor">
         <div id="MultiplePeoplheader" class="anchorTag"></div>
@@ -1533,7 +2198,7 @@
       <div class='paragraphShell anchor marginBottom'>
         <div id='ShouldsomeoneVMDMCGVQfp' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'ShouldsomeoneVMDMCGVQfp'"></app-bm-chapter-icon>
-        <p>Should someone attack them during this time, they are completely helpless and so their TN for defense is 1.
+        <p>Should someone attack them during this time, they are completely helpless and so their defense die is a d8!.
         </p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
@@ -1562,7 +2227,7 @@
         <div id='SoifacharaWYnLVWxlyt' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'SoifacharaWYnLVWxlyt'"></app-bm-chapter-icon>
         <p>So, if a character wants to walk across a room, which will take 8 seconds, and his Initiative is 5, once the
-          Clock reaches 5, he starts walking and once it reaches 14, he’s gotten the other side of the room.</p>
+          Clock reaches 5, he starts walking and once it reaches 13, he’s gotten the other side of the room.</p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
         <div id='AtanypointAbxVlMSRvf' class='anchorTag'></div>
@@ -1629,7 +2294,8 @@
       <div class='paragraphShell anchor marginBottom'>
         <div id='ThisdamageisABHnqSRpPA' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'ThisdamageisABHnqSRpPA'"></app-bm-chapter-icon>
-        <p>This damage is reduced by your Endurance (or Athletics) Rank, down to a minimum of 0.</p>
+        <p>This damage is reduced by your Endurance (or Athletics) Rank, down to a minimum of 0. This is modified by
+          your armor's Skill Adjustment penalty because sprinting in heavy armor is hard.</p>
       </div>
       <div class='paragraphShell anchor'>
         <div id='YoucanpushyhJnjULGSnP' class='anchorTag'></div>
@@ -1716,7 +2382,8 @@
         <app-bm-chapter-icon [id]="'APerfectAttaMsiiYzogOa'"></app-bm-chapter-icon>
         <p>A Perfect Attack or Defense is one that puts you in a better position to win. A Perfect Attack occurs on an
           unmodified roll of 20 on your Attack roll, while a Perfect Defense is an unmodified 20 on your Defense roll,
-          but only if your final totals are still greater than you opponent’s. If not, the attack still hits for Perfect
+          but only if your final totals are still greater than your opponent’s. If not, the attack still hits for
+          Perfect
           Attacks and you still dodge the blow for Perfect Defenses but you don’t gain the auxiliary benefits.</p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
@@ -1741,8 +2408,7 @@
       </div>
       <div class="anchor">
         <div id="PerfectDefensheader" class="anchorTag"></div>
-        <h3>Perfect Defense</h3>
-        <div class="underline-sub"></div>
+        <h4>Perfect Defense</h4>
       </div>
       <div class='paragraphShell anchor'>
         <div id='YougainafreNJXnZICmbA' class='anchorTag'></div>
@@ -1769,7 +2435,8 @@
         <div id='AnunmodifiedoepLviwdVP' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'AnunmodifiedoepLviwdVP'"></app-bm-chapter-icon>
         <p>An unmodified roll of 19 on either Attack or Defense results in a Near Perfect Attack or Defense, where you
-          may Shift for no penalty, change your Tactic, or, for attacks, gain an extra d4! to damage, or, for defenses
+          may Shift for no penalty, change your Tactic, or, for attacks, gain an extra d4! to damage (which doesn't
+          count as additional dice for /d DR), or, for defenses
           gained a free riposte with your off-hand weapon if it’s smaller than your size.</p>
       </div>
       <div class="anchor">
@@ -1945,7 +2612,7 @@
         <div id='IfyourefirisGefmCMXCH' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'IfyourefirisGefmCMXCH'"></app-bm-chapter-icon>
         <p>If you’re firing a ranged weapon, you managed to hit a sensitive area, lowering their max movement speed by
-          one category, minimum Crawl speed.</p>
+          one category, minimum Crawl speed. This continues until that wound is completely healed.</p>
       </div>
       <div class="anchor">
         <div id="NearPerfectAheader" class="anchorTag"></div>
@@ -2018,18 +2685,37 @@
         <h3>Firing Into Melee</h3>
         <div class="underline-sub"></div>
       </div>
+      <div class='paragraphShell anchor marginBottom'>
+        <div id='WheneveryouwOKxpZtDXLo' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'WheneveryouwOKxpZtDXLo'"></app-bm-chapter-icon>
+        <p>Whenever you would hit with a ranged attack, if there are any creatures within 5 ft of the line of fire,
+          treat
+          each interposing creature as providing Cover and check each in order to see if they were hit instead.</p>
+      </div>
       <div class='paragraphShell anchor'>
-        <div id='IftheresanyqsCevGcHZH' class='anchorTag'></div>
-        <app-bm-chapter-icon [id]="'IftheresanyqsCevGcHZH'"></app-bm-chapter-icon>
-        <p>If there’s any one within 5 ft of a direct line between the origin of the missile and the target, they’ll
-          have to roll the appropriate defense die vs the original attack roll to see if the missile hits them instead,
-          starting with the person closest to the archer or gunner and ending with the intended target.</p>
+        <div id='StartingatthzqFVEUfRbw' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'StartingatthzqFVEUfRbw'"></app-bm-chapter-icon>
+        <p>Starting at the person closest to the archer or gunner, roll their Cover value as normal; if adding that
+          value to
+          the original target’s defense roll would make the attack miss, the new target makes a Defense roll against the
+          original attack to determine if they hit the new target instead.</p>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='IftheywerenhihgsZzbKD' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'IftheywerenhihgsZzbKD'"></app-bm-chapter-icon>
+        <p>If they were not hit, then move to the next person giving Cover and resolve in the same manner</p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
-        <div id='AllthenormalAdpMumDoRg' class='anchorTag'></div>
-        <app-bm-chapter-icon [id]="'AllthenormalAdpMumDoRg'"></app-bm-chapter-icon>
-        <p>All the normal rolls apply so if the missile only misses because of cover, the missile has lodged itself in
-          the cover and goes no further.</p>
+        <div id='IfnoneoftheqbQvsQZref' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'IfnoneoftheqbQvsQZref'"></app-bm-chapter-icon>
+        <p>If none of the interposing combatants were hit, the missile landed true: roll damage against the original
+          target.
+        </p>
+      </div>
+      <div class='paragraphShell anchor marginBottom'>
+        <div id='IftherangedXTcnckLIwc' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'IftherangedXTcnckLIwc'"></app-bm-chapter-icon>
+        <p>If the ranged attack was a miss, see the Ranged Misses section below.</p>
       </div>
       <div class="anchor">
         <div id="DealingDamageheader" class="anchorTag"></div>
@@ -2048,30 +2734,36 @@
         <div class="underline-sub"></div>
       </div>
       <div class='paragraphShell anchor'>
-        <div id='OnamisswithQcPwAgXpnv' class='anchorTag'></div>
-        <app-bm-chapter-icon [id]="'OnamisswithQcPwAgXpnv'"></app-bm-chapter-icon>
-        <p>On a miss with a ranged weapon, the missile doesn’t magically disappear into oblivion. There’s a good chance
-          it might hit someone else, especially if your target is locked in melee.</p>
+        <div id='OnamisswithlneuHbChMM' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'OnamisswithlneuHbChMM'"></app-bm-chapter-icon>
+        <p>On a miss with a ranged weapon, the missile doesn’t magically disappear into oblivion; there’s a good chance
+          it
+          might hit someone else.</p>
       </div>
       <div class='paragraphShell anchor'>
-        <div id='InthecaseoftXXayQyjGX' class='anchorTag'></div>
-        <app-bm-chapter-icon [id]="'InthecaseoftXXayQyjGX'"></app-bm-chapter-icon>
-        <p>In the case of a miss, roll a d20! and a d4. The d4 determines to which side the missile strays - an odd
-          result means it goes left, an even result means it goes right.</p>
+        <div id='InthecaseofFJmMEpRcVM' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'InthecaseofFJmMEpRcVM'"></app-bm-chapter-icon>
+        <p>In the case of a miss, roll a d4. An odd result means it goes left, an even result means it goes right.</p>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='ThedifferencelAdzQOReSn' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'ThedifferencelAdzQOReSn'"></app-bm-chapter-icon>
+        <p>The difference between the attack and defense roll determines how many feet away the missile strayed.</p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
-        <div id='Thed20deterlEaJDwXkSy' class='anchorTag'></div>
-        <app-bm-chapter-icon [id]="'Thed20deterlEaJDwXkSy'"></app-bm-chapter-icon>
-        <p>The d20! determines how many feet it strays from the target. Draw an imaginary line between the archer and
-          that point. Everyone within 5ft of that line needs to roll a defense vs the original attack roll, starting
-          with the person closest to the archer and ending with the furthest possible target.</p>
+        <div id='DrawanimaginGccGLaiviE' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'DrawanimaginGccGLaiviE'"></app-bm-chapter-icon>
+        <p>Draw an imaginary line between the archer and that point. Everyone within 5ft of that line needs to roll a
+          defense vs the original attack roll, starting with the person closest to the archer and ending with the
+          furthest
+          possible target, ignoring the original target.</p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
-        <div id='InanimateobjehEdwzoHHmZ' class='anchorTag'></div>
-        <app-bm-chapter-icon [id]="'InanimateobjehEdwzoHHmZ'"></app-bm-chapter-icon>
-        <p>Inanimate objects may provide enough cover to be considered targets in both Firing into Combat and Ranged
-          Misses, such as a large boulder or tree. In which case, medium sized objects roll a d12!, with each size lower
-          decreasing the dice size by 2, and each size larger increasing the dice size by 2.</p>
+        <div id='InanimateobjeHciBAggtqU' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'InanimateobjeHciBAggtqU'"></app-bm-chapter-icon>
+        <p>Inanimate objects may provide enough cover to be considered targets in both Firing into Melee and Ranged
+          Misses,
+          such as a large boulder or tree. Resolve using the normal rules.</p>
       </div>
       <div class="anchor">
         <div id="MiscCombatRheader" class="anchorTag"></div>
@@ -2210,7 +2902,8 @@
       <div class='paragraphShell anchor'>
         <div id='AdditionallyiVZtkRSyzs' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'AdditionallyiVZtkRSyzs'"></app-bm-chapter-icon>
-        <p>Additionally, this lowers the range for Near Perfect Defenses by 1, so you score them on a base natural 18 -
+        <p>Additionally, this increases the range for Near Perfect Defenses by 1, so you score them on a base natural 18
+          -
           19. This tactic needs to be committed to for at least your full weapon Recovery. After that you may continue
           using it and change tactics at any point.</p>
       </div>
@@ -2225,8 +2918,8 @@
       <div class='paragraphShell anchor marginBottom'>
         <div id='ActiveDodgingNWuCnkzSrs' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'ActiveDodgingNWuCnkzSrs'"></app-bm-chapter-icon>
-        <p>Active Dodging can be combined with Retreat and Step Back, adding only the attack penalties but gaining all
-          auxiliary benefits from each (so no, the defenses don't stack).</p>
+        <p>Active Dodging can be combined with Retreat and Step Back, adding the auxiliary benefits and attack penalties
+          but not the Defense bonus.</p>
       </div>
       <div class="anchor">
         <div id="CarefulAimingheader" class="anchorTag"></div>
@@ -2271,7 +2964,8 @@
       <div class='paragraphShell anchor marginBottom'>
         <div id='WhenyouvechTPJGhjBSNC' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'WhenyouvechTPJGhjBSNC'"></app-bm-chapter-icon>
-        <p>When you’ve choked up on your weapon, your weapon’s Measure is halved, and you add that number, rounded down
+        <p>This is a strategy you will only really employ if someone Gets in Your Guard. When you’ve choked up on your
+          weapon, your weapon’s Measure is halved, and you add that number, rounded down
           to its Recovery. Your halved Measure is considered your new Measure for determining who attacks first and what
           Tactics can be employed on you as well.</p>
       </div>
@@ -2318,9 +3012,9 @@
         <div id='YoumayonlyuGmLEaLzbuv' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'YoumayonlyuGmLEaLzbuv'"></app-bm-chapter-icon>
         <p>You may only use this Tactic as someone is going from Threatened to Engaged, in which case they're
-          automatically considered to be Fended Off. To full becoming engaged with you, they'll have to knock your
+          automatically considered to be Fended Off. To become fully engaged with you, they'll have to knock your
           weapon aside with a regular attack that deals no damage. Should they hit, they become fully engaged and can
-          attack freely again.</p>
+          attack as normal, although they need to wait their full weapon Recovery.</p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
         <div id='fenodcaniobiofe' class='anchorTag'></div>
@@ -2449,7 +3143,7 @@
       <div class='paragraphShell anchor marginBottom'>
         <div id='ShiftingisalJSVwAdbtiG' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'ShiftingisalJSVwAdbtiG'"></app-bm-chapter-icon>
-        <p>Shifting is also used to change Facings so if you’re engaged with an enemy and you Shift. And don’t forget
+        <p>Shifting is also used to change Facings. Don’t forget
           that you get those tasty bonuses from flanking your enemy if they don’t also Shift to face you.</p>
       </div>
       <div class="anchor">
@@ -2544,7 +3238,7 @@
       <div class='paragraphShell anchor marginBottom'>
         <div id='ChallengescovIonLrAcFRE' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'ChallengescovIonLrAcFRE'"></app-bm-chapter-icon>
-        <p>Challenges cover a lot of ground: in fact, it’s easier to say that pChallenges are anything that’s not
+        <p>Challenges cover a lot of ground: in fact, it’s easier to say that Challenges are anything that’s not
           covered by
           Confrontations or Combats.</p>
       </div>
@@ -2566,6 +3260,11 @@
         <p>Challenges are a framework that you can use as a catch-all for all the other types of situations that might
           come
           up in play.</p>
+      </div>
+      <div class='paragraphShell anchor marginBottom'>
+        <div id='becausetheseare' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'becausetheseare'"></app-bm-chapter-icon>
+        <p>Because these are new terms, here is a high level overview: Challenges > Obstacles > Checks, where Challenges are a conceptual framework made up of 1 or more Obstacles and Obstacles are tools that interact with 1 or more Checks.</p>
       </div>
       <div class="anchor">
         <div id="Objectivesheader" class="anchorTag"></div>
@@ -2621,7 +3320,7 @@
           longer to get the spell or you miss an important part of the shaping, and your spell now has a side effect.
         </p>
       </div>
-      <div class='paragraphShell anchor marginBottom'>
+      <div class='paragraphShell anchor'>
         <div id='TheObstaclesQKPnTWxgSy' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'TheObstaclesQKPnTWxgSy'"></app-bm-chapter-icon>
         <p>The Obstacles should make sense: don’t feel like you need to force them or hit an arbitrary number, although
@@ -2629,6 +3328,14 @@
           might find that how characters deal with Obstacles could result in new Obstacles or another Challenge.</p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
+        <div id='additnoeiocie' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'additnoeiocie'"></app-bm-chapter-icon>
+        <p>Additionally, Obstacles can be made obsolete by player planning or choice; they can be optional, granting an extra bonus but 
+          not actually being required to reach the Objective of a Challenge; they can be replaced based on how the players are tackling things; and they can be player-initiated with 
+          the players decided to take on extra Obstacle to perhaps gain a boon or solve a problem.
+        </p>
+      </div>
+      <div class='paragraphShell anchor'>
         <div id='ForinstancerPGaRgnuJd' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'ForinstancerPGaRgnuJd'"></app-bm-chapter-icon>
         <p>For instance, fixing the serious side effects from shaping that new spell could result in another Challenge
@@ -2639,6 +3346,14 @@
         <div id='OritcouldjutBSkXsStgD' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'OritcouldjutBSkXsStgD'"></app-bm-chapter-icon>
         <p>Or it could just result in another Obstacle. It all depends on the focus of the game.</p>
+      </div>
+      
+      <div class='paragraphShell anchor marginBottom'>
+        <div id='atthendjiotjge' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'atthendjiotjge'"></app-bm-chapter-icon>
+        <p>At the end of the day, it's important to remember that Obstacles are tool for the GM to use to help arbitrate things and 
+          to provide a consistent and common-sense way of the players interacting with the world.
+        </p>
       </div>
       <div class="anchor">
         <div id="Difficultyheader" class="anchorTag"></div>
@@ -2677,7 +3392,7 @@
         <div id='ComplicationsNjEosyQQsW' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'ComplicationsNjEosyQQsW'"></app-bm-chapter-icon>
         <p>Complications represent complications, such as the guard hearing something, or you leaving a clue behind that
-          might give someone a heads up that you're there. An Obstacle gets +2 for every Complication is has on it.</p>
+          might give someone a heads up that you're there.</p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
         <div id='WhenanObstachOkYEhBeUK' class='anchorTag'></div>
@@ -2745,9 +3460,36 @@
       <div class='paragraphShell anchor marginBottom'>
         <div id='gmsmightfindit' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'gmsmightfindit'"></app-bm-chapter-icon>
-        <p>GMs might find it useful to break Obstacles up into Skill Challenges based on the level of granularity they're looking forward in their game.
-          For instance, if the players treking over a wilderness, if the focus of play isn't on the travel, they might consider that one Obstacle, while a game 
-          that is about travel might break it up into multiple Obstacles the players need to overcome before they're considered to have successfully crossed.
+        <p>GMs might find it useful to break Obstacles up into Skill Challenges based on the level of granularity they're looking for in their game.</p>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='forinstihiofyuiou' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'forinstihiofyuiou'"></app-bm-chapter-icon>
+        <p class="italic">For instance, if players are trying to scale a cliff, the GM can handle it in two ways:</p>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='theifishiothijfoe' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'theifishiothijfoe'"></app-bm-chapter-icon>
+        <p class="italic">The first is if the cliff isn't a major part of story: she wants to represent the difficulty of climbing the cliff but doesn't want to spend a lot of time on it.
+          In this case, she'll just have a single Obstacle, "The Cliff", that she assigns a Difficulty to and has the players make Checks against.
+        </p>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='theisecnoidisfhi' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'theisecnoidisfhi'"></app-bm-chapter-icon>
+        <p class="italic">The second is if the cliff is a big part of the game (perhaps it's a metaphor for one of the players). In this case, she's break it into Obstacles based on the different sections 
+          the players will have to climb: a long stretch (not hard so it's more a test of endurance), an overhang (a particularly difficult bit), a part where the players need to jump from 
+          one handhold to another (not difficult but very little margin for error).
+        </p>
+      </div>
+      <div class='paragraphShell anchor marginBottom'>
+        <div id='shcanthience' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'shcanthience'"></app-bm-chapter-icon>
+        <p class="italic">She can then, from there, figure out difficulty and maybe some unique Complications and Fail states based on the Skills and equipment the players use as well as things about that 
+          particular Obstacle. For instance, Complications and Failure on the long stretch might result in damage from fatigue or scares, resulting in Stress rather than falling, while failing on the 
+          overhang results in another Obstacle, "Catching the Following Character", that can be attempted by only players below that character. Additionally, the jump might cause a Complication where the 
+          player falls but the rope catches, leaving the player dangling away from the cliff face: they're unable to grab ahold of a hold on the cliff but could possible swing themselves back or 
+          climb up their rope, a harder but doable alternative.
         </p>
       </div>
       <div class="anchor">
@@ -4087,7 +4829,9 @@
       <div class='paragraphShell anchor marginBottom'>
         <div id='whenyoufirstshapesapell' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'whenyoufirstshapesapell'"></app-bm-chapter-icon>
-        <p>When you first shape a spell (on the second you receive your SP - although, if you don't have the spell Rudiments set, the GM is free to move the count along), you subtract its Drain from the number of SPs you have at that moment and the spell lasts for 
+        <p>When you first shape a spell (on the second you receive your SP - although, if you don't have the spell
+          Rudiments set, the GM is free to move the count along), you subtract its Drain from the number of SPs you have
+          at that moment and the spell lasts for
           an amount of time equal to its Interval.
         </p>
       </div>
@@ -4098,15 +4842,18 @@
       <div class='paragraphShell anchor'>
         <div id='howeverifyouhave' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'howeverifyouhave'"></app-bm-chapter-icon>
-        <p>However, if you have SP left over at the end of that Interval, you can keep the spell up. Again subtracting the Drain
+        <p>However, if you have SP left over at the end of that Interval, you can keep the spell up. Again subtracting
+          the Drain
           from the number of SP you have.
         </p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
         <div id='ifyouhavesomespbut' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'ifyouhavesomespbut'"></app-bm-chapter-icon>
-        <p>If you have at least 1 SP when the Interval comes up but don't have enough to cover the entire Drain cost, you can 
-          continue to keep the spell up for 1 more Interval if you take the amount of SP you're missing in Stress. This is called 
+        <p>If you have at least 1 SP when the Interval comes up but don't have enough to cover the entire Drain cost,
+          you can
+          continue to keep the spell up for 1 more Interval if you take the amount of SP you're missing in Stress. This
+          is called
           "Weirdburn". You can only do it once.
         </p>
       </div>
@@ -4120,15 +4867,16 @@
         <app-bm-chapter-icon [id]="'youcannotstop'"></app-bm-chapter-icon>
         <p>You cannot stop a spell that has been shaped until it reaches its Interval.</p>
       </div>
+      <div class='paragraphShell anchor'>
+        <div id='ifyourestackingmup' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'ifyourestackingmup'"></app-bm-chapter-icon>
+        <p><strong class='orangeHeader'>Stacking Different Effects & Interval</strong> If you're stacking multiple,
+          different Effects, you use the shortest Interval to determine what the Interval for the spell is.</p>
+      </div>
       <div class="anchor">
         <div id="ShapeRudimentheader" class="anchorTag"></div>
         <h2>Shape Rudiment Descrptions</h2>
         <div class="underline"></div>
-      </div>
-      <div class='paragraphShell anchor marginBottom'>
-        <div id='NotethatallpeTLfUQlIa' class='anchorTag'></div>
-        <app-bm-chapter-icon [id]="'NotethatallpeTLfUQlIa'"></app-bm-chapter-icon>
-        <p>Note that all shapes glow slightly with strange luminesce, alerting people where the spell is.</p>
       </div>
       <div class="anchor">
         <div id="Circleheader" class="anchorTag"></div>
@@ -4144,11 +4892,10 @@
         <div id='TheCircleisBGWgDqKZiH' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'TheCircleisBGWgDqKZiH'"></app-bm-chapter-icon>
         <p>The Circle is the most basic Shape. It extends from the Origin with a Radius equal to the Base Range of the
-          Effect. Anyone within the Circle is affected by the spell. If it deals damage or inflicts Stress, this occurs
+          Effect. Anyone in the Circle is affected by the spell only as long as they stay within it. If it deals damage
+          or inflicts Stress, this occurs
           on
-          the Interval or if a person enters/re-enters the shape. If not cast far enough away, this could also include
-          the
-          weird-adept.</p>
+          the Interval or if a person enters/re-enters the shape.</p>
       </div>
       <div class="anchor">
         <div id="Chainheader" class="anchorTag"></div>
@@ -4171,9 +4918,10 @@
       <div class='paragraphShell anchor marginBottom'>
         <div id='PeoplemaybeHjxYWGXrLM' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'PeoplemaybeHjxYWGXrLM'"></app-bm-chapter-icon>
-        <p>People may be hit multiple times, which simply counts as the spell Stacking on them, but the weird-adept may
+        <p>People may be hit multiple times, which simply counts as the spell Stacking on them. The weird-adept may
           try
-          and redirect the spell, causing it to skip over a person, but they take Stress equal to the number of times
+          and redirect the spell, causing it to skip over a person. This means that the target is randomly deteremined
+          again, although everyone in the Shape of the spell is still an option. They take Stress equal to the number of times
           they’ve done so.</p>
       </div>
       <div class="anchor">
@@ -4191,13 +4939,31 @@
         <app-bm-chapter-icon [id]="'TheConestartljYOEPttNZ'"></app-bm-chapter-icon>
         <p>The Cone starts with its tip at the Origin and then extends in a 45-degree arch from it up to the spell’s
           Range.
-          Anyone within the Cone is affected by the spell. If it deals damage or inflicts Stress, this occurs on the
+          Anyone within the Cone is affected by the spell for as long they're in its Shape. If it deals damage or
+          inflicts Stress, this occurs on the
           Interval or if a person enters/re-enters the shape.</p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
         <div id='TheConecanazijOAPmNfk' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'TheConecanazijOAPmNfk'"></app-bm-chapter-icon>
         <p>The Cone can also be moved and shifted, rotating around its Origin, moving a facing every 3 seconds.</p>
+      </div>
+      <div class="anchor">
+        <div id="Personalheader" class="anchorTag"></div>
+        <h3>Personal</h3>
+        <div class="underline-sub"></div>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='RAIN2DQjMkJAFEu' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'RAIN2DQjMkJAFEu'"></app-bm-chapter-icon>
+        <p><strong class='orangeHeader'>Drain</strong> 2</p>
+      </div>
+      <div class='paragraphShell anchor marginBottom'>
+        <div id='ThismakesthepjNHnjJJCD' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'ThismakesthepjNHnjJJCD'"></app-bm-chapter-icon>
+        <p>This makes the Shape of a spell just a single individual. Starting at the Origin, it effects the first viable
+          target (deteremined by the Effect Rudiment) and then stops. The spell continues to affect that person after
+          that point, wherever they move.</p>
       </div>
       <div class="anchor">
         <div id="Salvoheader" class="anchorTag"></div>
@@ -4212,19 +4978,32 @@
       <div class='paragraphShell anchor'>
         <div id='TheSalvoistykwPSLxJAb' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'TheSalvoistykwPSLxJAb'"></app-bm-chapter-icon>
-        <p>The Salvo is the spell chucked up to 3 * its base Range from the spell’s Origin. It requires a ranged attack
+        <p>The Salvo is the spell chucked up to 3 * its unmodified Range from the spell’s Origin. It requires a ranged
+          attack
           to
-          hit (though ignoring Cover). On a miss, it follows the normal ranged miss rules. Anyone that is hit, suffers
+          hit (though ignoring Cover) a single viable target. The shaper gains a bonus based on the Range Rudiment
+          they're using: +0 for Personal, +1 for Half, +3 for Full, +5 for Double.
+          Anyone that is hit, suffers
           the
-          full effects of the spell. If it deals damage or inflicts Stress, this occurs on the Interval.</p>
+          full effects of the spell for the duration of the spell. If it deals damage or inflicts Stress, this occurs on
+          the Interval.</p>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='ifashieldwound' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'ifashieldwound'"></app-bm-chapter-icon>
+        <p>If a shield wouldn't be a viable target for the spell, the defender can use its cover value.</p>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='onamissitfollowjis' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'onamissitfollowjis'"></app-bm-chapter-icon>
+        <p>On a miss, it follows the normal ranged miss rules.</p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
         <div id='FromwherethehreKHJuPVU' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'FromwherethehreKHJuPVU'"></app-bm-chapter-icon>
-        <p>From where the Salvo's touch location is, that is where the Shape of the spell is placed. Those within the
-          Base
-          Range of the Effect of that Shape (even on a total miss) suffer the effects of the spell for half its
-          Interval.
+        <p>This Shape can be stacked with itself to fire additional Salvos that can target different targets. If
+          targeting the same
+          target, they target needs to make multiple defense rolls.
         </p>
       </div>
       <div class="anchor">
@@ -4248,7 +5027,8 @@
       <div class='paragraphShell anchor marginBottom'>
         <div id='AnyonetouchedykoFauoOSR' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'AnyonetouchedykoFauoOSR'"></app-bm-chapter-icon>
-        <p>Anyone touched by the sphere suffers the Effects of the spell.</p>
+        <p>Anyone within 1 ft of the sphere suffers the Effects of the spell for as long as sphere is near them. This requires no attack roll. If it deals
+          damage or inflicts Stress, this occurs every second the sphere is in contact with the person.</p>
       </div>
       <div class="anchor">
         <div id="Rayheader" class="anchorTag"></div>
@@ -4258,22 +5038,27 @@
       <div class='paragraphShell anchor'>
         <div id='RAIN2dNCuLZGAVl' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'RAIN2dNCuLZGAVl'"></app-bm-chapter-icon>
-        <p><strong class='orangeHeader'>Drain</strong> 2</p>
+        <p><strong class='orangeHeader'>Drain</strong> 3</p>
       </div>
       <div class='paragraphShell anchor'>
         <div id='TherayisatnjgImtUfEl' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'TherayisatnjgImtUfEl'"></app-bm-chapter-icon>
-        <p>The ray is a thin line of magic that extends from the spell’s Origin up the 10 times the spell’s Range. It
-          manifests in a single instant, requiring a roll to hit, but those that it hits, suffer the full Effect of the
-          spell, though he can only try once per second, and this does eat into the Interval.</p>
+        <p>The ray is a thin, straight line of magic that extends from the spell’s Origin up the 5 times the spell’s
+          Range. This is modified by Range Rudiments. It
+          manifests in a single instant, requiring a roll to hit. This cannot be Parried and equipment is also part of the target. Those that it hits, suffer the full Effect of the
+          spell for the duration of the spell.</p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
         <div id='IfnoonewasswCfUTpBkD' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'IfnoonewasswCfUTpBkD'"></app-bm-chapter-icon>
-        <p>If no one was hit and the spell is still being cast, the weird-adept can manifest another ray and try again
-          until
-          he hits or he decasts the spell, though he can only try once per second and this does eat into the Interval.
-        </p>
+        <p>If no one was hit, the weird-adept can manifest another ray on each following second until either a target is hit or the spell ends.
+          Note that the Interval is always ticking; a target struck on a follow-up attempt will be affected for a shorter duration than one struck on the initial attempt.
+          </p>
+      </div>
+      <div class='paragraphShell anchor marginBottom'>
+        <div id='theshapcehicayiot' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'theshapcehicayiot'"></app-bm-chapter-icon>
+        <p>The shaper can hit multiple viable targets with one Ray but he has to do so simulanteously.  Non-viable targets, besides equipment that the targets are wearing, block the Ray or provide Cover.</p>
       </div>
       <div class="anchor">
         <div id="Wallheader" class="anchorTag"></div>
@@ -4298,7 +5083,8 @@
       <div class='paragraphShell anchor marginBottom'>
         <div id='AnyonepassingjEgKLyIskD' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'AnyonepassingjEgKLyIskD'"></app-bm-chapter-icon>
-        <p>Anyone passing through the wall is affected by the Spell. Those that are in the wall’s way when it is cast,
+        <p>Anyone passing through the wall is affected by the Spell for the rest of the duration of the spell. Those
+          that are in the wall’s way when it is shaped,
           get a
           defense roll vs a ranged attack to get out of the way.</p>
       </div>
@@ -4353,19 +5139,19 @@
         <p>This makes the Range of a spell half its Base Range.</p>
       </div>
       <div class="anchor">
-        <div id="Personalheader" class="anchorTag"></div>
-        <h3>Personal</h3>
+        <div id="localizedheader" class="anchorTag"></div>
+        <h3>Localized</h3>
         <div class="underline-sub"></div>
       </div>
       <div class='paragraphShell anchor'>
-        <div id='RAIN2DQjMkJAFEu' class='anchorTag'></div>
-        <app-bm-chapter-icon [id]="'RAIN2DQjMkJAFEu'"></app-bm-chapter-icon>
-        <p><strong class='orangeHeader'>Drain</strong> 2</p>
+        <div id='localizeddraing' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'localizeddraing'"></app-bm-chapter-icon>
+        <p><strong class='orangeHeader'>Drain</strong> 3</p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
         <div id='ThismakesthepjNHnjJJCD' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'ThismakesthepjNHnjJJCD'"></app-bm-chapter-icon>
-        <p>This makes the Range of a spell just a single individual.</p>
+        <p>This makes the Range of the spell 5ft, regardless of the Base Range of the Effect Rudiment.</p>
       </div>
       <div class="anchor">
         <div id="OriginRudimenheader" class="anchorTag"></div>
@@ -4406,7 +5192,26 @@
           target
           is trying to resist being touched, the weird-adept needs to make an Unarmed attack against them: the
           weird-adept
-          is considered armed.</p>
+          is considered armed. This attack cannot be Parried and any equipment is considered a viable target, forcing
+          the defender to defender on 1 dice size lower.
+          Additionally, if the shaper is hit with an attack, the spell automatically hits the attacker; they receive no
+          defense roll.</p>
+      </div>
+      <div class="anchor">
+        <div id="burstHeader" class="anchorTag"></div>
+        <h3>Burst</h3>
+        <div class="underline-sub"></div>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='burstsdraing' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'burstsdraing'"></app-bm-chapter-icon>
+        <p><strong class='orangeHeader'>Drain</strong> 1</p>
+      </div>
+      <div class='paragraphShell anchor marginBottom'>
+        <div id='ThismakesthefygpxFhjQW' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'ThismakesthefygpxFhjQW'"></app-bm-chapter-icon>
+        <p>This makes the Origin of the spell from 0ft up to the Base Range of the spell, although it never affects the
+          shaper.</p>
       </div>
       <div class="anchor">
         <div id="Nearheader" class="anchorTag"></div>
@@ -4421,8 +5226,7 @@
       <div class='paragraphShell anchor marginBottom'>
         <div id='ThismakesthefygpxFhjQW' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'ThismakesthefygpxFhjQW'"></app-bm-chapter-icon>
-        <p>This makes the Origin of the spell from the Effect's Base Range to up to double the Effect’s Base Range. This
-          never affects the caster.</p>
+        <p>This makes the Origin of the spell from the Effect's Base Range to up to double the Effect’s Base Range.</p>
       </div>
       <div class="anchor">
         <div id="Farheader" class="anchorTag"></div>
@@ -4439,7 +5243,7 @@
         <app-bm-chapter-icon [id]="'ThismakestheTTinJMumJI'"></app-bm-chapter-icon>
         <p>This makes the Origin of the spell from double the Effect’s Base Range to up to triple the Base Range.</p>
       </div>
-      
+
       <div class="anchor">
         <div id="animinsmeffective" class="anchorTag"></div>
         <h2>Animism Effect Rudiments Descriptions</h2>
@@ -5529,7 +6333,7 @@
       <div class='paragraphShell anchor'>
         <div id='FFECTThismovtJATVFDRhk' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'FFECTThismovtJATVFDRhk'"></app-bm-chapter-icon>
-        <p><strong class='orangeHeader'>Effect</strong> This moves everyone in the Shape of the spell in the direction
+        <p><strong class='orangeHeader'>Effect</strong> This moves everyone in the Shape of the spell in a horitzonal direction
           the
           weird-adept wishes. They move at 10 ft / second - so they may try to move to counteract it, though it will
           obviously be less effective.</p>
@@ -5576,6 +6380,49 @@
         <div id='TACKIncreaseqfaiZWnGyk' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'TACKIncreaseqfaiZWnGyk'"></app-bm-chapter-icon>
         <p><strong class='orangeHeader'>Stack</strong> Increase the Drain by 1.</p>
+      </div>
+      <div class="anchor">
+        <div id="Slowfallheader" class="anchorTag"></div>
+        <h3>Eiderdown</h3>
+        <div class="underline-sub"></div>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='RADITIONCharmSoEzsSmRqR' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'RADITIONCharmSoEzsSmRqR'"></app-bm-chapter-icon>
+        <p><strong class='orangeHeader'>Tradition</strong> Charm</p>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='ASEDRAIN3yuBwCBTJDM' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'ASEDRAIN3yuBwCBTJDM'"></app-bm-chapter-icon>
+        <p><strong class='orangeHeader'>Base Drain</strong> 3</p>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='ASERANGE20fXvhTdtOhUD' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'ASERANGE20fXvhTdtOhUD'"></app-bm-chapter-icon>
+        <p><strong class='orangeHeader'>Base Range</strong> 20 ft</p>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='NTERVAL5seconkgmLpBwPr' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'NTERVAL5seconkgmLpBwPr'"></app-bm-chapter-icon>
+        <p><strong class='orangeHeader'>Interval</strong> 30 Minutes</p>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='FFECTThischamfZTmTsHLE' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'FFECTThischamfZTmTsHLE'"></app-bm-chapter-icon>
+        <p><strong class='orangeHeader'>Effect</strong> This changes the kinetic energy of any falling person within the
+          Shape of the spell to potential energy, negatings a cumulative 50 ft of fall damage for those affected while
+          the spell is active.</p>
+      </div>
+      <div class='paragraphShell anchor'>
+        <div id='WhilethespelxCpSMOHAaA' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'WhilethespelxCpSMOHAaA'"></app-bm-chapter-icon>
+        <p>This can be taken at once (in a large fall) or piecemeal with small falls. Once all the fall damage has been
+          negated, the spell is automatically uncast.</p>
+      </div>
+      <div class='paragraphShell marginBottom anchor'>
+        <div id='TACKIncreaseqtiCJTXkQa' class='anchorTag'></div>
+        <app-bm-chapter-icon [id]="'TACKIncreaseqtiCJTXkQa'"></app-bm-chapter-icon>
+        <p><strong class='orangeHeader'>Stack</strong> Increase the fall distance negated by 50 ft.</p>
       </div>
       <div class="anchor">
         <div id="Flattenheader" class="anchorTag"></div>
@@ -5872,50 +6719,6 @@
         <app-bm-chapter-icon [id]="'TACKIncreaseotFQXERuyd'"></app-bm-chapter-icon>
         <p><strong class='orangeHeader'>Stack</strong> Increase the damage dice by 1 size. Give the person making Trauma
           Check an effective -3 to their Con.</p>
-      </div>
-      <div class="anchor">
-        <div id="Slowfallheader" class="anchorTag"></div>
-        <h3>Slowfall</h3>
-        <div class="underline-sub"></div>
-      </div>
-      <div class='paragraphShell anchor'>
-        <div id='RADITIONCharmSoEzsSmRqR' class='anchorTag'></div>
-        <app-bm-chapter-icon [id]="'RADITIONCharmSoEzsSmRqR'"></app-bm-chapter-icon>
-        <p><strong class='orangeHeader'>Tradition</strong> Charm</p>
-      </div>
-      <div class='paragraphShell anchor'>
-        <div id='ASEDRAIN3yuBwCBTJDM' class='anchorTag'></div>
-        <app-bm-chapter-icon [id]="'ASEDRAIN3yuBwCBTJDM'"></app-bm-chapter-icon>
-        <p><strong class='orangeHeader'>Base Drain</strong> 3</p>
-      </div>
-      <div class='paragraphShell anchor'>
-        <div id='ASERANGE20fXvhTdtOhUD' class='anchorTag'></div>
-        <app-bm-chapter-icon [id]="'ASERANGE20fXvhTdtOhUD'"></app-bm-chapter-icon>
-        <p><strong class='orangeHeader'>Base Range</strong> 20 ft</p>
-      </div>
-      <div class='paragraphShell anchor'>
-        <div id='NTERVAL5seconkgmLpBwPr' class='anchorTag'></div>
-        <app-bm-chapter-icon [id]="'NTERVAL5seconkgmLpBwPr'"></app-bm-chapter-icon>
-        <p><strong class='orangeHeader'>Interval</strong> 5 seconds</p>
-      </div>
-      <div class='paragraphShell anchor'>
-        <div id='FFECTThischamfZTmTsHLE' class='anchorTag'></div>
-        <app-bm-chapter-icon [id]="'FFECTThischamfZTmTsHLE'"></app-bm-chapter-icon>
-        <p><strong class='orangeHeader'>Effect</strong> This changes the kinetic energy of any falling person within the
-          Shape of the spell to potential energy, slowing their fall to a leisurely pace, 5 ft / second.</p>
-      </div>
-      <div class='paragraphShell anchor'>
-        <div id='WhilethespelxCpSMOHAaA' class='anchorTag'></div>
-        <app-bm-chapter-icon [id]="'WhilethespelxCpSMOHAaA'"></app-bm-chapter-icon>
-        <p>While the spell is cast, targets don’t take any fall damage. Additionally, if this spell was cast but doesn’t
-          last the duration of the fall, the targets only take damage for the space they fall at full speed.</p>
-      </div>
-      <div class='paragraphShell marginBottom anchor'>
-        <div id='TACKIncreaseqtiCJTXkQa' class='anchorTag'></div>
-        <app-bm-chapter-icon [id]="'TACKIncreaseqtiCJTXkQa'"></app-bm-chapter-icon>
-        <p><strong class='orangeHeader'>Stack</strong> Increase the fall speed by 2.5 ft / second. This doesn’t affect
-          how
-          much damage is taken after the spell is released.</p>
       </div>
       <div class="anchor">
         <div id="Smokescreenheader" class="anchorTag"></div>
@@ -6319,14 +7122,6 @@
         <p>The target is in a superimposed state, being, at once, one of the phantoms and none of them. Thus, she can
           strike
           from anywhere there is a phantom</p>
-      </div>
-      <div class='paragraphShell anchor'>
-        <div id='ThesephantomsDLTWyvocLG' class='anchorTag'></div>
-        <app-bm-chapter-icon [id]="'ThesephantomsDLTWyvocLG'"></app-bm-chapter-icon>
-        <p>These phantoms disappear on the following condition: the target makes an aggressive action of any kind,
-          whether
-          that’s spell shaping, shooting a bow, or striking with a weapon. Even if unsuccessful, all the phantoms
-          disappear.</p>
       </div>
       <div class='paragraphShell anchor'>
         <div id='AndwheneversECuipmgbAF' class='anchorTag'></div>
@@ -7043,7 +7838,7 @@
         <p><strong class='orangeHeader'>Stack</strong> The distance things fly an additional 5 ft and the d20 gets a +5.
         </p>
       </div>
-      
+
       <div class="anchor">
         <div id="Marionetteheader" class="anchorTag"></div>
         <h3>Marionette</h3>
@@ -7505,7 +8300,7 @@
       <div class='paragraphShell anchor'>
         <div id='NTERVAL3SkilHzflcfIHMQ' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'NTERVAL3SkilHzflcfIHMQ'"></app-bm-chapter-icon>
-        <p><strong class='orangeHeader'>Interval</strong> 3 Skill Check or 6 Hours, whichever comes first</p>
+        <p><strong class='orangeHeader'>Interval</strong> 3 Skill Checks or 6 Hours, whichever comes first</p>
       </div>
       <div class='paragraphShell anchor'>
         <div id='FFECTBychannXWvZcmbwce' class='anchorTag'></div>
@@ -8526,8 +9321,9 @@
         <p>At 1st level and as dedicated by your Archetypes, you’ll have the opportunity to acquire new Rudiments, which
           you
           can then use to shape spells. You’ll do so by picking a Rudiment table and then rolling on it. If you roll a
-          Rudiment you already have, you may select the Rudiment on either side of it. For Effects, you roll on the
-          Effects Rudiments table and then go to the corresponding sub-table. You may spend 1 CrP to reroll any of the tables, even during level up.</p>
+          Rudiment you already have, you can reroll for free until a new one comes up. For Effects, you roll on the
+          Effects Rudiments table and then go to the corresponding sub-table. You may spend 1 CrP to reroll any of the
+          tables, even during level up.</p>
       </div>
       <div class='paragraphShell anchor marginBottom'>
         <div id='PlayersthatsAFbcgcYqqG' class='anchorTag'></div>
@@ -8546,7 +9342,8 @@
       <div class='paragraphShell anchor marginBottom'>
         <div id='YoucanalsophiZSrpvPBc' class='anchorTag'></div>
         <app-bm-chapter-icon [id]="'YoucanalsophiZSrpvPBc'"></app-bm-chapter-icon>
-        <p>You can also purchase additional Rudiments for 15 CrP a pop.</p>
+        <p>You can also purchase additional Rudiments for 15 CrP a pop, although, if that's the case, you get to choose
+          the Rudiment.</p>
       </div>
       <div class="rudiment-shell">
         <table>
@@ -8561,16 +9358,20 @@
           </thead>
           <tbody>
             <tr>
-              <td>1 - 2</td>
+              <td>1</td>
               <td>Circle</td>
             </tr>
             <tr>
-              <td>3</td>
+              <td>2</td>
               <td>Chain</td>
             </tr>
             <tr>
-              <td>4</td>
+              <td>3</td>
               <td>Cone</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>Personal</td>
             </tr>
             <tr>
               <td>5</td>
@@ -8616,7 +9417,7 @@
             </tr>
             <tr>
               <td>4</td>
-              <td>Personal</td>
+              <td>Localized</td>
             </tr>
           </tbody>
         </table>
@@ -8627,7 +9428,7 @@
               <th colspan="2">Origin Rudiments</th>
             </tr>
             <tr class="notSticky">
-              <th>Roll (d4)</th>
+              <th>Roll (d6)</th>
               <th> </th>
             </tr>
           </thead>
@@ -8642,10 +9443,14 @@
             </tr>
             <tr>
               <td>3</td>
+              <td>Burst</td>
+            </tr>
+            <tr>
+              <td>4 - 5</td>
               <td>Near</td>
             </tr>
             <tr>
-              <td>4</td>
+              <td>6</td>
               <td>Far</td>
             </tr>
           </tbody>
@@ -8838,43 +9643,43 @@
           <tbody>
             <tr>
               <td>1 - 2</td>
-              <td>Dispel Enchantment</td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>Flatten</td>
-            </tr>
-            <tr>
-              <td>4 - 5</td>
               <td>Detraction</td>
             </tr>
             <tr>
-              <td>6 - 7</td>
+              <td>3 - 4</td>
+              <td>Dispel Enchantment</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>Eiderdown</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td>Flatten</td>
+            </tr>
+            <tr>
+              <td>7 - 8</td>
               <td>Hermetic Dweomer</td>
             </tr>
             <tr>
-              <td>8</td>
+              <td>9</td>
               <td>Illuminate</td>
             </tr>
             <tr>
-              <td>9</td>
+              <td>10</td>
               <td>Liminal Platform</td>
             </tr>
             <tr>
-              <td>10 - 11</td>
+              <td>11 - 12</td>
               <td>Magic Circle</td>
             </tr>
             <tr>
-              <td>12</td>
+              <td>13</td>
               <td>Shock</td>
             </tr>
             <tr>
-              <td>13</td>
-              <td>Silence</td>
-            </tr>
-            <tr>
               <td>14</td>
-              <td>Slowfall</td>
+              <td>Silence</td>
             </tr>
             <tr>
               <td>15 - 16</td>
@@ -9275,7 +10080,7 @@
           <tbody>
             <tr>
               <td>
-                <5< /td>
+                &#60;5</td>
               <td>0</td>
             </tr>
             <tr>

@@ -714,21 +714,17 @@ function addScriptsAndBody(fileName) {
         let kitRoute = '../bonfireSRD/src/app/character-creation/chapter-one/cc-one/kit.js'
         let equipmentRoute = '../bonfireSRD/src/app/character-creation/chapter-six/tables.js'
 
-        if (fileName === 'CharacterCreationHandbook') {
-            fs.readFile(kitRoute, "utf-8", (err, kits) => {
+        fs.readFile(kitRoute, "utf-8", (err, kits) => {
+            if (err) { console.log(err) }
+            scripts = scripts + `<script>kits=${kits.split('export default ')[1]}</script>`
+
+            fs.readFile(equipmentRoute, "utf-8", (err, equipment) => {
                 if (err) { console.log(err) }
-                scripts = scripts + `<script>kits=${kits.split('export default ')[1]}</script>`
-    
-                fs.readFile(equipmentRoute, "utf-8", (err, equipment) => {
-                    if (err) { console.log(err) }
-                    scripts = scripts + `<script>equipmentTables=${equipment.split('export default ')[1]}</script>`
-    
-                    resolve(scripts + body)
-                })
+                scripts = scripts + `<script>equipmentTables=${equipment.split('export default ')[1]}</script>`
+
+                resolve(scripts + body)
             })
-        } else {
-            resolve(body)
-        }
+        })
     })
 }
 

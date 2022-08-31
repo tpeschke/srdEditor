@@ -442,13 +442,13 @@ function formatNewSections() {
                 </div>`)
             } else if (val.substring(0, 1) === '2') {
                 formattedArray.push(`<div class="anchor">
-                    <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}header" class="anchorTag"></div>
+                    <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}header${newId}" class="anchorTag"></div>
                     <h2>${val.substring(1).toProperCase()}</h2>
                     <div class="underline-sub"></div>
                 </div>`)
             } else if (val.substring(0, 1) === '3') {
                 formattedArray.push(`<div class="anchor">
-                    <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}header" class="anchorTag"></div>
+                    <div id="${val.substring(1, 15).replace(/[\W_]+/g, "")}header${newId}" class="anchorTag"></div>
                     <h3>${val.substring(1).toProperCase()}</h3>
                 </div>`)
             } else if (val.substring(0, 1) === '4') {
@@ -473,6 +473,22 @@ function formatNewSections() {
                             <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
                             <p>${val.substring(1)}</p>
                         </div>`)
+            } else if (val.substring(0, 1) === 'i') {
+                formattedArray.push(`<div class='paragraphShell anchor'>
+                            <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                            <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                            <p class="italic">${val.substring(1)}</p>
+                        </div>`)
+            } else if (val.substring(0, 1) === 'f') {
+                formattedArray.push(`<div class='paragraphShell anchor marginBottom'>
+                            <div id='${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}' class='anchorTag'></div>
+                            <app-bm-chapter-icon [id]="'${val.substring(1, 15).replace(/[\W_]+/g, "")}${newId}'"></app-bm-chapter-icon>
+                            <p class="italic">${val.substring(1)}</p>
+                        </div>`)
+            } else if (val.substring(0, 1) === 'b') {
+                formattedArray.push(`<strong>${val.substring(1)}</strong>`)
+            } else if (val.substring(0, 1) === '*') {
+                formattedArray.push(`<strong class='optional'>*</strong>`)
             } else if (val.substring(0, 1) === 'x') {
                 if (sidebar) {
                     formattedArray.push(`</div>`)
@@ -990,10 +1006,6 @@ function tagsToUppercase(tags, string) {
     return string
 }
 
-// uppercase all <div>, <p>, <span> for example
-//   tagsToUppercase(["div", "p", "span"]);
-
-
 function correctString() {
     let correctedHTML = tagsToUppercase(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong'], string)
     fs.writeFile(`./string.html`, correctedHTML, (err) => {
@@ -1002,20 +1014,72 @@ function correctString() {
     });
 }
 
+function getProbability (roundedValue, skillRank) {
+    let dTwenty = 20
+        , tieGoesTo = 1
+
+    if (roundedValue > (dTwenty + skillRank)) {
+        return 0
+    } else {
+        if (roundedValue > skillRank) {
+            return 1 - ((((roundedValue - skillRank) * dTwenty) + (dTwenty * (dTwenty - tieGoesTo) / 2) - (roundedValue - skillRank - tieGoesTo) * (roundedValue - skillRank) / 2) / (dTwenty * dTwenty))
+        } else {
+            return (((skillRank - roundedValue) * dTwenty) + (dTwenty * (dTwenty + tieGoesTo) / 2) - (skillRank - roundedValue + tieGoesTo) * (skillRank - roundedValue) / 2) / (dTwenty * dTwenty)
+        }
+    }
+}
+
+function getProbabilityDescriptor (p) {
+    if (p > .99) {
+        return 'Auto'
+    } else if (p > .8) {
+        return 'Trivial'
+    } else if (p > .7) {
+        return 'Easy'
+    } else if (p > .6) {
+        return 'Ave'
+    } else if (p > .45) {
+        return 'Diffic'
+    } else if (p > .25) {
+        return 'Hard'
+    } else if (p > .1) {
+        return 'Challen'
+    } else {
+        return 'Impos'
+    }
+}
+
+let tableArray = []
+let rowArray = []
+
+function createRowArray(index) {
+    let roundedValues = [0, 3.83, 4.7, 5.64, 6.61, 7.59, 11.55, 15.39, 16.25, 17.20, 18.16, 19.14, 23.11]
+    for (let i = 0; i < 21; i++) {
+        rowArray.push(getProbabilityDescriptor(getProbability(roundedValues[index], i)))
+    }
+    tableArray.push(rowArray)
+    rowArray = []
+}
+
+function createTableArray() {
+    let diceValues = ['+0', '+d4!', '+d6!', '+d8!', '+d10!', '+d12!', '+d20!', '+d20!+d4!', '+d20!+d6!', '+d20!+d8!', '+d20!+d10!', '+d20!+d12!', '+2d20!']
+    for (let i = 0; i < diceValues.length; i++) {
+        rowArray.push(diceValues[i])
+        createRowArray(i)
+    }
+    console.log(tableArray)
+}
+
 massive(connection).then(dbI => {
     app.set('db', dbI)
     app.listen(4343, _ => {
-        // objectFromTable()
-        // console.log(rollDice("d6-8"))
-        // updateSearch('1.1')
+        // createTableArray()
+        updateSearch('1.1')
         // for (i = 1; i < 8; i++) {
-        // updateQuickNav('1.6')
+        // updateQuickNav('1.2')
         // }
         // formatNewSections()
-        // console.log(calculateAverageOfDice("1 + 4d20!+ 3!"))
-        formatPHB(0, '', 'rr')
-        // beastVitalityUpgradeScript()
-        // correctString()
+        // formatPHB(0, '', 'rr')
         console.log(`The night lays like a lullaby on the earth 4343`)
     })
 })

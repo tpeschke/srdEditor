@@ -339,7 +339,7 @@ async function updateQuickNavForRulesReference(endpoint) {
 
     let html = "";
 
-    fs.readFile(`../bonfireSRD/src/app/rules-reference/chapter-${chapterName}/rr-${chapterName}/rr-${chapterName}.component.html`, "utf-8", (err, data) => {
+    fs.readFile(`../bonfireSRD/src/app/rules-reference/chapter-${chapterName}/rr-${chapterName}-deluxe/rr-${chapterName}-deluxe.component.html`, "utf-8", (err, data) => {
         // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
         if (err) { console.log(err) }
         html = data.replace(/ _ngcontent-c2=""/g, '');
@@ -1014,7 +1014,7 @@ function correctString() {
     });
 }
 
-function getProbability (roundedValue, skillRank) {
+function getProbability(roundedValue, skillRank) {
     let dTwenty = 20
         , tieGoesTo = 1
 
@@ -1029,7 +1029,7 @@ function getProbability (roundedValue, skillRank) {
     }
 }
 
-function getProbabilityDescriptor (p) {
+function getProbabilityDescriptor(p) {
     if (p > .99) {
         return 'Auto'
     } else if (p > .8) {
@@ -1076,9 +1076,8 @@ massive(connection).then(dbI => {
         // createTableArray()
         updateSearch('1.1')
         // for (i = 1; i < 8; i++) {
-        // updateQuickNav('1.2')
+        // updateQuickNav('1.3')
         // }
-        // formatNewSections()
         // formatPHB(0, '', 'rr')
         console.log(`The night lays like a lullaby on the earth 4343`)
     })

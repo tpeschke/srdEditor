@@ -6,7 +6,7 @@ const { connection } = require('./servStuff')
     , fs = require('fs')
     , numWords = require('num-words')
     , _ = require('lodash');
-const { round, add } = require('lodash')
+const { round, add, split } = require('lodash')
     , { tables, multipliers } = require('./table.js')
     , beastVitalityList = require('../object')
     , string = require('../string.js');
@@ -1070,14 +1070,31 @@ function createTableArray() {
     console.log(tableArray)
 }
 
+function createTableArray() {
+    fs.readFile(`./formatter.txt`, "utf-8", (err, data) => {
+        let tableString = 'insert into rmaterial (material, materialcategory, weight, multiplier)\n values'
+        let i = 0
+
+        let splitData = data.split('|')
+
+        for (let i = 0; i < splitData.length; i += 2) {
+            tableString += `('${splitData[i]}', 'Wood', 1, ${splitData[i+1]}),\n`
+        }
+
+        console.log(tableString)
+    })
+}
+
 massive(connection).then(dbI => {
     app.set('db', dbI)
     app.listen(4343, _ => {
         // createTableArray()
         updateSearch('1.1')
         // for (i = 1; i < 8; i++) {
-        // updateQuickNav('1.3')
+        // updateQuickNav('1.5')
         // }
+        // createTableArray()
+        // formatNewSections()
         // formatPHB(0, '', 'rr')
         console.log(`The night lays like a lullaby on the earth 4343`)
     })

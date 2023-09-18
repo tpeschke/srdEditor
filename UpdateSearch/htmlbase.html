@@ -1,32 +1,654 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
     <meta charset="utf-8">
-    <title>Export to Doc</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script>
-        function Export2Doc(element) {
-            var preHtml = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export HTML To Doc</title></head><body>";
-            var postHtml = "</body></html>";
-            var html = preHtml + document.getElementById(element).innerHTML + postHtml;
-            var blob = new Blob(['\ufeff', html], {
-                type: 'application/msword'
-            });
-            var url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(html);
-            filename = 'BonfirePHB.doc';
-            var downloadLink = document.createElement("a");
-            document.body.appendChild(downloadLink);
-            if (navigator.msSaveOrOpenBlob) {
-                navigator.msSaveOrOpenBlob(blob, filename);
-            } else {
-                downloadLink.href = url;
-                downloadLink.download = filename;
-                downloadLink.click();
-            }
-            document.body.removeChild(downloadLink);
-        }
-    </script>
+    <title>Roll20: Online virtual tabletop for pen and paper RPGs and board games</title>
+    <meta property='og:title' content='Roll20' />
+    <meta property='og:type' content='website' />
+    <meta property='og:url' content='https://roll20.net' />
+    <meta property='og:image' content='https://app.roll20.net/images/Roll20-OG.png?1558452745' />
+    <meta property='og:description'
+        content='Roll20 brings pen-and-paper gameplay to your browser with features that save time and enhance your favorite parts of tabletop games.' />
+    <meta property='og:locale' content='en_US' />
+    <meta property='og:locale:alternate' content='af_ZA' />
+    <meta property='og:locale:alternate' content='zh_Hant_TW' />
+    <meta property='og:locale:alternate' content='cs_CZ' />
+    <meta property='og:locale:alternate' content='da_DK' />
+    <meta property='og:locale:alternate' content='nl_NL' />
+    <meta property='og:locale:alternate' content='fr_FR' />
+    <meta property='og:locale:alternate' content='de_DE' />
+    <meta property='og:locale:alternate' content='el_GR' />
+    <meta property='og:locale:alternate' content='he_IL' />
+    <meta property='og:locale:alternate' content='it_IT' />
+    <meta property='og:locale:alternate' content='ja_JP' />
+    <meta property='og:locale:alternate' content='ko_KR' />
+    <meta property='og:locale:alternate' content='pl_PL' />
+    <meta property='og:locale:alternate' content='pt_PT' />
+    <meta property='og:locale:alternate' content='ru_RU' />
+    <meta property='og:locale:alternate' content='es_ES' />
+    <meta property='og:locale:alternate' content='sv_SE' />
+    <meta property='og:locale:alternate' content='tr_TR' />
+    <meta property="og:site_name" content="Roll20" />
+    <meta property="og:image:alt"
+        content='Roll20 logo, a pink and purple 20-sided die with the number twenty featured on its face. The die sits on top of the name "Roll20" in black font.' />
+    <link rel="stylesheet" href="/v3/assets/js/libs/@fortawesome/fontawesome-free/css/all.min.css?1566922104"
+        type="text/css" />
+    <link rel="stylesheet" href="/v3/assets/js/libs/@fortawesome/fontawesome-free/css/all.min.css?1566922104"
+        type="text/css" />
+    <link rel="stylesheet" href="/assets/v2.css?1594221300" type="text/css" />
+    <link rel="stylesheet" href="/v2/css/browse.css?1625255333" type="text/css" />
+    <link rel="stylesheet" href="/v2/css/nightmode.css" type="text/css" />
+    <script type="text/javascript" src="/assets/v2.js?1597766191"></script>
+    <script type="text/javascript" src="/v2/js/browse.js?1570549568"></script>
+    <script type="text/javascript" src="/js/jquery-ui.1.11.2.min.js?1452029248"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script
+        type="text/javascript"> const stripe = Stripe("pk_PKNhCNY3rSBBMk2zKeJIdbTEzIult"); const elements = stripe.elements(); </script>
+    <script type="text/javascript"> $(function () { $.jqotetag('$'); }); </script>
+    <meta name="viewport" content="width=768" />
 </head>
+
 <body>
-    <button style="position: sticky;top: 0;width: 100%;height: 50px;background: green;color: white;" onclick="Export2Doc('exportContent');">Export as .doc</button>
-    <div id="exportContent">
+    <style>
+        .bottom-banner {
+            background-color: #fff;
+            position: fixed;
+            bottom: 40px;
+            z-index: 9999;
+            width: calc(100% - 80px);
+            margin-left: 40px;
+            box-shadow: 0px 0px 16px #888888;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        .bottom-banner-css-version-v2 {
+            border-left: 15px solid #ec008c;
+        }
+
+        .bottom-banner-css-version-v3 {
+            border-left: 15px solid #35c8f5;
+        }
+
+        .bottom-banner-css-version-v2 .bottom-banner__button {
+            background-color: #35c8f5;
+        }
+
+        .bottom-banner-css-version-v3 .bottom-banner__button {
+            background-color: #ec008c;
+        }
+
+        .bottom-banner--hidden {
+            display: none;
+        }
+
+        .bottom-banner__message {
+            padding: 1em;
+            width: calc(100% - 100px);
+            float: left;
+        }
+
+        .bottom-banner__dismiss-icon {
+            float: right;
+            padding: 10px;
+            color: #d1d1d1;
+            cursor: pointer;
+            align-self: flex-start;
+        }
+
+        .bottom-banner__dismiss-icon:hover {
+            color: #333333;
+        }
+
+        .bottom-banner__button,
+        .bottom-banner__button:hover,
+        .bottom-banner__button:visited,
+        .bottom-banner__button:active {
+            float: right;
+            font-size: 16px;
+            line-height: 1.6;
+            border-radius: 4px;
+            padding: 7px 15px 7px 15px;
+            color: #fff !important;
+            transition: all .25s linear;
+            text-decoration: none;
+        }
+
+        .bottom-banner__button:hover {
+            color: #fff;
+        }
+
+        .cookie-modal--hidden {
+            display: none;
+            position: fixed;
+            z-index: 10001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+        }
+
+        .cookie-modal-content {
+            background-color: #fefefe;
+            margin: 20% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 40%;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.6), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        }
+
+        .cookie-modal-content h3 {
+            display: inline-block;
+        }
+
+        .cookie-modal-css-version-v3 {
+            padding-top: 16px;
+        }
+
+        .cookie-modal_switch .switch {
+            display: inline-block;
+            float: right;
+            margin-top: 30px;
+            width: 60px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 26px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #8492A6;
+            -webkit-transition: .3s;
+            transition: .3s;
+        }
+
+        .slider:after {
+            content: "Off";
+            position: absolute;
+            top: 50%;
+            right: 11px;
+            transform: translateY(-50%);
+            color: #fff;
+            font-family: helvetica;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            -webkit-transition: .3s;
+            transition: .3s;
+        }
+
+        input:checked+.slider {
+            background-color: #00853C;
+        }
+
+        input:disabled+.slider {
+            cursor: no-drop;
+            background-color: #C2C7D1;
+        }
+
+        input:disabled+.slider:before {
+            background-color: #DFE2E7;
+        }
+
+        input:focus+.slider {
+            box-shadow: 0 0 5px #2196F3;
+        }
+
+        input:checked+.slider:before {
+            -webkit-transform: translateX(33px);
+            -ms-transform: translateX(33px);
+            transform: translateX(33px);
+        }
+
+        input:checked+.slider:after {
+            content: "On";
+            right: auto;
+            left: 11px;
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 26px;
+            width: 60px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        .close {
+            float: right;
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 18px;
+            color: #000000;
+            text-shadow: 0 1px 0 #ffffff;
+            opacity: 0.2;
+            filter: alpha(opacity=20);
+        }
+
+        .close:hover {
+            color: #000000;
+            text-decoration: none;
+            opacity: 0.4;
+            filter: alpha(opacity=40);
+            cursor: pointer;
+        }
+    </style>
+    <div id="gdpr-notification" class="bottom-banner bottom-banner--hidden bottom-banner-css-version-v2">
+        <div class="bottom-banner__message"> We use Cookies to help personalize and improve Roll20. For more information
+            on our use of non-essential Cookies, visit our Privacy Policy <a
+                href=https://roll20.zendesk.com/hc/en-us/articles/360037770793-Terms-of-Service-and-Privacy-Policy
+                target='_blank'>here.</a> </div> <a href="#" id="gdpr-notification-accept-button"
+            class="bottom-banner__button"> Accept </a> <i id="gdpr-notification-dismiss-button"
+            class="bottom-banner__dismiss-icon fa fa-times"></i>
+    </div>
+    <div id="cookie-modal" class="cookie-modal--hidden">
+        <!-- Modal content -->
+        <div class="cookie-modal-content cookie-modal-css-version-v2"> <span class="close"
+                id="cookie-modal-dismiss">&times;</span>
+            <h3>Cookie Preferences</h3> <span class="cookie-modal_switch"> <label class="switch"> <input
+                        class="feature_toggle" id="cookie-modal-input" type="checkbox"> <span
+                        class="slider round"></span> </span>
+            <hr> We use Cookies to help personalize and improve Roll20. For more information on our use of non-essential
+            Cookies, visit our Privacy Policy <a href={{0}} target='_blank'>here.</a>
+        </div>
+    </div>
+    <script type="text/javascript"
+        nonce=""> // TODO: tutorialstartjs.haml (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){ (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o), m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) })(window,document,'script','//www.google-analytics.com/analytics.js','ga'); ga('create', 'UA-31040388-1', {'cookieDomain': 'auto'}); window['ga-disable-UA-31040388-1'] = true; var gdprCookie = getCookie("gdpr_accepts_cookies"); if (gdprCookie != undefined) { gdprCookie == "true" ? gdprCookie = true : gdprCookie = false; }; var gdprBanner = document.getElementById("gdpr-notification"); var gdprBannerDissmissButton = document.getElementById("gdpr-notification-dismiss-button"); var gdprBannerAcceptButton = document.getElementById("gdpr-notification-accept-button"); var gdprLoggedIn = false; var gdprAccountAcceptsCookies = null; var cookieModal = document.getElementById("cookie-modal"); var cookieModalClose = document.getElementById("cookie-modal-dismiss"); var cookieModalSwitch = document.getElementById("cookie-modal-input"); function setGDPRCookie(value, expirationInDays) { var date = new Date(); date.setTime(date.getTime() + expirationInDays * 24 * 60 * 60 * 1000); //convert to milleseconds var expires = "expires="+ date.toUTCString(); document.cookie = "gdpr_accepts_cookies=" + value + ";" + expires + ";path=/"+ ";domain=.roll20.net"; } function getCookie(cname) { var name = cname + "="; var ca = document.cookie.split(';'); for(var i = 0; i < ca.length; i++) { var c = ca[i]; while (c.charAt(0) == ' ') { c = c.substring(1); } if (c.indexOf(name) == 0) { return c.substring(name.length, c.length); } } return undefined; } function checkGdprStatus() { if (gdprLoggedIn == true) { checkAccountGdprCookieSettings(); } else { checkPublicGdprCookieSettings(); } } function checkAccountGdprCookieSettings() { var cookieExists = getCookie("gdpr_accepts_cookies"); var accountGdprAcceptsCookie = // Injected Server Side console.log('Logged in - checking Account GDPR status: '+accountGdprAcceptsCookie) switch(accountGdprAcceptsCookie) { case true: acceptCookies(); break; case null: if (!cookieExists){ showGDPRBanner(); } break; default: console.log('GDPR Tracking disabled') } } function checkPublicGdprCookieSettings() { console.log('Not logged in - checking cookie GDPR status'); if (gdprCookie == undefined) { console.log("No GPDR Cookie Detected"); showGDPRBanner(); } else if (gdprCookie == true){ console.log("GDPR Cookie Detected"); acceptCookies(); } } function turnOnGoogleAnalytics() { window['ga-disable-UA-31040388-1'] = false; ga('send', 'pageview'); } var showGDPRBanner = function () { gdprBanner.classList.remove("bottom-banner--hidden"); } var hideGDPRBanner = function () { gdprBanner.classList.add("bottom-banner--hidden"); } var updateUserAccount = function(account_id, value) { var xhr = new XMLHttpRequest(); // need to get the below working for marketplace, compendium, landing (only works for app) xhr.open("PATCH", '/accounts/'+account_id, true); xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8'); var cookieValue = "account[gdpr_accepts_cookies]=" + value; xhr.send(cookieValue); } var acceptCookies = function () { setGDPRCookie(true, 365); turnOnGoogleAnalytics(); turnOnNewRelicBrowserPro(); hideGDPRBanner(); document.getElementById("cookie-modal-input").checked = true; } var denyCookies = function () { setGDPRCookie(false, 365); } var toggleCookie = function () { var switchChecked = document.getElementById("cookie-modal-input").checked; setGDPRCookie(switchChecked, 365); } var showCookieModal = function (){ cookieModal.style.display = "block"; } var closeCookieModal = function (){ cookieModal.style.display = "none"; } if (gdprCookie == true || gdprAccountAcceptsCookies == true){ document.getElementById("cookie-modal-input").checked = true; } gdprBannerAcceptButton.addEventListener("click", acceptCookies); gdprBannerDissmissButton.addEventListener("click", hideGDPRBanner); gdprBannerDissmissButton.addEventListener("click", denyCookies); cookieModalClose.addEventListener("click", closeCookieModal); cookieModalSwitch.addEventListener("click", toggleCookie); checkGdprStatus(); function turnOnNewRelicBrowserPro () { window.NREUM||(NREUM={}),__nr_require=function(t,n,e){function r(e){if(!n[e]){var o=n[e]={exports:{}};t[e][0].call(o.exports,function(n){var o=t[e][1][n];return r(o||n)},o,o.exports)}return n[e].exports}if("function"==typeof __nr_require)return __nr_require;for(var o=0;o<e.length;o++)r(e[o]);return r}({1:[function(t,n,e){function r(t){try{s.console&&console.log(t)}catch(n){}}var o,i=t("ee"),a=t(21),s={};try{o=localStorage.getItem("__nr_flags").split(","),console&&"function"==typeof console.log&&(s.console=!0,o.indexOf("dev")!==-1&&(s.dev=!0),o.indexOf("nr_dev")!==-1&&(s.nrDev=!0))}catch(c){}s.nrDev&&i.on("internal-error",function(t){r(t.stack)}),s.dev&&i.on("fn-err",function(t,n,e){r(e.stack)}),s.dev&&(r("NR AGENT IN DEVELOPMENT MODE"),r("flags: "+a(s,function(t,n){return t}).join(", ")))},{}],2:[function(t,n,e){function r(t,n,e,r,s){try{p?p-=1:o(s||new UncaughtException(t,n,e),!0)}catch(f){try{i("ierr",[f,c.now(),!0])}catch(d){}}return"function"==typeof u&&u.apply(this,a(arguments))}function UncaughtException(t,n,e){this.message=t||"Uncaught error with no additional information",this.sourceURL=n,this.line=e}function o(t,n){var e=n?null:c.now();i("err",[t,e])}var i=t("handle"),a=t(22),s=t("ee"),c=t("loader"),f=t("gos"),u=window.onerror,d=!1,l="nr@seenError",p=0;c.features.err=!0,t(1),window.onerror=r;try{throw new Error}catch(h){"stack"in h&&(t(9),t(8),"addEventListener"in window&&t(5),c.xhrWrappable&&t(10),d=!0)}s.on("fn-start",function(t,n,e){d&&(p+=1)}),s.on("fn-err",function(t,n,e){d&&!e[l]&&(f(e,l,function(){return!0}),this.thrown=!0,o(e))}),s.on("fn-end",function(){d&&!this.thrown&&p>0&&(p-=1)}),s.on("internal-error",function(t){i("ierr",[t,c.now(),!0])})},{}],3:[function(t,n,e){t("loader").features.ins=!0},{}],4:[function(t,n,e){function r(t){}if(window.performance&&window.performance.timing&&window.performance.getEntriesByType){var o=t("ee"),i=t("handle"),a=t(9),s=t(8),c="learResourceTimings",f="addEventListener",u="resourcetimingbufferfull",d="bstResource",l="resource",p="-start",h="-end",m="fn"+p,w="fn"+h,v="bstTimer",g="pushState",y=t("loader");y.features.stn=!0,t(7),"addEventListener"in window&&t(5);var x=NREUM.o.EV;o.on(m,function(t,n){var e=t[0];e instanceof x&&(this.bstStart=y.now())}),o.on(w,function(t,n){var e=t[0];e instanceof x&&i("bst",[e,n,this.bstStart,y.now()])}),a.on(m,function(t,n,e){this.bstStart=y.now(),this.bstType=e}),a.on(w,function(t,n){i(v,[n,this.bstStart,y.now(),this.bstType])}),s.on(m,function(){this.bstStart=y.now()}),s.on(w,function(t,n){i(v,[n,this.bstStart,y.now(),"requestAnimationFrame"])}),o.on(g+p,function(t){this.time=y.now(),this.startPath=location.pathname+location.hash}),o.on(g+h,function(t){i("bstHist",[location.pathname+location.hash,this.startPath,this.time])}),f in window.performance&&(window.performance["c"+c]?window.performance[f](u,function(t){i(d,[window.performance.getEntriesByType(l)]),window.performance["c"+c]()},!1):window.performance[f]("webkit"+u,function(t){i(d,[window.performance.getEntriesByType(l)]),window.performance["webkitC"+c]()},!1)),document[f]("scroll",r,{passive:!0}),document[f]("keypress",r,!1),document[f]("click",r,!1)}},{}],5:[function(t,n,e){function r(t){for(var n=t;n&&!n.hasOwnProperty(u);)n=Object.getPrototypeOf(n);n&&o(n)}function o(t){s.inPlace(t,[u,d],"-",i)}function i(t,n){return t[1]}var a=t("ee").get("events"),s=t("wrap-function")(a,!0),c=t("gos"),f=XMLHttpRequest,u="addEventListener",d="removeEventListener";n.exports=a,"getPrototypeOf"in Object?(r(document),r(window),r(f.prototype)):f.prototype.hasOwnProperty(u)&&(o(window),o(f.prototype)),a.on(u+"-start",function(t,n){var e=t[1],r=c(e,"nr@wrapped",function(){function t(){if("function"==typeof e.handleEvent)return e.handleEvent.apply(e,arguments)}var n={object:t,"function":e}[typeof e];return n?s(n,"fn-",null,n.name||"anonymous"):e});this.wrapped=t[1]=r}),a.on(d+"-start",function(t){t[1]=this.wrapped||t[1]})},{}],6:[function(t,n,e){function r(t,n,e){var r=t[n];"function"==typeof r&&(t[n]=function(){var t=i(arguments),n={};o.emit(e+"before-start",[t],n);var a;n[m]&&n[m].dt&&(a=n[m].dt);var s=r.apply(this,t);return o.emit(e+"start",[t,a],s),s.then(function(t){return o.emit(e+"end",[null,t],s),t},function(t){throw o.emit(e+"end",[t],s),t})})}var o=t("ee").get("fetch"),i=t(22),a=t(21);n.exports=o;var s=window,c="fetch-",f=c+"body-",u=["arrayBuffer","blob","json","text","formData"],d=s.Request,l=s.Response,p=s.fetch,h="prototype",m="nr@context";d&&l&&p&&(a(u,function(t,n){r(d[h],n,f),r(l[h],n,f)}),r(s,"fetch",c),o.on(c+"end",function(t,n){var e=this;if(n){var r=n.headers.get("content-length");null!==r&&(e.rxSize=r),o.emit(c+"done",[null,n],e)}else o.emit(c+"done",[t],e)}))},{}],7:[function(t,n,e){var r=t("ee").get("history"),o=t("wrap-function")(r);n.exports=r;var i=window.history&&window.history.constructor&&window.history.constructor.prototype,a=window.history;i&&i.pushState&&i.replaceState&&(a=i),o.inPlace(a,["pushState","replaceState"],"-")},{}],8:[function(t,n,e){var r=t("ee").get("raf"),o=t("wrap-function")(r),i="equestAnimationFrame";n.exports=r,o.inPlace(window,["r"+i,"mozR"+i,"webkitR"+i,"msR"+i],"raf-"),r.on("raf-start",function(t){t[0]=o(t[0],"fn-")})},{}],9:[function(t,n,e){function r(t,n,e){t[0]=a(t[0],"fn-",null,e)}function o(t,n,e){this.method=e,this.timerDuration=isNaN(t[1])?0:+t[1],t[0]=a(t[0],"fn-",this,e)}var i=t("ee").get("timer"),a=t("wrap-function")(i),s="setTimeout",c="setInterval",f="clearTimeout",u="-start",d="-";n.exports=i,a.inPlace(window,[s,"setImmediate"],s+d),a.inPlace(window,[c],c+d),a.inPlace(window,[f,"clearImmediate"],f+d),i.on(c+u,r),i.on(s+u,o)},{}],10:[function(t,n,e){function r(t,n){d.inPlace(n,["onreadystatechange"],"fn-",s)}function o(){var t=this,n=u.context(t);t.readyState>3&&!n.resolved&&(n.resolved=!0,u.emit("xhr-resolved",[],t)),d.inPlace(t,g,"fn-",s)}function i(t){y.push(t),h&&(b?b.then(a):w?w(a):(E=-E,O.data=E))}function a(){for(var t=0;t<y.length;t++)r([],y[t]);y.length&&(y=[])}function s(t,n){return n}function c(t,n){for(var e in t)n[e]=t[e];return n}t(5);var f=t("ee"),u=f.get("xhr"),d=t("wrap-function")(u),l=NREUM.o,p=l.XHR,h=l.MO,m=l.PR,w=l.SI,v="readystatechange",g=["onload","onerror","onabort","onloadstart","onloadend","onprogress","ontimeout"],y=[];n.exports=u;var x=window.XMLHttpRequest=function(t){var n=new p(t);try{u.emit("new-xhr",[n],n),n.addEventListener(v,o,!1)}catch(e){try{u.emit("internal-error",[e])}catch(r){}}return n};if(c(p,x),x.prototype=p.prototype,d.inPlace(x.prototype,["open","send"],"-xhr-",s),u.on("send-xhr-start",function(t,n){r(t,n),i(n)}),u.on("open-xhr-start",r),h){var b=m&&m.resolve();if(!w&&!m){var E=1,O=document.createTextNode(E);new h(a).observe(O,{characterData:!0})}}else f.on("fn-end",function(t){t[0]&&t[0].type===v||a()})},{}],11:[function(t,n,e){function r(t){if(!i(t))return null;var n=window.NREUM;if(!n.loader_config)return null;var e=(n.loader_config.accountID||"").toString()||null,r=(n.loader_config.agentID||"").toString()||null,s=(n.loader_config.trustKey||"").toString()||null;if(!e||!r)return null;var c=a.generateCatId(),f=a.generateCatId(),u=Date.now(),d=o(c,f,u,e,r,s);return{header:d,guid:c,traceId:f,timestamp:u}}function o(t,n,e,r,o,i){var a="btoa"in window&&"function"==typeof window.btoa;if(!a)return null;var s={v:[0,1],d:{ty:"Browser",ac:r,ap:o,id:t,tr:n,ti:e}};return i&&r!==i&&(s.d.tk=i),btoa(JSON.stringify(s))}function i(t){var n=!1,e=!1,r={};if("init"in NREUM&&"distributed_tracing"in NREUM.init&&(r=NREUM.init.distributed_tracing,e=!!r.enabled),e)if(t.sameOrigin)n=!0;else if(r.allowed_origins instanceof Array)for(var o=0;o<r.allowed_origins.length;o++){var i=s(r.allowed_origins[o]);if(t.hostname===i.hostname&&t.protocol===i.protocol&&t.port===i.port){n=!0;break}}return e&&n}var a=t(19),s=t(13);n.exports={generateTracePayload:r,shouldGenerateTrace:i}},{}],12:[function(t,n,e){function r(t){var n=this.params,e=this.metrics;if(!this.ended){this.ended=!0;for(var r=0;r<l;r++)t.removeEventListener(d[r],this.listener,!1);n.aborted||(e.duration=a.now()-this.startTime,this.loadCaptureCalled||4!==t.readyState?null==n.status&&(n.status=0):i(this,t),e.cbTime=this.cbTime,u.emit("xhr-done",[t],t),s("xhr",[n,e,this.startTime]))}}function o(t,n){var e=c(n),r=t.params;r.host=e.hostname+":"+e.port,r.pathname=e.pathname,t.parsedOrigin=c(n),t.sameOrigin=t.parsedOrigin.sameOrigin}function i(t,n){t.params.status=n.status;var e=w(n,t.lastSize);if(e&&(t.metrics.rxSize=e),t.sameOrigin){var r=n.getResponseHeader("X-NewRelic-App-Data");r&&(t.params.cat=r.split(", ").pop())}t.loadCaptureCalled=!0}var a=t("loader");if(a.xhrWrappable){var s=t("handle"),c=t(13),f=t(11).generateTracePayload,u=t("ee"),d=["load","error","abort","timeout"],l=d.length,p=t("id"),h=t(17),m=t(16),w=t(14),v=window.XMLHttpRequest;a.features.xhr=!0,t(10),t(6),u.on("new-xhr",function(t){var n=this;n.totalCbs=0,n.called=0,n.cbTime=0,n.end=r,n.ended=!1,n.xhrGuids={},n.lastSize=null,n.loadCaptureCalled=!1,t.addEventListener("load",function(e){i(n,t)},!1),h&&(h>34||h<10)||window.opera||t.addEventListener("progress",function(t){n.lastSize=t.loaded},!1)}),u.on("open-xhr-start",function(t){this.params={method:t[0]},o(this,t[1]),this.metrics={}}),u.on("open-xhr-end",function(t,n){"loader_config"in NREUM&&"xpid"in NREUM.loader_config&&this.sameOrigin&&n.setRequestHeader("X-NewRelic-ID",NREUM.loader_config.xpid);var e=f(this.parsedOrigin);e&&e.header&&(n.setRequestHeader("newrelic",e.header),this.dt=e)}),u.on("send-xhr-start",function(t,n){var e=this.metrics,r=t[0],o=this;if(e&&r){var i=m(r);i&&(e.txSize=i)}this.startTime=a.now(),this.listener=function(t){try{"abort"!==t.type||o.loadCaptureCalled||(o.params.aborted=!0),("load"!==t.type||o.called===o.totalCbs&&(o.onloadCalled||"function"!=typeof n.onload))&&o.end(n)}catch(e){try{u.emit("internal-error",[e])}catch(r){}}};for(var s=0;s<l;s++)n.addEventListener(d[s],this.listener,!1)}),u.on("xhr-cb-time",function(t,n,e){this.cbTime+=t,n?this.onloadCalled=!0:this.called+=1,this.called!==this.totalCbs||!this.onloadCalled&&"function"==typeof e.onload||this.end(e)}),u.on("xhr-load-added",function(t,n){var e=""+p(t)+!!n;this.xhrGuids&&!this.xhrGuids[e]&&(this.xhrGuids[e]=!0,this.totalCbs+=1)}),u.on("xhr-load-removed",function(t,n){var e=""+p(t)+!!n;this.xhrGuids&&this.xhrGuids[e]&&(delete this.xhrGuids[e],this.totalCbs-=1)}),u.on("addEventListener-end",function(t,n){n instanceof v&&"load"===t[0]&&u.emit("xhr-load-added",[t[1],t[2]],n)}),u.on("removeEventListener-end",function(t,n){n instanceof v&&"load"===t[0]&&u.emit("xhr-load-removed",[t[1],t[2]],n)}),u.on("fn-start",function(t,n,e){n instanceof v&&("onload"===e&&(this.onload=!0),("load"===(t[0]&&t[0].type)||this.onload)&&(this.xhrCbStart=a.now()))}),u.on("fn-end",function(t,n){this.xhrCbStart&&u.emit("xhr-cb-time",[a.now()-this.xhrCbStart,this.onload,n],n)}),u.on("fetch-before-start",function(t){var n,e=t[1]||{};"string"==typeof t[0]?n=t[0]:t[0]&&t[0].url&&(n=t[0].url),n&&(this.parsedOrigin=c(n),this.sameOrigin=this.parsedOrigin.sameOrigin);var r=f(this.parsedOrigin);if(r&&r.header){var o=r.header;if("string"==typeof t[0]){var i={};for(var a in e)i[a]=e[a];i.headers=new Headers(e.headers||{}),i.headers.set("newrelic",o),this.dt=r,t.length>1?t[1]=i:t.push(i)}else t[0]&&t[0].headers&&(t[0].headers.append("newrelic",o),this.dt=r)}})}},{}],13:[function(t,n,e){var r={};n.exports=function(t){if(t in r)return r[t];var n=document.createElement("a"),e=window.location,o={};n.href=t,o.port=n.port;var i=n.href.split("://");!o.port&&i[1]&&(o.port=i[1].split("/")[0].split("@").pop().split(":")[1]),o.port&&"0"!==o.port||(o.port="https"===i[0]?"443":"80"),o.hostname=n.hostname||e.hostname,o.pathname=n.pathname,o.protocol=i[0],"/"!==o.pathname.charAt(0)&&(o.pathname="/"+o.pathname);var a=!n.protocol||":"===n.protocol||n.protocol===e.protocol,s=n.hostname===document.domain&&n.port===e.port;return o.sameOrigin=a&&(!n.hostname||s),"/"===o.pathname&&(r[t]=o),o}},{}],14:[function(t,n,e){function r(t,n){var e=t.responseType;return"json"===e&&null!==n?n:"arraybuffer"===e||"blob"===e||"json"===e?o(t.response):"text"===e||"document"===e||""===e||void 0===e?o(t.responseText):void 0}var o=t(16);n.exports=r},{}],15:[function(t,n,e){function r(){}function o(t,n,e){return function(){return i(t,[f.now()].concat(s(arguments)),n?null:this,e),n?void 0:this}}var i=t("handle"),a=t(21),s=t(22),c=t("ee").get("tracer"),f=t("loader"),u=NREUM;"undefined"==typeof window.newrelic&&(newrelic=u);var d=["setPageViewName","setCustomAttribute","setErrorHandler","finished","addToTrace","inlineHit","addRelease"],l="api-",p=l+"ixn-";a(d,function(t,n){u[n]=o(l+n,!0,"api")}),u.addPageAction=o(l+"addPageAction",!0),u.setCurrentRouteName=o(l+"routeName",!0),n.exports=newrelic,u.interaction=function(){return(new r).get()};var h=r.prototype={createTracer:function(t,n){var e={},r=this,o="function"==typeof n;return i(p+"tracer",[f.now(),t,e],r),function(){if(c.emit((o?"":"no-")+"fn-start",[f.now(),r,o],e),o)try{return n.apply(this,arguments)}catch(t){throw c.emit("fn-err",[arguments,this,t],e),t}finally{c.emit("fn-end",[f.now()],e)}}}};a("actionText,setName,setAttribute,save,ignore,onEnd,getContext,end,get".split(","),function(t,n){h[n]=o(p+n)}),newrelic.noticeError=function(t,n){"string"==typeof t&&(t=new Error(t)),i("err",[t,f.now(),!1,n])}},{}],16:[function(t,n,e){n.exports=function(t){if("string"==typeof t&&t.length)return t.length;if("object"==typeof t){if("undefined"!=typeof ArrayBuffer&&t instanceof ArrayBuffer&&t.byteLength)return t.byteLength;if("undefined"!=typeof Blob&&t instanceof Blob&&t.size)return t.size;if(!("undefined"!=typeof FormData&&t instanceof FormData))try{return JSON.stringify(t).length}catch(n){return}}}},{}],17:[function(t,n,e){var r=0,o=navigator.userAgent.match(/Firefox[\/\s](\d+\.\d+)/);o&&(r=+o[1]),n.exports=r},{}],18:[function(t,n,e){function r(t,n){var e=t.getEntries();e.forEach(function(t){"first-paint"===t.name?c("timing",["fp",Math.floor(t.startTime)]):"first-contentful-paint"===t.name&&c("timing",["fcp",Math.floor(t.startTime)])})}function o(t,n){var e=t.getEntries();e.length>0&&c("lcp",[e[e.length-1]])}function i(t){if(t instanceof u&&!l){var n,e=Math.round(t.timeStamp);n=e>1e12?Date.now()-e:f.now()-e,l=!0,c("timing",["fi",e,{type:t.type,fid:n}])}}if(!("init"in NREUM&&"page_view_timing"in NREUM.init&&"enabled"in NREUM.init.page_view_timing&&NREUM.init.page_view_timing.enabled===!1)){var a,s,c=t("handle"),f=t("loader"),u=NREUM.o.EV;if("PerformanceObserver"in window&&"function"==typeof window.PerformanceObserver){a=new PerformanceObserver(r),s=new PerformanceObserver(o);try{a.observe({entryTypes:["paint"]}),s.observe({entryTypes:["largest-contentful-paint"]})}catch(d){}}if("addEventListener"in document){var l=!1,p=["click","keydown","mousedown","pointerdown","touchstart"];p.forEach(function(t){document.addEventListener(t,i,!1)})}}},{}],19:[function(t,n,e){function r(){function t(){return n?15&n[e++]:16*Math.random()|0}var n=null,e=0,r=window.crypto||window.msCrypto;r&&r.getRandomValues&&(n=r.getRandomValues(new Uint8Array(31)));for(var o,i="xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx",a="",s=0;s<i.length;s++)o=i[s],"x"===o?a+=t().toString(16):"y"===o?(o=3&t()|8,a+=o.toString(16)):a+=o;return a}function o(){function t(){return n?15&n[e++]:16*Math.random()|0}var n=null,e=0,r=window.crypto||window.msCrypto;r&&r.getRandomValues&&Uint8Array&&(n=r.getRandomValues(new Uint8Array(31)));for(var o=[],i=0;i<16;i++)o.push(t().toString(16));return o.join("")}n.exports={generateUuid:r,generateCatId:o}},{}],20:[function(t,n,e){function r(t,n){if(!o)return!1;if(t!==o)return!1;if(!n)return!0;if(!i)return!1;for(var e=i.split("."),r=n.split("."),a=0;a<r.length;a++)if(r[a]!==e[a])return!1;return!0}var o=null,i=null,a=/Version\/(\S+)\s+Safari/;if(navigator.userAgent){var s=navigator.userAgent,c=s.match(a);c&&s.indexOf("Chrome")===-1&&s.indexOf("Chromium")===-1&&(o="Safari",i=c[1])}n.exports={agent:o,version:i,match:r}},{}],21:[function(t,n,e){function r(t,n){var e=[],r="",i=0;for(r in t)o.call(t,r)&&(e[i]=n(r,t[r]),i+=1);return e}var o=Object.prototype.hasOwnProperty;n.exports=r},{}],22:[function(t,n,e){function r(t,n,e){n||(n=0),"undefined"==typeof e&&(e=t?t.length:0);for(var r=-1,o=e-n||0,i=Array(o<0?0:o);++r<o;)i[r]=t[n+r];return i}n.exports=r},{}],23:[function(t,n,e){n.exports={exists:"undefined"!=typeof window.performance&&window.performance.timing&&"undefined"!=typeof window.performance.timing.navigationStart}},{}],ee:[function(t,n,e){function r(){}function o(t){function n(t){return t&&t instanceof r?t:t?c(t,s,i):i()}function e(e,r,o,i){if(!l.aborted||i){t&&t(e,r,o);for(var a=n(o),s=m(e),c=s.length,f=0;f<c;f++)s[f].apply(a,r);var d=u[y[e]];return d&&d.push([x,e,r,a]),a}}function p(t,n){g[t]=m(t).concat(n)}function h(t,n){var e=g[t];if(e)for(var r=0;r<e.length;r++)e[r]===n&&e.splice(r,1)}function m(t){return g[t]||[]}function w(t){return d[t]=d[t]||o(e)}function v(t,n){f(t,function(t,e){n=n||"feature",y[e]=n,n in u||(u[n]=[])})}var g={},y={},x={on:p,addEventListener:p,removeEventListener:h,emit:e,get:w,listeners:m,context:n,buffer:v,abort:a,aborted:!1};return x}function i(){return new r}function a(){(u.api||u.feature)&&(l.aborted=!0,u=l.backlog={})}var s="nr@context",c=t("gos"),f=t(21),u={},d={},l=n.exports=o();l.backlog=u},{}],gos:[function(t,n,e){function r(t,n,e){if(o.call(t,n))return t[n];var r=e();if(Object.defineProperty&&Object.keys)try{return Object.defineProperty(t,n,{value:r,writable:!0,enumerable:!1}),r}catch(i){}return t[n]=r,r}var o=Object.prototype.hasOwnProperty;n.exports=r},{}],handle:[function(t,n,e){function r(t,n,e,r){o.buffer([t],r),o.emit(t,n,e)}var o=t("ee").get("handle");n.exports=r,r.ee=o},{}],id:[function(t,n,e){function r(t){var n=typeof t;return!t||"object"!==n&&"function"!==n?-1:t===window?0:a(t,i,function(){return o++})}var o=1,i="nr@id",a=t("gos");n.exports=r},{}],loader:[function(t,n,e){function r(){if(!E++){var t=b.info=NREUM.info,n=p.getElementsByTagName("script")[0];if(setTimeout(u.abort,3e4),!(t&&t.licenseKey&&t.applicationID&&n))return u.abort();f(y,function(n,e){t[n]||(t[n]=e)}),c("mark",["onload",a()+b.offset],null,"api");var e=p.createElement("script");e.src="https://"+t.agent,n.parentNode.insertBefore(e,n)}}function o(){"complete"===p.readyState&&i()}function i(){c("mark",["domContent",a()+b.offset],null,"api")}function a(){return O.exists&&performance.now?Math.round(performance.now()):(s=Math.max((new Date).getTime(),s))-b.offset}var s=(new Date).getTime(),c=t("handle"),f=t(21),u=t("ee"),d=t(20),l=window,p=l.document,h="addEventListener",m="attachEvent",w=l.XMLHttpRequest,v=w&&w.prototype;NREUM.o={ST:setTimeout,SI:l.setImmediate,CT:clearTimeout,XHR:w,REQ:l.Request,EV:l.Event,PR:l.Promise,MO:l.MutationObserver};var g=""+location,y={beacon:"bam.nr-data.net",errorBeacon:"bam.nr-data.net",agent:"js-agent.newrelic.com/nr-1167.min.js"},x=w&&v&&v[h]&&!/CriOS/.test(navigator.userAgent),b=n.exports={offset:s,now:a,origin:g,features:{},xhrWrappable:x,userAgent:d};t(15),t(18),p[h]?(p[h]("DOMContentLoaded",i,!1),l[h]("load",r,!1)):(p[m]("onreadystatechange",o),l[m]("onload",r)),c("mark",["firstbyte",s],null,"api");var E=0,O=t(23)},{}],"wrap-function":[function(t,n,e){function r(t){return!(t&&t instanceof Function&&t.apply&&!t[a])}var o=t("ee"),i=t(22),a="nr@original",s=Object.prototype.hasOwnProperty,c=!1;n.exports=function(t,n){function e(t,n,e,o){function nrWrapper(){var r,a,s,c;try{a=this,r=i(arguments),s="function"==typeof e?e(r,a):e||{}}catch(f){l([f,"",[r,a,o],s])}u(n+"start",[r,a,o],s);try{return c=t.apply(a,r)}catch(d){throw u(n+"err",[r,a,d],s),d}finally{u(n+"end",[r,a,c],s)}}return r(t)?t:(n||(n=""),nrWrapper[a]=t,d(t,nrWrapper),nrWrapper)}function f(t,n,o,i){o||(o="");var a,s,c,f="-"===o.charAt(0);for(c=0;c<n.length;c++)s=n[c],a=t[s],r(a)||(t[s]=e(a,f?s+o:o,i,s))}function u(e,r,o){if(!c||n){var i=c;c=!0;try{t.emit(e,r,o,n)}catch(a){l([a,e,r,o])}c=i}}function d(t,n){if(Object.defineProperty&&Object.keys)try{var e=Object.keys(t);return e.forEach(function(e){Object.defineProperty(n,e,{get:function(){return t[e]},set:function(n){return t[e]=n,n}})}),n}catch(r){l([r])}for(var o in t)s.call(t,o)&&(n[o]=t[o]);return n}function l(n){try{t.emit("internal-error",n)}catch(e){}}return t||(t=o),e.inPlace=f,e.flag=a,e}},{}]},{},["loader",2,12,4,3]); ;NREUM.loader_config={accountID:"290325",trustKey:"290325",agentID:"1985895",licenseKey:"50a61d60f7",applicationID:"1985886"} ;NREUM.info={beacon:"bam.nr-data.net",errorBeacon:"bam.nr-data.net",licenseKey:"50a61d60f7",applicationID:"1985886",sa:1} } </script>
+    <div class="container topbar">
+        <script
+            type='text/javascript'> var googletag = googletag || {}; googletag.cmd = googletag.cmd || []; // (function() { // var gads = document.createElement('script'); // gads.async = true; // gads.type = 'text/javascript'; // var useSSL = 'https:' == document.location.protocol; // gads.src = (useSSL ? 'https:' : 'http:') + // '//www.googletagservices.com/tag/js/gpt.js'; // var node = document.getElementsByTagName('script')[0]; // node.parentNode.insertBefore(gads, node); // })(); </script>
+        <script
+            type='text/javascript'> // googletag.cmd.push(function() { // googletag.defineSlot('/34541132/Leaderboard', [728, 90], 'dfp-1349444251840-1').addService(googletag.pubads()); // googletag.pubads().enableSingleRequest(); // googletag.enableServices(); // }); </script>
+        <div class="bna"> <span class="header">Advertisement</span> <span class="footer"> <a
+                    href="https://app.roll20.net/account/create/?bannertext&utm_source=inhouse&utm_medium=banner&utm_campaign=freetextCTA">
+                    Create a free account </a> </span> <a
+                href="https://app.roll20.net/account/create/?bannerbackup&amp;utm_source=inhouse&amp;utm_medium=banner&amp;utm_campaign=compendiumtop"
+                target="_blank"> <img src="/v2/images/banners/Compendium-Ad.gif" /> </a>
+            <!--<div id='dfp-1349444251840-1' style='width:728px; height:90px; margin-left: auto; margin-right: auto;'> -->
+            <script
+                type='text/javascript'> googletag.cmd.push(function () { /*$("#dfp-1349444251840-1 a").remove();*/ googletag.display('dfp-1349444251840-1'); }); </script>
+            <!-- </div> -->
+        </div>
+        <div class="row"
+            style="background-color: white; position: relative; z-index: 10000; padding-top: 20px; padding-bottom: 10px; margin-right: 0px;">
+            <div class="col-md-8 logo" style="width: 275px;"> <a href="https://app.roll20.net"> <img
+                        src="https://app.roll20.net/v2/images/roll20-logo.png?v=2" alt="Roll20 logo" style=""
+                        class="withoutad" /> </a> </div>
+        </div>
+        <div class="row mobilemenu">
+            <div class="col-md-12 btn-row">
+                <div class="menu-hider"></div>
+                <div class="btn-group"> <a class="menutoggler btn btn-default" href="#" class="btn btn-default"
+                        role="button">Menu<span class="caret"></span></a>
+                    <div class="fullmobilemenu">
+                        <ul class="nav nav-pills nav-stacked">
+                            <li><a href="https://roll20.net/">Home</a></li>
+                            <li><a href="https://app.roll20.net/campaigns/search">My Games</a></li>
+                            <li><a href="https://app.roll20.net/lfg">Join a Game</a></li>
+                            <li><a href="https://marketplace.roll20.net/">Marketplace</a></li>
+                            <li><a href="https://roll20.net/compendium">Compendium</a></li>
+                            <li><a href="https://app.roll20.net/forum">Forums</a></li>
+                            <li><a href="https://roll20.zendesk.com/">Wiki</a></li>
+                            <li><a href="http://blog.roll20.net">Blog</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="simplecontainer right topbarlogin">
+                    <div class="btn-group signin"> <button type="button" class="btn btn-default dropdown-toggle"
+                            data-toggle="dropdown" aria-expanded="false" id="signin"> Sign In <span
+                                class="caret"></span> </button> </div>
+                    <div class="simple signin" role="menu" area-labelledby="signin">
+                        <form action="https://app.roll20.net/sessions/create" class="navbar-form form-inline"
+                            method="post"> <input name="email" type="text" placeholder="Email"> <input name="password"
+                                type="password" placeholder="Password"> <button class="btn btn-primary">Sign In</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="simplecontainer right topbarnotifications"> </div>
+                <div class="simplecontainer right topbarsitenotifications">
+                    <div class="btn-group alertcontainer "> <button type="button"
+                            class="btn btn-default dropdown-toggle sitenotifications" data-toggle="dropdown"
+                            aria-expanded="false" id="sitenotifications">
+                            <div class="countcontainer"> </div> <span class="pictos">:</span>
+                        </button> </div>
+                    <div class="simple sitenotifications" role="menu" area-labelledby="sitenotifications">
+                        <div class="notification new"> <a href="https://pages.roll20.net/redesign">
+                                <div class="thumbcontainer"> <img src="/images/Notification System Icons/fix-pink.png">
+                                </div>
+                                <div class="message"> <span class="title">Opt-In to VTT Redesign Available</span> <span
+                                        class="short">Preview the new Toolbar and Layers navigation by opting in within
+                                        the virtual tabletop.</span> </div>
+                            </a> </div>
+                        <div class="notification new"> <a
+                                href="https://help.roll20.net/hc/en-us/articles/360039675373-Page-Settings#PageSettings-Background">
+                                <div class="thumbcontainer"> <img src="/images/Notification System Icons/chat-pink.png">
+                                </div>
+                                <div class="message"> <span class="title">New Backdrop Color</span> <span
+                                        class="short">The VTT backdrop color will now change based on your map. You can
+                                        adjust or disable it under Page Settings.</span> </div>
+                            </a> </div>
+                        <div class="notification new"> <a href="https://app.roll20.net/forum/permalink/11390394/">
+                                <div class="thumbcontainer"> <img src="/images/Notification System Icons/plus-pink.png">
+                                </div>
+                                <div class="message"> <span class="title">Macros Added to the Transmogrifier</span>
+                                    <span class="short">Pro subscribers can copy pages, characters, handouts, and now
+                                        macros between their games.</span>
+                                </div>
+                            </a> </div>
+                        <div class="notification new"> <a href="https://pages.roll20.net/dmsguild">
+                                <div class="thumbcontainer"> <img src="/images/logo-die-large.png"> </div>
+                                <div class="message"> <span class="title">DMsGuild Now on Roll20</span> <span
+                                        class="short">Play converted DMsGuild community content, now on Roll20.</span>
+                                </div>
+                            </a> </div> <button class="btn btn-purple btn-sm fetch_more_notifications">See More<span
+                                class="ss-navigatedown"></span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row desktopmenu">
+            <div class="col-md-12 btn-row">
+                <div class="menu-hider"></div>
+                <div class="btn-group"> <a href="https://app.roll20.net/" class="btn btn-default" role="button">Play
+                        Now</a> </div>
+                <div class="btn-group"> <a href="https://app.roll20.net/lfg" class="btn btn-default" role="button">Join
+                        a Game</a> </div>
+                <div class="btn-group drop"> <a href="https://marketplace.roll20.net" class="btn btn-default"
+                        role="button" data-toggle="dropdown" aria-expanded="false" data-hover="dropdown">Marketplace</a>
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                        aria-expanded="false" data-hover="dropdown" id="marketplace"> <span class="caret"></span> <span
+                            class="sr-only">Toggle Dropdown</span> </button>
+                </div>
+                <div class="full" role="menu" aria-labelledby="marketplace">
+                    <div class="menu"> <a href="https://marketplace.roll20.net">What's New</a> <a
+                            href="https://marketplace.roll20.net/browse">Browse</a> <a
+                            href="https://marketplace.roll20.net/gift/">Give a Gift</a> <a
+                            href="https://marketplace.roll20.net/coupon/">Redeem a Code</a> <a
+                            href="https://merchoforr.com/">Merchandise</a> </div>
+                    <div class="listing marketplaceitem">
+                        <div class="inneritem"> <a
+                                href="https://marketplace.roll20.net/browse/bundle/15508/journeys-through-the-radiant-citadel"><img
+                                    src="https://s3.amazonaws.com/files.d20.io/marketplace/2332394/hbgMCxSCzzURGijNibu_tg/med.png?1647889066882" /></a>
+                            <div class="desc"><em>Journeys Through the Radiant Citadel</em> <br /> by Wizards of the
+                                Coast </div>
+                        </div>
+                    </div>
+                    <div class="listing marketplaceitem">
+                        <div class="inneritem"> <a
+                                href="https://marketplace.roll20.net/browse/module/4085/stranger-things-dungeons-and-dragons-starter-set"><img
+                                    src="https://s3.amazonaws.com/files.d20.io/marketplace/2489346/RR7IRYFFMHjOW5r6xwlA3g/med.jpg?1654713796657" /></a>
+                            <div class="desc"><em>Stranger Things Dungeons &amp; Dragons Starter Set</em> <br /> by
+                                Wizards of the Coast </div>
+                        </div>
+                    </div>
+                    <div class="listing marketplaceitem">
+                        <div class="inneritem"> <a
+                                href="https://marketplace.roll20.net/browse/bundle/17048/band-of-blades-core-book"><img
+                                    src="https://s3.amazonaws.com/files.d20.io/marketplace/2488704/wOEV27vsVtTtnvipXfws-w/med.png?1654636863846" /></a>
+                            <div class="desc"><em>Band of Blades Core Book</em> <br /> by Evil Hat Productions </div>
+                        </div>
+                    </div>
+                    <div class="listing marketplaceitem">
+                        <div class="inneritem"> <a
+                                href="https://marketplace.roll20.net/browse/bundle/15851/marvel-multiverse-role-playing-game-playtest-rulebook"><img
+                                    src="https://s3.amazonaws.com/files.d20.io/marketplace/2388371/sH1LgH9C7k1o5Fj1NWVSMQ/med.jpg?1650456243451" /></a>
+                            <div class="desc"><em>Marvel Multiverse Role-Playing Game: Playtest Rulebook</em> <br /> by
+                                Marvel </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-group drop"> <a href="https://roll20.net/compendium/" class="btn btn-default"
+                        role="button" data-toggle="dropdown" data-hover="dropdown" aria-expanded="false">Tools</a>
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                        data-hover="dropdown" aria-expanded="false" id="digitaltools"> <span class="caret"></span> <span
+                            class="sr-only">Toggle Dropdown</span> </button>
+                </div>
+                <div class="full" role="menu" aria-labelledby="digitaltools">
+                    <div class="menu"> <a href="https://roll20.net/compendium/">Compendium</a> <a
+                            href="https://app.roll20.net/vault/">Character Vault</a> <a
+                            href="https://app.roll20.net/audio_library/">Manage Audio</a> <a
+                            href="https://roll20.zendesk.com/hc/en-us/articles/360039675173-Roll20-for-iPad-and-Android">Roll20
+                            for iPad and Android</a> <a href="https://app.roll20.net/marker-library">Token Marker
+                            Library</a> </div>
+                    <div class="listing">
+                        <div class="imgcontainer"> <a href="https://app.roll20.net/vault/"> <img
+                                    src="/images/CharacterVault.png"> </a> </div>
+                        <div class="gameinfo"> <a href="https://app.roll20.net/vault/">Character Vault</a>
+                            <div class="shorthr"></div> <span class="gameinfo">Any Concept / Any System</span>
+                        </div>
+                    </div>
+                    <div class="listing">
+                        <div class="imgcontainer"> <a href="https://roll20.net/compendium/"> <img
+                                    src="/images/Compendium.png"> </a> </div>
+                        <div class="gameinfo"> <a href="https://roll20.net/compendium/">Compendium</a>
+                            <div class="shorthr"></div> <span class="gameinfo">Your System Come To Life</span>
+                        </div>
+                    </div>
+                    <div class="listing">
+                        <div class="imgcontainer"> <a
+                                href="https://play.google.com/store/apps/details?id=net.roll20.playerappandroid&hl=en">
+                                <img src="/images/forAndroid.png"> </a> </div>
+                        <div class="gameinfo"> <a
+                                href="https://play.google.com/store/apps/details?id=net.roll20.playerappandroid&hl=en">Roll20
+                                for Android</a>
+                            <div class="shorthr"></div> <span class="gameinfo">Streamlined for your Tablet</span>
+                        </div>
+                    </div>
+                    <div class="listing">
+                        <div class="imgcontainer"> <a
+                                href="https://itunes.apple.com/us/app/roll20-for-ipad/id944989026?mt=8"> <img
+                                    src="/images/foriPad.png"> </a> </div>
+                        <div class="gameinfo"> <a
+                                href="https://itunes.apple.com/us/app/roll20-for-ipad/id944989026?mt=8">Roll20 for
+                                iPad</a>
+                            <div class="shorthr"></div> <span class="gameinfo">Streamlined for your Tablet</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-group drop"> <a href="https://app.roll20.net/forum/"
+                        class="btn btn-default community-toggler" role="button" data-toggle="dropdown"
+                        data-hover="dropdown" aria-expanded="false">Community</a> <button type="button"
+                        class="btn btn-default dropdown-toggle community community-toggler" data-toggle="dropdown"
+                        data-hover="dropdown" aria-expanded="false" id="community"> <span class="caret"></span> <span
+                            class="sr-only">Toggle Dropdown</span> </button> </div>
+                <div class="full community" role="menu" aria-labelledby="community">
+                    <div class="menu"> <a href="https://app.roll20.net/forum/">Forums</a> <a
+                            href="https://roll20.net/help" target="_blank">Help Center</a> <a
+                            href="https://wiki.roll20.net/Main_Page" class="dropdown-item">Help Wiki</a> <a
+                            href="http://blog.roll20.net">Blog</a> <a href="http://www.twitch.tv/roll20app"
+                            target="_blank">Live Stream</a> <a
+                            href="https://www.youtube.com/channel/UCHC1kWACzA7G6D2fqkqsRDg" target="_blank">VODs</a>
+                    </div>
+                    <div class="listing">
+                        <div class="imgcontainer"> <a href="http://roll20.io/help"> <img
+                                    src="https://s3.amazonaws.com/files.d20.io/images/108817734/3wP4E9ANeZSrjFEh5d3RAg/original.jpg?1584553652821" />
+                            </a> </div>
+                        <p class="snippet"> <a href="http://roll20.io/help"> Roll20 Help Center </a> </p>
+                    </div>
+                    <div class="listing">
+                        <div class="imgcontainer"> <a href="https://app.roll20.net/lfg/search/"> <img
+                                    src="https://s3.amazonaws.com/files.d20.io/images/235128791/emsps59EW8S5z9ghg_qFOw/original.jpg?1626732976702" />
+                            </a> </div>
+                        <p class="snippet"> <a href="https://app.roll20.net/lfg/search/"> Find your next game group!
+                            </a> </p>
+                    </div>
+                    <div class="listing">
+                        <div class="imgcontainer"> <a href="https://roll20.net/reserve"> <img
+                                    src="https://s3.amazonaws.com/files.d20.io/images/271147938/OgsDO1zLc5Pnt7ZwKOejkQ/original.png?1645026308591" />
+                            </a> </div>
+                        <p class="snippet"> <a href="https://roll20.net/reserve"> Roll20 Reserve </a> </p>
+                    </div>
+                    <div class="listing">
+                        <div class="imgcontainer"> <a href="https://youtu.be/qijAKDeT74E"> <img
+                                    src="https://s3.amazonaws.com/files.d20.io/images/285851885/gSax6x0wG07wbMWrvwrBGg/original.jpg?1652988213040" />
+                            </a> </div>
+                        <p class="snippet"> <a href="https://youtu.be/qijAKDeT74E"> 2022 Product Updates </a> </p>
+                    </div>
+                </div>
+                <div class="simplecontainer right topbarlogin">
+                    <div class="btn-group signin"> <button type="button" class="btn btn-default dropdown-toggle"
+                            data-toggle="dropdown" aria-expanded="false" id="signin"> Sign In <span
+                                class="caret"></span> </button> </div>
+                    <div class="simple signin" role="menu" area-labelledby="signin">
+                        <form action="https://app.roll20.net/sessions/create" class="navbar-form form-inline"
+                            method="post"> <input name="email" type="text" placeholder="Email"> <input name="password"
+                                type="password" placeholder="Password"> <button class="btn btn-primary">Sign In</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="simplecontainer right topbarnotifications"> </div>
+                <div class="simplecontainer right topbarsitenotifications">
+                    <div class="btn-group alertcontainer "> <button type="button"
+                            class="btn btn-default dropdown-toggle sitenotifications" data-toggle="dropdown"
+                            aria-expanded="false" id="sitenotifications">
+                            <div class="countcontainer"> </div> <span class="pictos">:</span>
+                        </button> </div>
+                    <div class="simple sitenotifications" role="menu" area-labelledby="sitenotifications">
+                        <div class="notification new"> <a href="https://pages.roll20.net/redesign">
+                                <div class="thumbcontainer"> <img src="/images/Notification System Icons/fix-pink.png">
+                                </div>
+                                <div class="message"> <span class="title">Opt-In to VTT Redesign Available</span> <span
+                                        class="short">Preview the new Toolbar and Layers navigation by opting in within
+                                        the virtual tabletop.</span> </div>
+                            </a> </div>
+                        <div class="notification new"> <a
+                                href="https://help.roll20.net/hc/en-us/articles/360039675373-Page-Settings#PageSettings-Background">
+                                <div class="thumbcontainer"> <img src="/images/Notification System Icons/chat-pink.png">
+                                </div>
+                                <div class="message"> <span class="title">New Backdrop Color</span> <span
+                                        class="short">The VTT backdrop color will now change based on your map. You can
+                                        adjust or disable it under Page Settings.</span> </div>
+                            </a> </div>
+                        <div class="notification new"> <a href="https://app.roll20.net/forum/permalink/11390394/">
+                                <div class="thumbcontainer"> <img src="/images/Notification System Icons/plus-pink.png">
+                                </div>
+                                <div class="message"> <span class="title">Macros Added to the Transmogrifier</span>
+                                    <span class="short">Pro subscribers can copy pages, characters, handouts, and now
+                                        macros between their games.</span>
+                                </div>
+                            </a> </div>
+                        <div class="notification new"> <a href="https://pages.roll20.net/dmsguild">
+                                <div class="thumbcontainer"> <img src="/images/logo-die-large.png"> </div>
+                                <div class="message"> <span class="title">DMsGuild Now on Roll20</span> <span
+                                        class="short">Play converted DMsGuild community content, now on Roll20.</span>
+                                </div>
+                            </a> </div> <button class="btn btn-purple btn-sm fetch_more_notifications">See More<span
+                                class="ss-navigatedown"></span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script
+        type="text/javascript"> $(".signin input").click(function () { return false; }); $("body, .simplecontainer").on("click", ".full, .simplecontainer .simple", function (e) { e.stopPropagation(); }); $(".menutoggler").on("click", function () { $(".mobilemenu").addClass("open"); return false; }); $(document).on("click", function () { $(".mobilemenu").removeClass("open"); }); if ('ontouchstart' in document) { //touch-compatible } else { //mouse-compatible $(".topbar .btn-group a.btn[data-toggle=dropdown]").removeAttr("data-toggle"); $('[data-hover="dropdown"]').dropdownHover({hoverDelay: 100, delay: 300}); } var trackOutboundLink = function(url) { ga('send', 'event', 'outbound', 'obsAdvert', '', { 'transport': 'beacon', 'hitCallback': function(){document.location = url;} }); } $(function() { setTimeout(function(){ if($(".obs_container").length > 0) { // GA Event Tracking ga('send', { 'hitType': 'event', 'eventCategory': 'obsAdvert', 'eventAction': 'topbar', 'eventLabel': '' }); } }, 0); }); </script>
+    <div class="container">
+        <style type="text/css">
+            .conintro h1 {
+                font-size: 7.0em;
+                line-height: .85em;
+                margin-top: 0;
+                color: black;
+                z-index: 2;
+            }
+
+            .conintro p {
+                font-size: 1.1em;
+                line-height: 1.4em;
+            }
+
+            .conintro img.intrographic {
+                top: 50px;
+                left: 450px;
+                z-index: 1;
+            }
+        </style>
+        <div class="container" style="overflow: hidden;">
+            <div class="conintro row">
+                <div class="col-md-12">
+                    <h1>Not Authorized</h1>
+                    <p>Either you are not logged in or do not have access to this page.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container globalfooter">
+        <div class="row" style="padding-bottom: 20px; padding-top: 60px;">
+            <div class="col-md-12">
+                <div class="footerborder1"></div>
+                <div class="footerborder2"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 copyrightnotice">
+                <p style="border-top: none; padding-top: 0px;">&copy; The Orr Group, LLC &middot; <a
+                        href="https://roll20.zendesk.com/hc/en-us/articles/360037254354-Acknowledgments"
+                        target="_blank">Acknowledgements</a> &middot; <a
+                        href="https://roll20.zendesk.com/hc/en-us/articles/360037770793-Terms-of-Service-and-Privacy-Policy">Terms
+                        of Service & Privacy Policy</a> &middot; <a
+                        href="https://roll20.zendesk.com/hc/en-us/articles/360037770793-Terms-of-Service-and-Privacy-Policy#Notification_of_Copyright_Infringement_.28DMCA_Policy.29"
+                        target="_blank">DMCA</a> &middot; <a href="javascript:showCookieModal();"
+                        class="cookie_modal">Cookies</a> &middot; <a href="https://roll20.net/help"
+                        target="_blank">Support</a> &middot; <a href="https://roll20.zendesk.com/hc/en-us/requests/new"
+                        target="_blank">Contact Us</a> &middot; On Social Media: <a
+                        href="https://www.facebook.com/pages/Roll20/439774126041559" target="_blank"><img
+                            src="/v2/images/social-fb.png" alt="Roll20 on Facebook" /></a> <a
+                        href="https://twitter.com/roll20app" target="_blank"><img src="/v2/images/social-twitter.png"
+                            alt="Roll20 on Twitter" /></a> <a
+                        href="https://www.youtube.com/channel/UCHC1kWACzA7G6D2fqkqsRDg" target="_blank"><img
+                            style="margin-right:+5px;" src="/v2/images/social-youtube.png"
+                            alt="Roll20 on YouTube" /></a> <a href="http://twitch.tv/roll20app" target="_blank"><img
+                            src="/v2/images/social-twitch.png" alt="Roll20 on Twitch" /></a> <a
+                        href="https://www.instagram.com/roll20app/" target="_blank"><img style="margin-right: 10px;"
+                            src="/v2/images/social-instagram.png" alt="Roll20 on Instagram" /></a> </p>
+                <p style="border-top: none; padding-top: 0px;">Roll20<sup>&reg;</sup> is a Registered Trademark of The
+                    Orr Group, LLC. All rights reserved. </p>
+            </div>
+        </div>
+    </div>
+    <script id="tmpl_campaigntag" type="text/html"> <div class="tag"><$=this.model.get("tag")$></div> </script>
+    <script id="tmpl_campaigntags"
+        type="text/html"> <div class="tags tagset"> <div class="tagslabel"> <span class="pictos">z</span> Tags: </div> <input> <$ if(this.editable == "true") { $> <div class="add"> <em> <span class="pictos">p</span> Edit Tags </em> </div> <$ } $> </div> <div class="clear"></div> </script>
+    <script id="tmpl_tokentag" type="text/html"> <div class="tag"> <$=this.model.get("tag")$> </div> </script>
+    <script id="tmpl_tokentags"
+        type="text/html"> <div class="tags tagset"> <div class="label"> <span class="pictos">z</span> Global Tags: </div> <input /> <$ if(this.editable == "true") { $> <div class="add"> <em> <span class="pictos">p</span> Edit Tags </em> </div> <$ } $> </div> <div class="clear"></div> </script>
+    <script id="tmpl_yourtag" type="text/html"> <div class="tag"> <$=this.model.get("tag")$> </div> </script>
+    <script id="tmpl_yourtags"
+        type="text/html"> <div class="tags tagset"> <div class="label"> <span class="pictos">z</span> Global Tags: </div> <input /> <$ if(this.editable == "true") { $> <div class="add"> <em> <span class="pictos">p</span> Edit Tags </em> </div> <$ } $> </div> <div class="clear"></div> </script>
+    <script id="tmpl_uploadslot"
+        type="text/html"> <div class="avatar dropbox <$! (this != "" ? "filled" : "empty") $>"> <div class="status"></div> <div class="inner"> <$ if(this == "") { $> <h4 style="padding-bottom: 0px; marigin-bottom: 0px; color: #777;">Drop a File<small>(JPG, PNG, GIF)</small></h4> <div style="margin-top: -5px; margin-bottom: 5px;">or</div> <a href="javascript:void(0);" class="btn btn-info" style="margin-bottom: 10px;">Choose a File...</a> <input class="manual" type="file" /> <$ } else { $> <img src="<$!this$>" /> <div class='remove'><a href='javascript:void(0);'>Change Image</a></div> <$ } $> </div> </div> </script>
+    <script
+        type="text/javascript"> $(function () { var cookieName = "roll20tempauth"; var cookieValue = Math.floor(Math.random() * 100); var myDate = new Date(); myDate.setMonth(myDate.getMonth() + 1); var cookieinfo = cookieName + "=" + cookieValue + ";expires=" + myDate + ";domain=.roll20.net;path=/"; document.cookie = cookieinfo; }); </script>
+    <script
+        type="text/javascript"> $("#roll20-top .loginform button").on("click", function () { console.log("click"); var $form = $(this).parents("form"); $form.attr("action", $form.attr("action") + "?backto=" + escape(window.location)); $form.submit(); return false; }); $(".topbarnotifications .notification button").on("click", function () { let notid = $(this).attr("data-notification-id"); let othis = this; $.getJSON("https://app.roll20.net/notifications/dismiss/" + notid + "/?callback=?", function (data) { if (notid == "all") { $(othis).parents(".notifications").fadeOut(); $(".alertcount").html(""); $(".topbarnotifications .alertcontainer").html("<a href='https://app.roll20.net/private_message/inbox/' class='btn btn-default pictos' role='button' style='color:#555'>M</a>") return; } if ($(othis).attr("href")) { window.location = "https://app.roll20.net" + $(othis).attr("href"); } else { $(othis).parents(".notification").fadeOut(); let $count = $(othis).parents(".notifications").find("a .count"); let current = parseInt($.trim($count.text()), 10); current = current - 1; if (current < 0) current = 0; $count.text(current); countdown = parseInt($(".alertcount").html(), 10) $(".alertcount").html(countdown - 1); if (countdown < 2) { $(othis).parents(".notifications").fadeOut(); $(".alertcount").html(""); $(".topbarnotifications .alertcontainer").html("<a href='https://app.roll20.net/private_message/inbox/' class='btn btn-default pictos' role='button' style='color:#555'>M</a>") return; } } }); return false; }); $(".topbarsitenotifications .newalerts button").on("click", function () { }); $(".topbarsitenotifications .sitenotifications button.fetch_more_notifications").on("click", function () { window.location = "https://app.roll20.net/sitenotifications"; }); </script>
+</body>
+
+</html>

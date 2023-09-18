@@ -77,7 +77,7 @@ function updateRulesReferenceSearch(endpoint) {
     const db = app.get('db')
     let chapterName = numWords(endpoint)
 
-    if (endpoint === 3 || endpoint === 5 || endpoint === 6 || endpoint === 7) {
+    if (endpoint === 3 || endpoint === 5 || endpoint === 7) {
         fs.readFile(`../bonfireSRD/src/app/rules-reference/chapter-${chapterName}/rr-${chapterName}-deluxe/rr-${chapterName}-deluxe.component.html`, "utf-8", (adverr, advData) => {
             fs.readFile(`../bonfireSRD/src/app/rules-reference/chapter-${chapterName}/rr-${chapterName}/rr-${chapterName}.component.html`, "utf-8", (err, data) => {
                 if (err) console.log(err);
@@ -339,8 +339,8 @@ async function updateQuickNavForRulesReference(endpoint) {
 
     let html = "";
 
-    fs.readFile(`../bonfireSRD/src/app/rules-reference/chapter-${chapterName}/rr-${chapterName}-deluxe/rr-${chapterName}-deluxe.component.html`, "utf-8", (err, data) => {
-        // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
+    fs.readFile(`../bonfireSRD/src/app/rules-reference/chapter-${chapterName}/rr-${chapterName}/rr-${chapterName}.component.html`, "utf-8", (err, data) => {
+        // fs.readFile(`../bonfireSRD/src/app/chapters/rr-${chapterName}/rr-${chapterName}.component.html`, "utf-8", (err, data) => {
         if (err) { console.log(err) }
         html = data.replace(/ _ngcontent-c2=""/g, '');
         newhtml = html.split(/anchor"|anchor'|anchor /)
@@ -613,7 +613,7 @@ function rollDice(diceString) {
         let expressionValue = ""
 
         diceString.replace(/\s/g, '').split('').forEach((val, i, array) => {
-            if (val === '-' || val === '+') {
+            if (val === '-' || val === '+' || val === '*') {
                 diceExpressionArray.push(expressionValue)
                 if (i !== array.length - 1) {
                     diceExpressionArray.push(val)
@@ -713,13 +713,16 @@ function getRoute(i, type) {
     let typeFull = type === 'cc' ? 'character-creation' : 'rules-reference'
     let route = `../bonfireSRD/src/app/${typeFull}/chapter-${chapterName}/${type}-${chapterName}/${type}-${chapterName}.component.html`
 
-    if (i === 0) {
-        route = './UpdateSearch/processbase.html'
+    if (type === 'rr') {
+        if (i === 3 || i === 5 || i === 7) {
+            route = `../bonfireSRD/src/app/${typeFull}/chapter-${chapterName}/${type}-${chapterName}-deluxe/${type}-${chapterName}-deluxe.component.html`
+        }
+    } else if (type === 'cc') {
+        if (i === 2 || i === 3) {
+            route = `../bonfireSRD/src/app/${typeFull}/chapter-${chapterName}/${type}-${chapterName}-deluxe/${type}-${chapterName}-deluxe.component.html`
+        }
     }
-    // else {
-    //     route = `../bonfireSRD/src/app/character-creation/chapter-${chapterName}/chapter-${chapterName}-advanced/chapter-${chapterName}-advanced.component.html`
-    // }
-
+    
     return route
 }
 
@@ -732,7 +735,7 @@ function addScriptsAndBody(fileName) {
 
         fs.readFile(kitRoute, "utf-8", (err, kits) => {
             if (err) { console.log(err) }
-            scripts = scripts + `<script>kits=${kits.split('export default ')[1]}</script>`
+            // scripts = scripts + `<script>kits=${kits.split('export default ')[1]}</script>`
 
             fs.readFile(equipmentRoute, "utf-8", (err, equipment) => {
                 if (err) { console.log(err) }
@@ -1078,11 +1081,163 @@ function createTableArray() {
         let splitData = data.split('|')
 
         for (let i = 0; i < splitData.length; i += 2) {
-            tableString += `('${splitData[i]}', 'Wood', 1, ${splitData[i+1]}),\n`
+            tableString += `('${splitData[i]}', 'Wood', 1, ${splitData[i + 1]}),\n`
         }
 
         console.log(tableString)
     })
+}
+
+function createTable() {
+    fs.readFile(`./formatter.txt`, "utf-8", (err, data) => {
+        let i = 1
+        let tableArray = []
+        let object = {}
+        data.split('|').forEach(val => {
+            if (i > 2) {
+                i = 1
+            }
+
+            if (i === 1) {
+                if (val.includes('-')) {
+                    object.weight = (eval(val) * -1) + 1
+                } else {
+                    object.weight = 1
+                }
+            } else if (i === 2) {
+                object.table = val
+            }
+
+            i++
+
+            if (i > 2) {
+                tableArray.push(object)
+                object = {}
+            }
+        })
+
+        console.log(tableArray)
+    })
+}
+
+function addCurrentTotaltoTables() {
+    let table = flawTables.physical
+
+    let total = 0
+    table = table.map(val => {
+        val.currentTotal = total
+        total += val.weight
+        return val
+    })
+
+    console.log(table)
+}
+
+const weights = [
+    {
+        beastid: 1,
+        labelid: 1,
+        role: 'Ferdherz',
+        weight: 10
+    },
+    {
+        beastid: 1,
+        labelid: 1,
+        role: 'Sweinkopf',
+        weight: 5
+    },
+    {
+        beastid: 1,
+        labelid: 1,
+        role: 'Ziegehiten',
+        weight: 3
+    },
+    {
+        beastid: 1,
+        labelid: 1,
+        role: 'Braymann',
+        weight: 1
+    }
+]
+const label = [
+    {
+        beastid: 1,
+        labelid: 1,
+        weight: 10,
+        label: 'Forward Scouts'
+    }
+]
+const numbers = [
+    {
+        beastid: 1,
+        weight: 2,
+        numbers: '1d10 * 4',
+        miles: 'd20'
+    }
+]
+
+function getRandomEncounter() {
+    let rolesGoodToAdd = {}
+    let randomEncounterRoles = {}
+    weights.forEach(entry => {
+        rolesGoodToAdd[entry.role] = true
+    })
+
+    let roleLoopTimes = 1
+
+    const totalNumber = rollDice(numbers[0].numbers)
+
+    for (i = 1; i <= totalNumber; i++) {
+        const entry = weights[Math.floor(Math.random()*weights.length)];
+
+        if (randomEncounterRoles[entry.role] && rolesGoodToAdd[entry.role]) {
+            randomEncounterRoles[entry.role] += 1
+            if (randomEncounterRoles[entry.role] === (entry.weight * roleLoopTimes)) {
+                rolesGoodToAdd[entry.role] = false
+            }
+        } else if (!randomEncounterRoles[entry.role] && rolesGoodToAdd[entry.role]) {
+            randomEncounterRoles[entry.role] = 1
+            if (randomEncounterRoles[entry.role] === (entry.weight * roleLoopTimes)) {
+                rolesGoodToAdd[entry.role] = false
+            }
+        } else if (!rolesGoodToAdd[entry.role]) {
+            let allRolesFalse = true
+            for (key in rolesGoodToAdd) {
+                if (rolesGoodToAdd[key]) {
+                    allRolesFalse = false
+                }
+            }
+
+            if (allRolesFalse) {
+                for (key in rolesGoodToAdd) {
+                    rolesGoodToAdd[key] = true
+                }
+                roleLoopTimes++
+            } else {
+                --i
+            }
+        }
+    }
+
+    console.log({
+        monsterRoles: randomEncounterRoles,
+        label: label[0].label,
+        milesFromLair: rollDice(numbers[0].miles),
+        totalNumber
+    })
+}
+
+function createValuesToInsert() {
+    const verbs = ["Admires", "Adores", "Afraid of", "Aloof from", "Ambivalent to", "Antagonistic to", "Antipathy Toward", "Apathetic of", "Apathetic to", "Appreciates", "Apprenticed to", "Ashamed of", "Aspirant to", "Aspiring to", "Assassinate", "At Peace with", "Averse to", "Awed by", "Awkward with", "Banished by", "Banished from", "Believes in", "Belongs to", "Bitter About", "Bound to", "Burn the", "Can't Find", "Can’t Handle", "Can’t Stand", "Captivated by", "Careful About", "Cares About", "Cares for", "Cares Little for", "Carrier of", "Child of", "Close to", "Closed to", "Cold Towards", "Comfortable with", "Compassionate to", "Compassionate Toward", "Compelled to Protect", "Connected with", "Contempt for", "Craves", "Curious About", "Dedicated to", "Defends", "Defensive About", "Demanding of", "Depends on", "Desire Death of", "Desire to B", "Desires", "Despises", "Destined for", "Devote of", "Devoted to", "Devotion to", "Disdain for", "Distaste for", "Distrusts", "Doesn't Respect", "Doesn't Understand", "Doesn't Want", "Doesn’t Care for", "Doesn’t Listen to", "Doesn’t Really Care for", "Doesn’t Want", "Donates to", "Done with", "Drawn to", "Driven to", "Dutiful to", "Embody Ymir", "Embraces Fate", "Enemy of", "Enforces", "Enjoys", "Envious of", "Estranged from", "Exploitive of", "Fanatic Disciple of", "Fanatical Devotion to", "Fascinated by", "Fascinated with", "Feels Inferior to", "Feels Superior to", "Fights for", "Finds", "Follower of", "Follows", "Fondness for", "Friend of", "Friendly to", "Friendly with", "Friends with", "Fuck", "Gave Up Everything for", "Good to His Followers", "Has a", "Has a Distaste for", "Has No", "Hates", "Hatred of", "Helps", "Hesitant to", "Hides from", "Honors", "Hopeful of", "Hungry for", "Idolized", "Idolizes", "In Debt to", "Indifferent T0", "Indifferent Towards", "Interested in", "Jealous of", "Keeps", "Likes", "Loathes", "Looking for", "Looks Down on", "Looks Up to", "Loves", "Loyal Devotee to", "Loyal to", "Loyal Toward", "Lusts for", "Merciless to", "Misses", "Mistrusts", "Mixed Feelings", "Mixed Feelings About", "Must Change View of", "Needs", "Nostalgic", "Not Bound by", "Obsessed with", "Open to", "Out to Get", "Patient with", "Patron of", "Pities", "Plagued by", "Pragmatic Toward", "Prefers", "Prioritizes", "Protective of", "Questions", "Rejected by", "Reliant on", "Respectful of", "Respects", "Revels in", "Reveres", "Rivals with", "Romantic Longing for", "Runs from", "Sacrificed for", "Scared of", "Searching for", "Secretly Wants", "Seeks", "Seizes", "Servant of", "Serves", "Sick of", "Strengthens", "Strives Fore", "Struggling with", "Supplicant of", "Supports", "Suspicious of", "Sycophantic to", "Sympathetic to", "Takes", "Thinks", "Thirsts", "Tired of", "To Family", "To Hell with", "Trusting of", "Trusts", "Uncertain About", "Uncomfortable", "Unsure of", "Upset at", "Values", "Wants", "Warm to", "Wary of", "Watches over", "Watchful of", "Wild About", "Will Do Almost Anything for", "Wishes for", "Wistful of", "Works for", "Worships", "Would Die for", "Wrestles with"]
+    const nouns = ["A Bad Time", "A Business", "A Church", "A City", "A Civilian", "A Clan", "A Community", "A Cousin", "A Cult", "A Family", "A Good Time", "A Great Thief", "A Guard", "A Guild", "A Hometown", "A Library", "A Local", "A Local Spirit", "A Men", "A Paragon", "A Quiet Life on the Farm", "A Soldier", "A Uncle", "A University", "Adopted Sibling", "Adventuring", "Aggressors", "All Cultures", "All Good Things", "All of Elf Kind", "An Aunt", "An Orphanage", "Ancient Culture", "Animals", "Another", "Another City", "Another's Culture", "Another's Nobility", "Armor", "Astronomy", "Authority", "Background", "Battle", "Blood", "Brothers-in-arms", "Carvings", "Causing Trouble", "Changing Minds", "Clan Grudges", "Close Relationships", "Coin", "Companion", "Compassion", "Contemplation", "Cook", "Crime", "Criminals", "Cruelty", "Culture", "Dark Thoughts", "Dead Father", "Dead Guardian", "Dead Kid", "Dead Kids", "Dead Mother", "Dead Spouse", "Discipline", "Disorderedly People", "Downtrodden", "Everyone", "Ex", "Family", "Family Name", "Fate", "Filthy Lucre", "Forest", "Friends", "Greatness", "Happy Thoughts", "High Social Caste", "Higher Castes", "Home Hamlet", "Humor", "Iron", "Justice", "Knowledge", "Lady Luck", "Life Itself", "Lifelong Learning", "Local Community", "Location", "Magic", "Mercy", "Monsters", "Morals", "More", "Motherland", "My Allies", "My Armor", "My Clan", "My Enemies", "My Family", "My Friens", "My Future Clan", "My Guild", "My Hometown", "My Place", "My Shield", "My Spouse and Kids", "My Stuck-up Family", "My Weapon", "Nature", "Nature Divinity", "Neigborhood", "No One", "Nobility", "Nomadic Clan", "Norms", "Old Crew", "One of Their Subordinates", "Opressed", "Orderly People", "Other Classes", "Other Cultures", "Other Nobility", "Other People", "Other Profressions", "Other Races", "Others", "Overachievers", "Paintings", "Parents", "Parishioner", "People", "Peoplenumbers", "People’s Behavior", "Personal Gain", "Personal Interest", "Pilgrimmage", "Pleasure", "Popularity", "Power", "Privilege", "Quiet", "Refugees", "Responsibility", "Risktakers", "Self", "Self Preservation", "Shields", "Social Validation", "Solutions", "Spirituality", "Statues", "Strength", "Stress", "Supernatural Evil", "Sweet Tooth", "The Ancestors", "The Army", "The Austerity of Another Country", "The Austerity of Their Country", "The Bank", "The Baron", "The Bloodline", "The Church", "The City", "The Community", "The Count", "The Cult", "The Cult of Saints", "The Divines", "The Downtrodden", "The Duke", "The Empire", "The Exploited", "The Farmer", "The Flame", "The Freemen", "The Future", "The Guilds", "The Infidel", "The Innocent", "The King", "The Kingdom", "The Law", "The Little Things", "The Local Nobles", "The Local Priest", "The Moral High Ground", "The Motherland", "The Museum", "The Newly Ennobled", "The Non-ennobled", "The Old Days", "The Opulence of Another Country", "The Opulence of Their Country", "The Other Guilds", "The Party", "The Past", "The People of a Faith", "The People of the Faith", "The Physical Form", "The Plan", "The Poor", "The Prince", "The Prisoners", "The Rebel", "The Saints", "The Self-righteous", "The Spirit", "The Spirits", "The Taste of Victory", "The Tyrant", "The Watch", "The Wierd", "The World", "Their Aunts", "Their Business", "Their City", "Their Clan", "Their Class", "Their College", "Their Command", "Their Company", "Their Cousins", "Their Culture", "Their Duties", "Their Family", "Their Father", "Their Fighters", "Their Flock", "Their Followers", "Their Freedom", "Their Friends", "Their Guards", "Their Guild", "Their Hometown", "Their Job", "Their Kin", "Their Men", "Their Morality", "Their Mother", "Their Nation", "Their Noblity", "Their Paragon", "Their Parents", "Their People", "Their Profession", "Their Race", "Their Sexuality", "Their Sister", "Their Son", "Their Spouse", "Their Traveling Partners", "Their Tribe", "Their Uncles", "Their View of the World", "Theirself", "Themselves", "Thier Ex", "To Others", "Tribe", "Undead", "Underachievers", "University", "Useful People", "Uselss People", "Values", "Vigilante", "Violence", "Wealth and Power", "Wealthy People", "Weapons", "Weird Adepts", "Wizard", "Worldly Things", "Ymir", "Your Kin", "{{animal}}", "{{food}}", "{{monster}}"]
+
+    let valuesString = ''
+
+    nouns.forEach((val, index) => {
+        valuesString += `('${verbs[index] ? verbs[index] : null}', '${nouns[index]}'), `
+    })
+
+    console.log(valuesString)
 }
 
 massive(connection).then(dbI => {
@@ -1091,11 +1246,13 @@ massive(connection).then(dbI => {
         // createTableArray()
         updateSearch('1.1')
         // for (i = 1; i < 8; i++) {
-        // updateQuickNav('1.5')
+        // updateQuickNav('1.6')
         // }
-        // createTableArray()
         // formatNewSections()
         // formatPHB(0, '', 'rr')
+        // addCurrentTotaltoTables()
+        // getRandomEncounter()
+        // createValuesToInsert()
         console.log(`The night lays like a lullaby on the earth 4343`)
     })
 })

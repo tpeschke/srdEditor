@@ -10,7 +10,6 @@ const { round, add, split } = require('lodash')
     , { tables, multipliers } = require('./table.js')
     , beastVitalityList = require('../object')
     , string = require('../string.js');
-const { Switch } = require('react-router-dom');
 
 const app = new express()
 app.use(bodyParser.json())
@@ -1246,7 +1245,7 @@ massive(connection).then(dbI => {
         // createTableArray()
         updateSearch('1.1')
         // for (i = 1; i < 8; i++) {
-        // updateQuickNav('1.6')
+        // updateQuickNav('2.4')
         // }
         // formatNewSections()
         // formatPHB(0, '', 'rr')

@@ -131,7 +131,7 @@ function updateCharacterCreationSearch(endpoint) {
     const db = app.get('db')
     let chapterName = numWords(endpoint)
 
-    if (endpoint === 2 || endpoint === 3) {
+    if (endpoint === 2) {
         fs.readFile(`../bonfireSRD/src/app/character-creation/chapter-${chapterName}/cc-${chapterName}-deluxe/cc-${chapterName}-deluxe.component.html`, "utf-8", (err, advData) => {
             fs.readFile(`../bonfireSRD/src/app/character-creation/chapter-${chapterName}/cc-${chapterName}/cc-${chapterName}.component.html`, "utf-8", (err, data) => {
                 if (err) console.log(err);
@@ -383,8 +383,8 @@ async function updateQuickNavForCharacterCreation(endpoint) {
 
     let html = "";
 
-    fs.readFile(`../bonfireSRD/src/app/character-creation/chapter-${chapterName}/cc-${chapterName}/cc-${chapterName}.component.html`, "utf-8", (err, data) => {
-        // fs.readFile(`../bonfireSRD/src/app/chapters/chapter-${chapterName}/chapter-${chapterName}.component.html`, "utf-8", (err, data) => {
+    // fs.readFile(`../bonfireSRD/src/app/character-creation/chapter-${chapterName}/cc-${chapterName}/cc-${chapterName}.component.html`, "utf-8", (err, data) => {
+    fs.readFile(`../bonfireSRD/src/app/character-creation/chapter-${chapterName}/cc-${chapterName}-deluxe/cc-${chapterName}-deluxe.component.html`, "utf-8", (err, data) => {
         if (err) { console.log(err) }
         html = data.replace(/ _ngcontent-c2=""/g, '');
         newhtml = html.split(/anchor"|anchor'|anchor /)
@@ -1245,7 +1245,7 @@ massive(connection).then(dbI => {
         // createTableArray()
         updateSearch('1.1')
         // for (i = 1; i < 8; i++) {
-        // updateQuickNav('2.4')
+        // updateQuickNav('1.2')
         // }
         // formatNewSections()
         // formatPHB(0, '', 'rr')

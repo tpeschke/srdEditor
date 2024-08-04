@@ -4,7 +4,6 @@ const { connection } = require('./servStuff')
     , cors = require('cors')
     , massive = require('massive')
     , fs = require('fs')
-    , numWords = require('num-words')
     , _ = require('lodash');
 const { round, add, split } = require('lodash')
     , { tables, multipliers } = require('./table.js')
@@ -32,6 +31,11 @@ String.prototype.toFirstCased = function () {
         }
     }
     return words.join(' ')
+}
+
+function numWords(index) {
+    const numberWords = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight']
+    return numberWords[+index]
 }
 
 function makeid(length) {
@@ -326,9 +330,9 @@ function insertSpellEffects(spellListObj, spellId, effectType, effectIndex, effe
 function updateQuickNav(endpoint) {
     let sectionAndChapter = endpoint.split('.')
     if (+sectionAndChapter[0] === 1) {
-        updateQuickNavForRulesReference(+sectionAndChapter[1])
+        updateQuickNavForRulesReference(sectionAndChapter[1])
     } else {
-        updateQuickNavForCharacterCreation(+sectionAndChapter[1])
+        updateQuickNavForCharacterCreation(sectionAndChapter[1])
     }
 }
 
@@ -382,9 +386,8 @@ async function updateQuickNavForCharacterCreation(endpoint) {
         , chapterName = numWords(endpoint)
 
     let html = "";
-
-    // fs.readFile(`../bonfireSRD/src/app/character-creation/chapter-${chapterName}/cc-${chapterName}/cc-${chapterName}.component.html`, "utf-8", (err, data) => {
-    fs.readFile(`../bonfireSRD/src/app/character-creation/chapter-${chapterName}/cc-${chapterName}-deluxe/cc-${chapterName}-deluxe.component.html`, "utf-8", (err, data) => {
+    fs.readFile(`../bonfireSRD/src/app/character-creation/chapter-${chapterName}/cc-${chapterName}/cc-${chapterName}.component.html`, "utf-8", (err, data) => {
+    // fs.readFile(`../bonfireSRD/src/app/character-creation/chapter-${chapterName}/cc-${chapterName}-deluxe/cc-${chapterName}-deluxe.component.html`, "utf-8", (err, data) => {
         if (err) { console.log(err) }
         html = data.replace(/ _ngcontent-c2=""/g, '');
         newhtml = html.split(/anchor"|anchor'|anchor /)
@@ -1245,7 +1248,7 @@ massive(connection).then(dbI => {
         // createTableArray()
         updateSearch('1.1')
         // for (i = 1; i < 8; i++) {
-        // updateQuickNav('1.2')
+        // updateQuickNav('2.1')
         // }
         // formatNewSections()
         // formatPHB(0, '', 'rr')

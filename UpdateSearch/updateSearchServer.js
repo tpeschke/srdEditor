@@ -102,7 +102,7 @@ function updateRulesReferenceSearch(endpoint) {
                         updateSearch('1.' + (endpoint + 1))
                     } else {
                         console.log('Rules Reference All Done')
-                        updateSearch('2.1')
+                        updateSearch('2.0')
                     }
                 })
             })
@@ -123,7 +123,7 @@ function updateRulesReferenceSearch(endpoint) {
                     updateSearch('1.' + (endpoint + 1))
                 } else {
                     console.log('Rules Reference All Done')
-                    updateSearch('2.1')
+                    updateSearch('2.0')
                 }
             })
         })
@@ -152,7 +152,7 @@ function updateCharacterCreationSearch(endpoint) {
 
                 Promise.all(promiseArray).then(_ => {
                     console.log(`Successfully Updated Character Creation Chapter ${endpoint}'s Search`);
-                    if (endpoint !== 7) {
+                    if (endpoint < 7) {
                         updateSearch('2.' + (endpoint + 1))
                     } else {
                         console.log('Character Creation All Done')
@@ -172,7 +172,7 @@ function updateCharacterCreationSearch(endpoint) {
 
             Promise.all(promiseArray).then(_ => {
                 console.log(`Successfully Updated Character Creation Chapter ${endpoint}'s Search`);
-                if (endpoint !== 7) {
+                if (endpoint < 7) {
                     updateSearch('2.' + (endpoint + 1))
                 } else {
                     console.log('Character Creation All Done')
